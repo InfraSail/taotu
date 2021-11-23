@@ -10,5 +10,12 @@
  */
 #ifndef TAOTU_TAOTU_LOGGING_H_
 #define TAOTU_TAOTU_LOGGING_H_
-// TODO:
+
+namespace taotu
+{
+
+
+
+}
+
 #endif

@@ -9,4 +9,11 @@
  * 
  */
 #include "logging.h"
-// TODO:
+
+namespace taotu
+{
+
+
+
+}
+
