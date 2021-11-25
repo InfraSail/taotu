@@ -26,7 +26,8 @@ void Logger::EndLogger() {}
 Logger::LoggerPtr Logger::GetLogger() {}
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
-  RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
+  RecordLogs(
+      std::move(Log_level_info_prefix[log_type] + std::string(log_info)));
 }
 void Logger::RecordLogs(LogLevel log_type, const std::string& log_info) {
   RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
@@ -39,7 +40,7 @@ void Logger::RecordLogs() {}
 void Logger::UpdateLoggerTime() {}
 
 void Logger::RecordLogs(const char* log_info) {
-  RecordLogs(std::string(log_info));
+  RecordLogs(std::move(std::string(log_info)));
 }
 void Logger::RecordLogs(const std::string& log_info) {
   RecordLogs(std::move(log_info));
