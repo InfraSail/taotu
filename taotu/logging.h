@@ -22,9 +22,9 @@ namespace logger {
 
 // relevant to Log_level_info_prefix
 enum LogLevel {
-  KDebug = 0,
-  KWarn,
-  KError,
+  kDebug = 0,
+  kWarn,
+  kError,
 };
 namespace {
 // relevant to LogLevel
