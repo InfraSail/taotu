@@ -5,7 +5,7 @@
  * @date 2021-11-25
  *
  * @license: MIT
- * @copyright Copyright (c) 2021
+ * @copyright Copyright (c) 2021 Sigma711
  *
  */
 #ifndef TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
