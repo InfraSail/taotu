@@ -5,7 +5,7 @@
  * @date 2021-11-23
  * 
  * @license: MIT
- * @copyright Copyright (c) 2021
+ * @copyright Copyright (c) 2021 Sigma711
  * 
  */
 #include "logging.h"
