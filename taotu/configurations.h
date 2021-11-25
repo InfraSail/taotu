@@ -8,15 +8,17 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
-#ifndef TAOTU_TAOTU_CONFIGURER_H_
-#define TAOTU_TAOTU_CONFIGURER_H_
+#ifndef TAOTU_TAOTU_CONFIGURATIONS_H_
+#define TAOTU_TAOTU_CONFIGURATIONS_H_
 
 #include <string>
 
 namespace taotu {
 
-namespace configurer {}  // namespace configurer
+namespace configurations {
+static std::string LOG_NAME{"log.txt"};
+}  // namespace configurations
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_CONFIGURER_H_
+#endif  // !TAOTU_TAOTU_CONFIGURATIONS_H_
