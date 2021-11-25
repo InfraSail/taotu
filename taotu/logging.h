@@ -54,7 +54,7 @@ class Logger : utility::NonCopyableMovable {
 
  private:
   void UpdateLoggerTime();
-  void RecordLogs();  // Finally call it when write down logs
+  void WriteDownLogs();  // Finally call it when write down logs
 
   void RecordLogs(const char* log_info);
   void RecordLogs(const std::string& log_info);

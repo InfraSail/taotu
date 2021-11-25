@@ -36,7 +36,7 @@ void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
   RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
 }
 
-void Logger::RecordLogs() {}
+void Logger::WriteDownLogs() {}
 void Logger::UpdateLoggerTime() {}
 
 void Logger::RecordLogs(const char* log_info) {
