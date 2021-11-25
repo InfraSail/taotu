@@ -11,9 +11,9 @@
 #ifndef TAOTU_TAOTU_LOGGING_H_
 #define TAOTU_TAOTU_LOGGING_H_
 
-#include <string>
+#include <non_copyable_movable.h>
 
-#include "boost/noncopyable.hpp"
+#include <string>
 
 namespace taotu {
 
@@ -34,7 +34,7 @@ std::string Log_level_info_prefix[3]{
  * @brief
  *
  */
-class Logger : boost::noncopyable {
+class Logger : utility::NonCopyableMovable {
  private:
   Logger();
   ~Logger();
@@ -42,4 +42,4 @@ class Logger : boost::noncopyable {
 }  // namespace logger
 }  // namespace taotu
 
-#endif
+#endif  //
