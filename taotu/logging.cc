@@ -10,4 +10,9 @@
  */
 #include "logging.h"
 
-namespace taotu {}
+namespace taotu {
+namespace logger {
+Logger::Logger() {}
+Logger::~Logger() {}
+}  // namespace logger
+}  // namespace taotu

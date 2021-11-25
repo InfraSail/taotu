@@ -11,6 +11,35 @@
 #ifndef TAOTU_TAOTU_LOGGING_H_
 #define TAOTU_TAOTU_LOGGING_H_
 
-namespace taotu {}
+#include <string>
+
+#include "boost/noncopyable.hpp"
+
+namespace taotu {
+
+// relevant to Log_level_info_prefix
+enum LogLevel {
+  KDebug = 0,
+  KWarn,
+  KError,
+};
+namespace logger {
+namespace {
+// relevant to LogLevel
+std::string Log_level_info_prefix[3]{
+    "Log (Debug) : ", "Log (Warn) : ", "Log (Error) : "};
+}  // namespace
+
+/**
+ * @brief
+ *
+ */
+class Logger : boost::noncopyable {
+ private:
+  Logger();
+  ~Logger();
+};
+}  // namespace logger
+}  // namespace taotu
 
 #endif
