@@ -11,6 +11,7 @@
 #ifndef TAOTU_TAOTU_LOGGING_H_
 #define TAOTU_TAOTU_LOGGING_H_
 
+#include <stdint.h>
 #include <stdio.h>
 
 #include <array>
@@ -89,28 +90,35 @@ class Logger : NonCopyableMovable {
   static LoggerPtr logger_;
   static bool is_initialized_;
 
+  alignas(256) volatile int64_t is_stopping_;
+  alignas(256) char filler1;  // Only for solving "False Sharing"
+
   std::mutex log_mutex_;
   std::condition_variable log_cond_var_;
+
+  // Index which was read last time
+  alignas(256) volatile int64_t read_index_;
+  alignas(256) char filler2;  // Only for solving "False Sharing"
 
   int64_t cur_log_file_byte_;
   int64_t cur_log_file_seq_;
   std::string log_file_name_;
+
+  // Index which was wrote last time
+  alignas(256) volatile int64_t wrote_index_;
+  alignas(256) char filler3;  // Only for solving "False Sharing"
+
   ::FILE* log_file_;
 
   ThreadPtr thread_;
 
-  alignas(256) volatile int64_t is_stopping_;
-
-  // Index which was read last time
-  alignas(256) volatile int64_t read_index_;
-  // Index which was wrote last time
-  alignas(256) volatile int64_t wrote_index_;
-  // Index which can be written now
-  alignas(256) volatile std::atomic_int64_t write_index_;
-
   std::mutex time_mutex_;
   std::string time_now_str_;
   time_t time_now_sec_;
+
+  // Index which can be written now
+  alignas(256) volatile std::atomic_int64_t write_index_;
+  alignas(256) char filler4;  // Only for solving "False Sharing"
 
   long time_zone_offset_;
 
