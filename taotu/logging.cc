@@ -51,6 +51,9 @@ void Logger::StartLogger(std::string&& log_file_name) {
   }
   time_t tmp_time = 0;
   struct tm* tmp_tm = ::localtime(&tmp_time);
+  time_zone_offset_ =
+      0 - tmp_tm->tm_hour * 60 * 60;  // Calculate the deviation of timezones
+  UpdateLoggerTime();
 }
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
@@ -81,9 +84,18 @@ void Logger::RecordLogs(const std::string& log_info) {
 
 void Logger::RecordLogs(std::string&& log_info) {}
 
-Logger::Logger(/* TODO: */) {
-  // TODO:
-}
+Logger::Logger()
+    : cur_log_file_byte_(0),
+      cur_log_file_seq_(0),
+      log_file_(NULL),
+      thread_(nullptr),
+      is_stopping_(0L),
+      read_index_(-1L),
+      wrote_index_(-1L),
+      write_index_(0L),
+      time_now_str_("1970-01-01 00:00:00"),
+      time_now_sec_(0),
+      time_zone_offset_(0) {}
 
 }  // namespace logger
 }  // namespace taotu

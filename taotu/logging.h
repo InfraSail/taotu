@@ -71,7 +71,7 @@ class Logger : NonCopyableMovable {
   void RecordLogs(LogLevel log_type, std::string&& log_info);
 
  protected:
-  Logger(/* TODO: */);
+  Logger();
   ~Logger() {}
 
  private:
@@ -109,7 +109,8 @@ class Logger : NonCopyableMovable {
   alignas(256) volatile std::atomic_int64_t write_index_;
 
   std::mutex time_mutex_;
-  std::string time_now_;
+  std::string time_now_str_;
+  time_t time_now_sec_;
 
   long time_zone_offset_;
 
