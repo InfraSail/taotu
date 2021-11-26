@@ -55,7 +55,7 @@ const std::string Log_level_info_prefix[3]{
 class Logger : NonCopyableMovable {
  public:
   typedef std::shared_ptr<Logger> LoggerPtr;
-  typedef std::thread ThreadPtr;
+  typedef std::shared_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, configurations::kLogBufferSize> LogBuffer;
 
   void EndLogger();
@@ -87,6 +87,7 @@ class Logger : NonCopyableMovable {
   void RecordLogs(std::string&& log_info);
 
   static LoggerPtr logger_;
+  static bool is_initialized_;
 
   std::mutex log_mutex_;
   std::condition_variable log_cond_var_;
@@ -94,6 +95,7 @@ class Logger : NonCopyableMovable {
   int64_t cur_log_file_seq_;
   std::string log_file_name_;
   ::FILE* log_file_;
+  ThreadPtr thread_;
   // TODO:
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;
