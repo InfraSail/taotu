@@ -17,7 +17,7 @@
 namespace taotu {
 
 logger::Logger::LoggerPtr logger::Logger::logger_(new logger::Logger,
-                                                  Logger::EndLogger);
+                                                  logger::Logger::EndLogger);
 
 namespace logger {
 
