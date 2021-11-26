@@ -25,6 +25,8 @@ namespace logger {
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
 
+void Logger::EndLogger() { logger_->is_stopping_ = true; }
+
 void Logger::StartLogger(const std::string& log_file_name) {
   StartLogger(std::move(const_cast<std::string&>(log_file_name)));
 }

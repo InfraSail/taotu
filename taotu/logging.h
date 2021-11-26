@@ -63,6 +63,8 @@ class Logger : NonCopyableMovable {
   static LoggerPtr GetLogger();
   static void DestroyLogger(Logger* logger);
 
+  void EndLogger();
+
   // Initialize this logger (have to be called before recording logs)
   void StartLogger(const std::string& log_file_name);
   void StartLogger(std::string&& log_file_name);
