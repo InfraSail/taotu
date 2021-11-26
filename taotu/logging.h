@@ -106,7 +106,7 @@ class Logger : NonCopyableMovable {
   // Index which was wrote last time
   alignas(256) volatile int64_t wrote_index_;
   // Index which can be written now
-  alignas(256) volatile atomic_int64_t write_index_;
+  alignas(256) volatile std::atomic_int64_t write_index_;
 
   std::mutex time_mutex_;
   std::string time_now_;
