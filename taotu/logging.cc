@@ -16,22 +16,13 @@
 
 namespace taotu {
 
-logger::Logger::LoggerPtr logger::Logger::logger_ = nullptr;
-std::mutex logger::Logger::log_mutex_;
+logger::Logger::LoggerPtr logger::Logger::logger_(new logger::Logger,
+                                                  Logger::EndLogger);
 
 namespace logger {
 
+Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::EndLogger() {}
-
-Logger::LoggerPtr Logger::GetLogger() {
-  if (logger_ == nullptr) {
-    std::lock_guard<std::mutex> lock(log_mutex_);
-    if (logger_ == nullptr) {
-      logger_.reset(new Logger);
-    }
-  }
-  return logger_;
-}
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
   RecordLogs(

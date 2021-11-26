@@ -70,9 +70,10 @@ class Logger : NonCopyableMovable {
   ~Logger() {}
 
  private:
+  static void EndLogger();
+
   void StartLogger(const std::string& log_file_name);
   void StartLogger(std::string&& log_file_name);
-  void EndLogger();
 
   void UpdateLoggerTime();
 
@@ -86,8 +87,8 @@ class Logger : NonCopyableMovable {
   void RecordLogs(std::string&& log_info);
 
   static LoggerPtr logger_;
-  static std::mutex log_mutex_;
 
+  std::mutex log_mutex_;
   std::condition_variable log_cond_var_;
   int64_t cur_log_file_byte_;
   int64_t cur_log_file_seq_;
