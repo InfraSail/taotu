@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include <array>
+#include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -61,6 +62,7 @@ class Logger : NonCopyableMovable {
   static LoggerPtr GetLogger();
   static void DestroyLogger(Logger* logger);
 
+  // Initialize this logger (have to be called before recording logs)
   void StartLogger(const std::string& log_file_name);
   void StartLogger(std::string&& log_file_name);
 
@@ -89,12 +91,28 @@ class Logger : NonCopyableMovable {
 
   std::mutex log_mutex_;
   std::condition_variable log_cond_var_;
+
   int64_t cur_log_file_byte_;
   int64_t cur_log_file_seq_;
   std::string log_file_name_;
   ::FILE* log_file_;
+
   ThreadPtr thread_;
-  // TODO:
+
+  alignas(256) volatile int64_t is_stopping_;
+
+  // Index which was read last time
+  alignas(256) volatile int64_t read_index_;
+  // Index which was wrote last time
+  alignas(256) volatile int64_t wrote_index_;
+  // Index which can be written now
+  alignas(256) volatile atomic_int64_t write_index_;
+
+  std::mutex time_mutex_;
+  std::string time_now_;
+
+  long time_zone_offset_;
+
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;
 };

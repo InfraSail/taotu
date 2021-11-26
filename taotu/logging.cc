@@ -10,6 +10,8 @@
  */
 #include "logging.h"
 
+#include <time.h>
+
 #include <utility>
 
 namespace taotu {
@@ -40,7 +42,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
                                 .c_str(),
                             "wb");
       }
-      std::string file_header{"Cur file sequence: 0\n"};
+      std::string file_header{"Current file sequence: 0\n"};
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
       is_initialized_ = true;
@@ -48,6 +50,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
     }
   }
   time_t tmp_time = 0;
+  struct tm* tmp_tm = ::localtime(&tmp_time);
 }
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
