@@ -70,7 +70,7 @@ class Logger : NonCopyableMovable {
   ~Logger() {}
 
  private:
-  static void EndLogger();
+  static void DestroyLogger(Logger* logger);
 
   void StartLogger(const std::string& log_file_name);
   void StartLogger(std::string&& log_file_name);

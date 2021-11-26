@@ -16,13 +16,13 @@
 
 namespace taotu {
 
-logger::Logger::LoggerPtr logger::Logger::logger_(new logger::Logger,
-                                                  logger::Logger::EndLogger);
+logger::Logger::LoggerPtr logger::Logger::logger_(
+    new logger::Logger, logger::Logger::DestroyLogger);
 
 namespace logger {
 
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
-void Logger::EndLogger() {}
+void Logger::DestroyLogger(Logger* logger) { delete logger; }
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
   RecordLogs(
