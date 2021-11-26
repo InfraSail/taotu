@@ -25,7 +25,7 @@ class NonCopyableMovable {
  private:
   NonCopyableMovable(const NonCopyableMovable&) = delete;
   NonCopyableMovable& operator=(const NonCopyableMovable&) = delete;
-  NonCopyableMovable(const NonCopyableMovable&&) = delete;
+  NonCopyableMovable(NonCopyableMovable&&) = delete;
 };
 
 }  // namespace taotu
