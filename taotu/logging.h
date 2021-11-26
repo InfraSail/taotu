@@ -20,6 +20,7 @@
 #include <string>
 #include <thread>
 
+#include "configurations.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
