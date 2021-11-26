@@ -14,7 +14,6 @@
 #include <string>
 
 namespace taotu {
-
 namespace configurations {
 static const std::string kLogName{"log.txt"};
 }  // namespace configurations
