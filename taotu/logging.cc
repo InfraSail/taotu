@@ -51,14 +51,14 @@ void Logger::StartLogger(std::string&& log_file_name) {
 }
 
 void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
-	RecordLogs(
-		std::move(Log_level_info_prefix[log_type] + std::string(log_info)));
+  RecordLogs(
+      std::move(Log_level_info_prefix[log_type] + std::string(log_info)));
 }
 void Logger::RecordLogs(LogLevel log_type, const std::string& log_info) {
-	RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
+  RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
 }
 void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
-	RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
+  RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
 }
 
 void Logger::UpdateLoggerTime() {
