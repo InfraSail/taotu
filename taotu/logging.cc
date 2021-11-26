@@ -23,17 +23,6 @@ namespace logger {
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
 
-void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
-  RecordLogs(
-      std::move(Log_level_info_prefix[log_type] + std::string(log_info)));
-}
-void Logger::RecordLogs(LogLevel log_type, const std::string& log_info) {
-  RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
-}
-void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
-  RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
-}
-
 void Logger::StartLogger(const std::string& log_file_name) {
   StartLogger(std::move(const_cast<std::string&>(log_file_name)));
 }
@@ -59,6 +48,17 @@ void Logger::StartLogger(std::string&& log_file_name) {
     }
   }
   time_t tmp_time = 0;
+}
+
+void Logger::RecordLogs(LogLevel log_type, const char* log_info) {
+	RecordLogs(
+		std::move(Log_level_info_prefix[log_type] + std::string(log_info)));
+}
+void Logger::RecordLogs(LogLevel log_type, const std::string& log_info) {
+	RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
+}
+void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
+	RecordLogs(std::move(Log_level_info_prefix[log_type] + log_info));
 }
 
 void Logger::UpdateLoggerTime() {
