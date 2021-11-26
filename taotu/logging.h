@@ -27,14 +27,18 @@
 
 namespace taotu {
 
+// Note: Only these APIs are allowed for logging!!!
+/************************Open Logging APIs**************************/
 // Start the unique logger
 #define START_LOG(log_file_name) \
   logger::Logger::GetLogger()->StartLogger(log_file_name)
 
-// TODO:
+// End the unique logger
+#define END_LOG() logger::Logger::GetLogger()->EndLogger()
 
 // The unique API for recording logs
 #define LOG(...) logger::Logger::GetLogger()->RecordLogs(__VA_ARGS__)
+/********************************************************************/
 
 namespace logger {
 
