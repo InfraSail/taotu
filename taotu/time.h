@@ -11,6 +11,14 @@
 #ifndef TAOTU_TAOTU_TIME_H_
 #define TAOTU_TAOTU_TIME_H_
 
-namespace taotu {}  // namespace taotu
+namespace taotu {
+
+/**
+ * @brief
+ *
+ */
+class Time {};
+
+}  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_TIME_H_

@@ -12,7 +12,11 @@
 #define TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
 
 namespace taotu {
-namespace utility {
+
+/**
+ * @brief
+ *
+ */
 class NonCopyableMovable {
  protected:
   NonCopyableMovable() = default;
@@ -23,7 +27,7 @@ class NonCopyableMovable {
   NonCopyableMovable& operator=(const NonCopyableMovable&) = delete;
   NonCopyableMovable(const NonCopyableMovable&&) = delete;
 };
-}  // namespace utility
+
 }  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
