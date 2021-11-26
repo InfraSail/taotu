@@ -58,9 +58,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
       thread_.reset(new std::thread{&Logger::WriteDownLogs, this});
     }
   }
-}
-void Logger::EndLogger() {
-  // TODO:
+  time_t tmp_time = 0;
 }
 
 void Logger::UpdateLoggerTime() {

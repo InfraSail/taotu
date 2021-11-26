@@ -58,23 +58,21 @@ class Logger : NonCopyableMovable {
   typedef std::shared_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, configurations::kLogBufferSize> LogBuffer;
 
-  void EndLogger();
   static LoggerPtr GetLogger();
+  static void DestroyLogger(Logger* logger);
 
   void RecordLogs(LogLevel log_type, const char* log_info);
   void RecordLogs(LogLevel log_type, const std::string& log_info);
   void RecordLogs(LogLevel log_type, std::string&& log_info);
+
+  void StartLogger(const std::string& log_file_name);
+  void StartLogger(std::string&& log_file_name);
 
  protected:
   Logger(/* TODO: */);
   ~Logger() {}
 
  private:
-  static void DestroyLogger(Logger* logger);
-
-  void StartLogger(const std::string& log_file_name);
-  void StartLogger(std::string&& log_file_name);
-
   void UpdateLoggerTime();
 
   // Called to write down logs
