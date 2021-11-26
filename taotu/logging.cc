@@ -12,8 +12,6 @@
 
 #include <utility>
 
-#include "configurations.h"
-
 namespace taotu {
 
 logger::Logger::LoggerPtr logger::Logger::logger_(
