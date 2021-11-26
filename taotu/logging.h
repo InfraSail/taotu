@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 
+#include <array>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
