@@ -11,6 +11,7 @@
 #ifndef TAOTU_TAOTU_LOGGING_H_
 #define TAOTU_TAOTU_LOGGING_H_
 
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -28,8 +29,8 @@ enum LogLevel {
 };
 namespace {
 // relevant to LogLevel
-std::string Log_level_info_prefix[3]{
-    "Log (Debug) : ", "Log (Warn) : ", "Log (Error) : "};
+const std::string Log_level_info_prefix[3]{
+    "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
 }  // namespace
 
 /**
@@ -38,11 +39,10 @@ std::string Log_level_info_prefix[3]{
  */
 class Logger : utility::NonCopyableMovable {
  public:
-  typedef std::unique_ptr<Logger> LoggerPtr;
+  typedef std::shared_ptr<Logger> LoggerPtr;
 
-  bool StartLogger(const std::string&& log_file);
   void EndLogger();
-  static LoggerPtr GetLogger();
+  static LoggerPtr GetLogger(std::string&& log_file);
 
   void RecordLogs(LogLevel log_type, const char* log_info);
   void RecordLogs(LogLevel log_type, const std::string& log_info);
@@ -53,6 +53,7 @@ class Logger : utility::NonCopyableMovable {
   ~Logger();
 
  private:
+  bool StartLogger(std::string& log_file);
   void UpdateLoggerTime();
   void WriteDownLogs();  // Finally call it when write down logs
 
@@ -62,7 +63,8 @@ class Logger : utility::NonCopyableMovable {
 
   static LoggerPtr logger_;
   static std::mutex log_mutex_;
-  static bool is_initialized;
+
+  std::condition_variable log_cond_var_;
 };
 }  // namespace logger
 }  // namespace taotu
