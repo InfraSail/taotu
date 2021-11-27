@@ -38,6 +38,8 @@ void Logger::StartLogger(std::string&& log_file_name) {
     std::lock_guard<std::mutex> lock(log_mutex_);
     if (!is_initialized_) {
       log_file_name_ = log_file_name;
+      // Use the name of the log tile given by the project instead of the
+      // unavailable one given by user
       if (log_file_name_.empty() ||
           ((log_file_ = ::fopen(log_file_name_.c_str(), "wb")) == NULL)) {
         log_file_name_ = configurations::kLogName;
@@ -76,25 +78,33 @@ void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
 }
 
 void Logger::UpdateLoggerTime() {
-  std::lock_guard<std::mutex> lock(time_mutex_);
   time_t tmp_time;
   ::time(&tmp_time);
   if (tmp_time > time_now_sec_) {
-    time_now_sec_ = tmp_time;
-    struct tm* tmp_tm = ::localtime(&tmp_time);
-    std::string tmp_time_now_str(::asctime(tmp_tm));
-    tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
-    time_now_str_ = std::move("[ " + tmp_time_now_str + " ]");
+    std::lock_guard<std::mutex> lock(time_mutex_);
+    ::time(&tmp_time);
+    if (tmp_time > time_now_sec_) {
+      time_now_sec_ = tmp_time;
+      // In consideration of time zone
+      struct tm* tmp_tm = ::localtime(&tmp_time);
+      std::string tmp_time_now_str(::asctime(tmp_tm));
+      tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
+      time_now_str_ = std::move("[ " + tmp_time_now_str + " ]");
+    }
   }
 }
 
 void Logger::WriteDownLogs() {
+  // Loop for flushing io buffer into disk
   while (true) {
-    if (is_stopping_ == 1L || read_index_ == wrote_index_) {
+    if (is_stopping_ == 1L && read_index_ == wrote_index_) {
       return;
     } else {
+      // Loop for flushing ring buffer into io buffer
       while (read_index_ < wrote_index_) {
         int cur_read_index = read_index_ + 1;
+        // Change the log file to new one when the old is full (Always only 2
+        // log files in circulation)
         if (cur_log_file_byte_ >= kStandardLogFileByte) {
           ::fflush(log_file_);
           ::fclose(log_file_);
@@ -109,6 +119,7 @@ void Logger::WriteDownLogs() {
                                   std::to_string(cur_log_file_seq_) + "\n"};
           ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
         }
+        // Copy the content of one bucket of ring buffer to io buffer
         std::string& tmp_buf =
             log_buffer_[read_index_ & (configurations::kLogBufferSize - 1)];
         int tmp_buf_len = tmp_buf.size();
@@ -117,7 +128,10 @@ void Logger::WriteDownLogs() {
         tmp_buf.clear();
         read_index_ = cur_read_index;
       }
+      // Flush into disk (the status of ring buffer may change because of
+      // spending much time here)
       ::fflush(log_file_);
+      // Sleep when the buffer is empty
       if (read_index_ == wrote_index_) {
         std::unique_lock<std::mutex> lock(log_mutex_);
         if (is_stopping_ == 0L && read_index_ == wrote_index_) {
@@ -136,7 +150,8 @@ void Logger::RecordLogs(const std::string& log_info) {
 }
 
 void Logger::RecordLogs(std::string&& log_info) {
-  // TODO:
+  if (write_index_.load()) {
+  }
 }
 
 Logger::Logger()
