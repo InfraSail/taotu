@@ -86,7 +86,9 @@ void Logger::RecordLogs(const std::string& log_info) {
   RecordLogs(std::move(const_cast<std::string&>(log_info)));
 }
 
-void Logger::RecordLogs(std::string&& log_info) {}
+void Logger::RecordLogs(std::string&& log_info) {
+  // TODO:
+}
 
 Logger::Logger()
     : cur_log_file_byte_(0),
