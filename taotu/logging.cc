@@ -159,6 +159,17 @@ void Logger::RecordLogs(std::string&& log_info) {
   const int64_t write_index =
       write_index_.fetch_add(1, std::memory_order_release);  // Old value
   UpdateLoggerTime();
+  // Splice this log record
+  std::string time_now_str{time_now_str_.c_str()};
+  std::string log_data(time_now_str.size() + log_info.size() + 2, ' ');
+  ::memcpy(const_cast<char*>(log_data.c_str()), time_now_str.c_str(),
+           time_now_str.size());
+  ::memcpy(const_cast<char*>(log_data.c_str()) + log_data.size() + 1,
+           log_info.c_str(), log_info.size());
+  log_data.back() = '\n';
+  // Put this log record into ring buffer
+  log_buffer_[write_index & (configurations::kLogBufferSize - 1)] =
+      std::move(log_data);
   // TODO:
 }
 
