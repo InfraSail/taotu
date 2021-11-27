@@ -127,7 +127,7 @@ class Logger : NonCopyableMovable {
   std::string time_now_str_;
   time_t time_now_sec_;
 
-  // Index which can be written now
+  // Index which can be written next time
   alignas(256) volatile std::atomic_int64_t write_index_;
   alignas(256) char filler4;  // Only for solving "False Sharing"
 

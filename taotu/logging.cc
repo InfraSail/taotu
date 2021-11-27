@@ -126,6 +126,7 @@ void Logger::WriteDownLogs() {
         ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
         cur_log_file_byte_ += tmp_buf_len;
         tmp_buf.clear();
+        // Update the index which was read last time
         read_index_ = cur_read_index;
       }
       // Flush into disk (the status of ring buffer may change because of
@@ -156,8 +157,9 @@ void Logger::RecordLogs(std::string&& log_info) {
       configurations::kLogBufferSize - 1) {
     return;
   }
+  // Update the index which can be written next time and get the previous value
   const int64_t write_index =
-      write_index_.fetch_add(1, std::memory_order_release);  // Old value
+      write_index_.fetch_add(1, std::memory_order_release);
   UpdateLoggerTime();
   // Splice this log record
   std::string time_now_str{time_now_str_.c_str()};
@@ -170,9 +172,10 @@ void Logger::RecordLogs(std::string&& log_info) {
   // Put this log record into ring buffer
   log_buffer_[write_index & (configurations::kLogBufferSize - 1)] =
       std::move(log_data);
-  // Block for a while if ring buffer is full (small probability event) TODO:
+  // Block for a while if ring buffer is full (a small probability event) TODO:
   while (write_index - 1L != read_index_) {
   }
+  // Update the index which was wrote last time
   wrote_index_ = write_index;
   // Awake flushing thread if ring buffer was empty before
   if (write_index - 1L == read_index_) {
