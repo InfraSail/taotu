@@ -150,8 +150,16 @@ void Logger::RecordLogs(const std::string& log_info) {
 }
 
 void Logger::RecordLogs(std::string&& log_info) {
-  if (write_index_.load()) {
+  // Give up recording this time because the logs which have been in the file
+  // are more valuable
+  if (write_index_.load(std::memory_order_acquire) - read_index_ >=
+      configurations::kLogBufferSize - 1) {
+    return;
   }
+  const int64_t write_index =
+      write_index_.fetch_add(1, std::memory_order_release);  // Old value
+  UpdateLoggerTime();
+  // TODO:
 }
 
 Logger::Logger()
