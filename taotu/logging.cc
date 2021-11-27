@@ -99,7 +99,6 @@ Logger::Logger()
       read_index_(-1L),
       wrote_index_(-1L),
       write_index_(0L),
-      time_now_str_("1970-01-01 00:00:00"),
       time_now_sec_(0) {}
 
 }  // namespace logger
