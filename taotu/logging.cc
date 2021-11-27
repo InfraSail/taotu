@@ -20,9 +20,6 @@ bool logger::Logger::is_initialized_ = false;
 
 namespace logger {
 
-const int64_t Logger::kStandardLogFileByte =
-    configurations::kLogFileMaxByte / 2;
-
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
 

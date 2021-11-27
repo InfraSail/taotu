@@ -97,7 +97,8 @@ class Logger : NonCopyableMovable {
   static LoggerPtr logger_;
   static bool is_initialized_;
 
-  static const int64_t kStandardLogFileByte;
+  static constexpr int64_t kStandardLogFileByte =
+      configurations::kLogFileMaxByte / 2;
 
   alignas(256) volatile int64_t is_stopping_;
   alignas(256) char filler1;  // Only for solving "False Sharing"
