@@ -15,8 +15,8 @@
 namespace taotu {
 
 /**
- * @brief The "Copy" semantics and "Move" semantics of the class that inherits
- * it will be prohibited.
+ * @brief "Copy" semantics and "Move" semantics of the class that inherits
+ * it will be prohibited
  *
  */
 class NonCopyableMovable {
