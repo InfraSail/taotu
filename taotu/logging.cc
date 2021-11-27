@@ -36,17 +36,24 @@ void Logger::StartLogger(std::string&& log_file_name) {
       if (log_file_name_.empty() ||
           ((log_file_ = ::fopen(log_file_name_.c_str(), "wb")) == NULL)) {
         log_file_name_ = configurations::kLogName;
-        log_file_ = ::fopen(std::string{std::string('n', 1) +
-                                        std::to_string(cur_log_file_seq_ & 1) +
-                                        std::string('_', 1) + log_file_name_}
-                                .c_str(),
-                            "wb");
+        log_file_ =
+            ::fopen(std::string{"n" + std::to_string(cur_log_file_seq_ & 1) +
+                                "_" + log_file_name_}
+                        .c_str(),
+                    "wb");
       }
       std::string file_header{"Current file sequence: 0\n"};
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
       is_initialized_ = true;
-      thread_.reset(new std::thread{&Logger::WriteDownLogs, this});
+      thread_.reset(new std::thread{&Logger::WriteDownLogs, this},
+                    [](std::thread* trd) {
+                      if (trd != nullptr && trd->joinable()) {
+                        trd->join();
+                        delete trd;
+                        trd = nullptr;
+                      }
+                    });
     }
   }
   UpdateLoggerTime();
@@ -64,13 +71,14 @@ void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
 }
 
 void Logger::UpdateLoggerTime() {
-  std::lock_guard lock(time_mutex_);
+  std::lock_guard<std::mutex> lock(time_mutex_);
   time_t tmp_time;
   ::time(&tmp_time);
   if (tmp_time > time_now_sec_) {
     time_now_sec_ = tmp_time;
     struct tm* tmp_tm = ::localtime(&tmp_time);
     std::string tmp_time_now_str(::asctime(tmp_tm));
+    tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
     time_now_str_ = std::move("[ " + tmp_time_now_str + " ]");
   }
 }
