@@ -20,10 +20,18 @@ bool logger::Logger::is_initialized_ = false;
 
 namespace logger {
 
+const int64_t Logger::kStandardLogFileByte =
+    configurations::kLogFileMaxByte / 2;
+
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
 
-void Logger::EndLogger() { logger_->is_stopping_ = true; }
+void Logger::EndLogger() {
+  logger_->is_stopping_ = 1L;
+  log_cond_var_.notify_one();
+  ::fclose(log_file_);
+  is_initialized_ = false;
+}
 
 void Logger::StartLogger(const std::string& log_file_name) {
   StartLogger(std::move(const_cast<std::string&>(log_file_name)));
@@ -84,7 +92,13 @@ void Logger::UpdateLoggerTime() {
 }
 
 void Logger::WriteDownLogs() {
-  // TODO:
+  while (is_stopping_ == 0L) {
+    if (read_index_ != wrote_index_) {
+      while (read_index_ < wrote_index_) {
+        // TODO:
+      }
+    }
+  }
 }
 
 void Logger::RecordLogs(const char* log_info) {
