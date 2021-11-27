@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 #include <array>
 #include <atomic>
@@ -126,7 +127,7 @@ class Logger : NonCopyableMovable {
   alignas(256) volatile std::atomic_int64_t write_index_;
   alignas(256) char filler4;  // Only for solving "False Sharing"
 
-  long time_zone_offset_;
+  // long time_zone_offset_;
 
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;
