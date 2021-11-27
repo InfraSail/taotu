@@ -92,10 +92,40 @@ void Logger::UpdateLoggerTime() {
 }
 
 void Logger::WriteDownLogs() {
-  while (is_stopping_ == 0L) {
-    if (read_index_ != wrote_index_) {
+  while (true) {
+    if (is_stopping_ == 1L || read_index_ == wrote_index_) {
+      return;
+    } else {
       while (read_index_ < wrote_index_) {
-        // TODO:
+        int cur_read_index = read_index_ + 1;
+        if (cur_log_file_byte_ >= kStandardLogFileByte) {
+          ::fflush(log_file_);
+          ::fclose(log_file_);
+          ++cur_log_file_seq_;
+          log_file_ =
+              ::fopen(std::string{"n" + std::to_string(cur_log_file_seq_ & 1) +
+                                  "_" + log_file_name_}
+                          .c_str(),
+                      "wb");
+          cur_log_file_byte_ = 0;
+          std::string file_header{"Current file sequence: " +
+                                  std::to_string(cur_log_file_seq_) + "\n"};
+          ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
+        }
+        std::string& tmp_buf =
+            log_buffer_[read_index_ & (configurations::kLogBufferSize - 1)];
+        int tmp_buf_len = tmp_buf.size();
+        ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
+        cur_log_file_byte_ += tmp_buf_len;
+        tmp_buf.clear();
+        read_index_ = cur_read_index;
+      }
+      ::fflush(log_file_);
+      if (read_index_ == wrote_index_) {
+        std::unique_lock<std::mutex> lock(log_mutex_);
+        if (is_stopping_ == 0L && read_index_ == wrote_index_) {
+          log_cond_var_.wait(lock);
+        }
       }
     }
   }
