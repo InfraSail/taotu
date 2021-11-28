@@ -1,7 +1,8 @@
 /**
  * @file logging.cc
  * @author Sigma711 (sigma711@foxmail.com)
- * @brief // TODO:
+ * @brief Implementation of class "Logger" which is the log.
+ * recorder of this library.
  * @date 2021-11-23
  *
  * @license: MIT
@@ -14,6 +15,7 @@
 
 namespace taotu {
 
+// The unique actual "Logger" object
 logger::Logger::LoggerPtr logger::Logger::logger_(
     new logger::Logger, logger::Logger::DestroyLogger);
 bool logger::Logger::is_initialized_ = false;

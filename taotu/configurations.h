@@ -1,7 +1,7 @@
 /**
  * @file configurer.h
  * @author Sigma711 (sigma711@foxmail.com)
- * @brief // TODO:
+ * @brief Configurations of "taotu".
  * @date 2021-11-25
  *
  * @license: MIT

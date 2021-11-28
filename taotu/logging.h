@@ -1,7 +1,8 @@
 /**
  * @file logging.h
  * @author Sigma711 (sigma711@foxmail.com)
- * @brief // TODO:
+ * @brief Declaration of class "Logger" which is the log recorder of this
+ * library but only 3 Marco APIs are open.
  * @date 2021-11-23
  *
  * @license: MIT
@@ -57,7 +58,9 @@ const std::string Log_level_info_prefix[3]{
 }  // namespace
 
 /**
- * @brief // TODO:
+ * @brief "Logger" uses a special ring buffer called "Disruptor": the index of
+ * writable position is atomic. And it uses "Sigleton" pattern, so there is only
+ * one actual "Logger" object in the global environment of one process.
  *
  */
 class Logger : NonCopyableMovable {
@@ -66,6 +69,8 @@ class Logger : NonCopyableMovable {
   typedef std::shared_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, configurations::kLogBufferSize> LogBuffer;
 
+  // The unique method to creat the unique actual "Logger" object ("Sigleton"
+  // pattern)
   static LoggerPtr GetLogger();
   static void DestroyLogger(Logger* logger);
 
@@ -92,7 +97,7 @@ class Logger : NonCopyableMovable {
   void RecordLogs(const char* log_info);
   void RecordLogs(const std::string& log_info);
 
-  // Actual log-record method (uses "move" semantics)
+  // The Actual log-record method (uses "move" semantics)
   void RecordLogs(std::string&& log_info);
 
   static LoggerPtr logger_;
