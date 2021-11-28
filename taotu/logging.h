@@ -115,7 +115,7 @@ class Logger : NonCopyableMovable {
   int64_t cur_log_file_seq_;
   std::string log_file_name_;
 
-  // Index which was wrote last time
+  // Index which was written last time
   alignas(256) volatile int64_t wrote_index_;
   alignas(256) char filler3;  // Only for solving "False Sharing"
 
