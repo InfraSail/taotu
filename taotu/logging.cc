@@ -172,11 +172,11 @@ void Logger::RecordLogs(std::string&& log_info) {
   // Put this log record into ring buffer
   log_buffer_[write_index & (configurations::kLogBufferSize - 1)] =
       std::move(log_data);
-  // Block for a while if ring buffer is full (a small probability event) TODO:
-  while (write_index - 1L != read_index_) {
-  }
+  // // Block for a while if ring buffer is full (a small probability event)
+  // while (write_index - 1L != wrote_index_) {
+  // }
   // Update the index which was wrote last time
-  wrote_index_ = write_index;
+  wrote_index_ = (wrote_index_ < write_index) ? wrote_index_ : write_index;
   // Awake flushing thread if ring buffer was empty before
   if (write_index - 1L == read_index_) {
     std::lock_guard<std::mutex> lock(log_mutex_);
