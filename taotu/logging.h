@@ -81,7 +81,7 @@ class Logger : NonCopyableMovable {
 
  protected:
   Logger();
-  ~Logger() {}
+  ~Logger();
 
  private:
   void UpdateLoggerTime();
