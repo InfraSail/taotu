@@ -1,5 +1,5 @@
 /**
- * @file logging.h
+ * @file logger.h
  * @author Sigma711 (sigma711@foxmail.com)
  * @brief Declaration of class "Logger" which is the log recorder of this
  * library but only 3 Marco APIs are open.
@@ -9,8 +9,8 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
-#ifndef TAOTU_TAOTU_LOGGING_H_
-#define TAOTU_TAOTU_LOGGING_H_
+#ifndef TAOTU_TAOTU_LOGGER_H_
+#define TAOTU_TAOTU_LOGGER_H_
 
 #include <stdint.h>
 #include <stdio.h>
@@ -142,4 +142,4 @@ class Logger : NonCopyableMovable {
 }  // namespace logger
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_LOGGING_H_
+#endif  // !TAOTU_TAOTU_LOGGER_H_

@@ -1,5 +1,5 @@
 /**
- * @file logging.cc
+ * @file logger.cc
  * @author Sigma711 (sigma711@foxmail.com)
  * @brief Implementation of class "Logger" which is the log.
  * recorder of this library.
@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
-#include "logging.h"
+#include "logger.h"
 
 #include <utility>
 
