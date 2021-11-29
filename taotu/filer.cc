@@ -4,7 +4,7 @@
  * @brief
  * @date 2021-11-28
  *
- * @license: MIT
+ * @license MIT
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
