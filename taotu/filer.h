@@ -11,7 +11,9 @@
 #ifndef TAOTU_TAOTU_FILER_H_
 
 namespace taotu {
-namespace filer {}
+
+namespace filer {}  // namespace filer
+
 }  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_FILER_H_
