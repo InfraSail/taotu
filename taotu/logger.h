@@ -30,8 +30,8 @@
 
 namespace taotu {
 
-// Note: Only these APIs are allowed for logging!!!
-/************************Open Logging APIs**************************/
+// Note: Only these APIs are allowed for log!!!
+/************************Open Logger APIs***************************/
 // Start the unique logger
 #define START_LOG(log_file_name) \
   logger::Logger::GetLogger()->StartLogger(log_file_name)

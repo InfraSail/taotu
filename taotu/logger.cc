@@ -105,45 +105,42 @@ void Logger::WriteDownLogs() {
     if (is_stopping_ == 1L && read_index_ == wrote_index_) {
       return;
     } else {
-      // Loop for flushing ring buffer into io buffer (Use double because
-      // flushing operation is very time-consuming so during this time
-      // something may happen in another thread)
+      // Loop for flushing ring buffer into io buffer (flushing operation is
+      // very time-consuming so that something may happen in another thread
+      // during this time)
       while (read_index_ < wrote_index_) {
-        while (read_index_ < wrote_index_) {
-          int64_t cur_read_index = read_index_ + 1;
-          // Change the log file to new one when the old is full (Always only
-          // 2 log files in circulation)
-          if (cur_log_file_byte_ >= kStandardLogFileByte) {
-            ::fflush(log_file_);
-            ::fclose(log_file_);
-            ++cur_log_file_seq_;
-            log_file_ = ::fopen(
-                std::string{"n" + std::to_string(cur_log_file_seq_ & 1) + "_" +
-                            log_file_name_}
-                    .c_str(),
-                "wb");
-            cur_log_file_byte_ = 0;
-            std::string file_header{"Current file sequence: " +
-                                    std::to_string(cur_log_file_seq_) + "\n"};
-            ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
-          }
-          // Copy the content of one bucket of ring buffer to io buffer
-          std::string& tmp_buf =
-              log_buffer_[cur_read_index &
-                          (configurations::kLogBufferSize - 1)];
-          int tmp_buf_len = tmp_buf.size();
-          ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
-          cur_log_file_byte_ += tmp_buf_len;
-          tmp_buf.clear();
-          // Update the index which was read last time
-          read_index_ = cur_read_index;
+        int64_t cur_read_index = read_index_ + 1;
+        // Change the log file to new one when the old is full (Always only
+        // 2 log files in circulation)
+        if (cur_log_file_byte_ >= kStandardLogFileByte) {
+          ::fflush(log_file_);
+          ::fclose(log_file_);
+          ++cur_log_file_seq_;
+          log_file_ =
+              ::fopen(std::string{"n" + std::to_string(cur_log_file_seq_ & 1) +
+                                  "_" + log_file_name_}
+                          .c_str(),
+                      "wb");
+          cur_log_file_byte_ = 0;
+          std::string file_header{"Current file sequence: " +
+                                  std::to_string(cur_log_file_seq_) + "\n"};
+          ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
         }
-        // Flush into disk (the status of ring buffer may change because of
-        // spending much time here)
-        ::fflush(log_file_);
+        // Copy the content of one bucket of ring buffer to io buffer
+        std::string& tmp_buf =
+            log_buffer_[cur_read_index & (configurations::kLogBufferSize - 1)];
+        int tmp_buf_len = tmp_buf.size();
+        ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
+        cur_log_file_byte_ += tmp_buf_len;
+        tmp_buf.clear();
+        // Update the index which was read last time
+        read_index_ = cur_read_index;
       }
+      // Flush into disk (the status of ring buffer may change because of
+      // spending much time here)
+      ::fflush(log_file_);
       // Block when the buffer is empty
-      {
+      if (read_index_ == wrote_index_) {
         std::unique_lock<std::mutex> lock(log_mutex_);
         if (is_stopping_ == 0L && read_index_ == wrote_index_) {
           log_cond_var_.wait(lock);
