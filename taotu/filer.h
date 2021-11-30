@@ -4,7 +4,6 @@
  * @brief  // TODO:
  * @date 2021-11-28
  *
- * @license MIT
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
@@ -12,7 +11,11 @@
 
 namespace taotu {
 
-namespace filer {}  // namespace filer
+namespace filer {
+
+class Filer {};
+
+}  // namespace filer
 
 }  // namespace taotu
 

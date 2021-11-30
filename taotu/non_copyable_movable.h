@@ -5,7 +5,6 @@
  * used to build "Singleton" patterns).
  * @date 2021-11-25
  *
- * @license MIT
  * @copyright Copyright (c) 2021 Sigma711
  *
  */

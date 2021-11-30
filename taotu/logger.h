@@ -5,7 +5,6 @@
  * library but only 3 Marco APIs are open.
  * @date 2021-11-23
  *
- * @license MIT
  * @copyright Copyright (c) 2021 Sigma711
  *
  */

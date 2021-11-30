@@ -5,7 +5,6 @@
  * recorder of this library.
  * @date 2021-11-23
  *
- * @license MIT
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
