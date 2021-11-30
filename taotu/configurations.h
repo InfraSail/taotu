@@ -22,7 +22,9 @@ static constexpr int64_t kLogFileMaxByte = 1024 * 1024 * 1024;
 
 // Should be the nth power of 2 (for "Disruptor")
 static constexpr int64_t kLogBufferSize = 1024 * 1024 * 16;
+
 // TODO:
+
 }  // namespace configurations
 
 }  // namespace taotu
