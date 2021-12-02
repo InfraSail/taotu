@@ -11,11 +11,19 @@
 #ifndef TAOTU_TAOTU_SOCKETER_H_
 #define TAOTU_TAOTU_SOCKETER_H_
 
+#include "non_copyable_movable.h"
+
 namespace taotu {
 
 namespace socketer {
 
-class Socketer {};
+class Socketer : NonCopyableMovable {
+ public:
+  Socketer();
+  ~Socketer();
+
+ private:
+};
 
 }  // namespace socketer
 

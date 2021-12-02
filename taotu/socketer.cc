@@ -12,6 +12,12 @@
 
 namespace taotu {
 
-namespace socketer {}  // namespace socketer
+namespace socketer {
+
+Socketer::Socketer() {}
+
+Socketer::~Socketer() {}
+
+}  // namespace socketer
 
 }  // namespace taotu
