@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
+
 #ifndef TAOTU_TAOTU_LOGGER_H_
 #define TAOTU_TAOTU_LOGGER_H_
 

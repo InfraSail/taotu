@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
+
 #include "logger.h"
 
 #include <utility>

@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
+
 #ifndef TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
 #define TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
 

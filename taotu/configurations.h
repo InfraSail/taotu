@@ -7,6 +7,7 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
+
 #ifndef TAOTU_TAOTU_CONFIGURATIONS_H_
 #define TAOTU_TAOTU_CONFIGURATIONS_H_
 
