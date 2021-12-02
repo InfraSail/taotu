@@ -17,6 +17,10 @@ namespace taotu {
 
 namespace socketer {
 
+/**
+ * @brief  // TODO:
+ *
+ */
 class Socketer : NonCopyableMovable {
  public:
   Socketer();
