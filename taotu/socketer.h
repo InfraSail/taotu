@@ -11,11 +11,15 @@
 #ifndef TAOTU_TAOTU_SOCKETER_H_
 #define TAOTU_TAOTU_SOCKETER_H_
 
+#include <functional>
+#include <memory>
+
+#include "eventer.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
 
-namespace socketer {
+class Eventer;
 
 /**
  * @brief  // TODO:
@@ -23,13 +27,15 @@ namespace socketer {
  */
 class Socketer : NonCopyableMovable {
  public:
-  Socketer();
+  typedef std::function<void()> NomalCallBack;
+  typedef std::function<void()> ReadCallBack;
+  typedef std::weak_ptr<Eventer> EventerPtr;
+
+  Socketer(EventerPtr eventer, int fd);
   ~Socketer();
 
  private:
 };
-
-}  // namespace socketer
 
 }  // namespace taotu
 

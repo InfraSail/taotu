@@ -13,14 +13,12 @@
 
 #include <utility>
 
-namespace taotu {
+using namespace taotu;
+using namespace taotu::logger;
 
 // The unique actual "Logger" object
-logger::Logger::LoggerPtr logger::Logger::logger_(
-    new logger::Logger, logger::Logger::DestroyLogger);
-bool logger::Logger::is_initialized_ = false;
-
-namespace logger {
+Logger::LoggerPtr Logger::logger_(new Logger, Logger::DestroyLogger);
+bool Logger::is_initialized_ = false;
 
 Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
@@ -201,6 +199,3 @@ Logger::Logger()
       time_now_sec_(0) {}
 
 Logger::~Logger() {}
-
-}  // namespace logger
-}  // namespace taotu

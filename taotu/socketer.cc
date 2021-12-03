@@ -10,14 +10,10 @@
 
 #include "socketer.h"
 
-namespace taotu {
+#include "logger.h"
 
-namespace socketer {
+using namespace taotu;
 
-Socketer::Socketer() {}
+Socketer::Socketer(Socketer::EventerPtr eventer, int fd) {}
 
 Socketer::~Socketer() {}
-
-}  // namespace socketer
-
-}  // namespace taotu
