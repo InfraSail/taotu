@@ -14,6 +14,6 @@
 
 using namespace taotu;
 
-Socketer::Socketer(Socketer::EventerPtr eventer, int fd) {}
+Socketer::Socketer(std::shared_ptr<Eventer> eventer, int fd) {}
 
 Socketer::~Socketer() {}

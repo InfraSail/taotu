@@ -31,7 +31,7 @@ class Socketer : NonCopyableMovable {
   typedef std::function<void()> ReadCallBack;
   typedef std::weak_ptr<Eventer> EventerPtr;
 
-  Socketer(EventerPtr eventer, int fd);
+  Socketer(std::shared_ptr<Eventer> eventer, int fd);
   ~Socketer();
 
  private:

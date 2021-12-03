@@ -24,7 +24,7 @@ Logger::LoggerPtr Logger::GetLogger() { return logger_; }
 void Logger::DestroyLogger(Logger* logger) { delete logger; }
 
 void Logger::EndLogger() {
-  logger_->is_stopping_ = 1L;
+  is_stopping_ = 1L;
   log_cond_var_.notify_one();
   if (thread_->joinable()) {
     thread_->join();
