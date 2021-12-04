@@ -19,5 +19,4 @@ Socketer::Socketer(std::shared_ptr<Eventer> eventer, int fd) {}
 Socketer::~Socketer() {}
 
 int Socketer::Fd() const { return fd_; }
-
 int Socketer::Events() const { return out_events_; }
