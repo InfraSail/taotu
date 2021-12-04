@@ -65,9 +65,9 @@ class Socketer : NonCopyableMovable {
   void UpdateEvents();
 
   enum {
-    kNoEvent = 0,
-    kReadEvents = 1 | 2,
-    kWriteEvents = 4,
+    kNoEvent = 0x0000,
+    kReadEvents = 0x0001 | 0x0002,
+    kWriteEvents = 0x0004,
   };
 
   EventerPtr eventer_;
