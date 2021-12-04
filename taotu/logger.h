@@ -100,21 +100,21 @@ class Logger : NonCopyableMovable {
   // The Actual log-record method (uses "move" semantics)
   void RecordLogs(std::string&& log_info);
 
-  static LoggerPtr logger_;
-  static bool is_initialized_;
+  static LoggerPtr logger_ptr;
+  static bool is_initialized;
 
   static constexpr int64_t kStandardLogFileByte =
       configurations::kLogFileMaxByte / 2;
 
   alignas(256) volatile int64_t is_stopping_;
-  alignas(256) char filler1;  // Only for solving "False Sharing"
+  alignas(256) char filler1_;  // Only for solving "False Sharing"
 
   std::mutex log_mutex_;
   std::condition_variable log_cond_var_;
 
   // Index which was read last time
   alignas(256) volatile int64_t read_index_;
-  alignas(256) char filler2;  // Only for solving "False Sharing"
+  alignas(256) char filler2_;  // Only for solving "False Sharing"
 
   int64_t cur_log_file_byte_;
   int64_t cur_log_file_seq_;
@@ -122,7 +122,7 @@ class Logger : NonCopyableMovable {
 
   // Index which was written last time
   alignas(256) volatile int64_t wrote_index_;
-  alignas(256) char filler3;  // Only for solving "False Sharing"
+  alignas(256) char filler3_;  // Only for solving "False Sharing"
 
   ::FILE* log_file_;
 
@@ -134,7 +134,7 @@ class Logger : NonCopyableMovable {
 
   // Index which can be written next time
   alignas(256) volatile std::atomic_int64_t write_index_;
-  alignas(256) char filler4;  // Only for solving "False Sharing"
+  alignas(256) char filler4_;  // Only for solving "False Sharing"
 
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;

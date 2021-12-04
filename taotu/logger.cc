@@ -17,11 +17,11 @@ using namespace taotu;
 using namespace taotu::logger;
 
 // The unique actual "Logger" object
-Logger::LoggerPtr Logger::logger_(new Logger, Logger::DestroyLogger);
-bool Logger::is_initialized_ = false;
+Logger::LoggerPtr Logger::logger_ptr(new Logger, Logger::DestroyLogger);
+bool Logger::is_initialized = false;
 
-Logger::LoggerPtr Logger::GetLogger() { return logger_; }
-void Logger::DestroyLogger(Logger* logger) { delete logger; }
+Logger::LoggerPtr Logger::GetLogger() { return logger_ptr; }
+void Logger::DestroyLogger(Logger* logger_raw_ptr) { delete logger_raw_ptr; }
 
 void Logger::EndLogger() {
   is_stopping_ = 1L;
@@ -30,16 +30,16 @@ void Logger::EndLogger() {
     thread_->join();
   }
   ::fclose(log_file_);
-  is_initialized_ = false;
+  is_initialized = false;
 }
 
 void Logger::StartLogger(const std::string& log_file_name) {
   StartLogger(std::move(const_cast<std::string&>(log_file_name)));
 }
 void Logger::StartLogger(std::string&& log_file_name) {
-  if (!is_initialized_) {
+  if (!is_initialized) {
     std::lock_guard<std::mutex> lock(log_mutex_);
-    if (!is_initialized_) {
+    if (!is_initialized) {
       log_file_name_ = log_file_name;
       // Use the name of the log tile given by the project instead of the
       // unavailable one given by user
@@ -55,7 +55,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
       std::string file_header{"Current file sequence: 0\n"};
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
-      is_initialized_ = true;
+      is_initialized = true;
       thread_.reset(new std::thread{&Logger::WriteDownLogs, this},
                     [](std::thread* trd) {
                       if (trd != nullptr && trd->joinable()) {
