@@ -68,8 +68,8 @@ class Socketer : NonCopyableMovable {
 
   enum {
     kNoEvent = 0,
-    kWriteEvents = POLLOUT,
-    kReadEvents = POLLIN | POLLPRI,
+    kReadEvents = 1 | 2,
+    kWriteEvents = 4,
   };
 
   EventerPtr eventer_;
