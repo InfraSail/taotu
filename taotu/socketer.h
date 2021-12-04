@@ -11,8 +11,6 @@
 #ifndef TAOTU_TAOTU_SOCKETER_H_
 #define TAOTU_TAOTU_SOCKETER_H_
 
-#include <poll.h>
-
 #include <functional>
 #include <memory>
 
