@@ -29,9 +29,9 @@ class Socketer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(/*TODO:*/)> ReadCallback;
-  typedef std::weak_ptr<Eventer> EventerPtr;
+  typedef std::shared_ptr<Eventer> EventerPtr;
 
-  Socketer(std::shared_ptr<Eventer> eventer, int fd);
+  Socketer(EventerPtr eventer, int fd);
   ~Socketer();
 
   // Handle all events
@@ -57,7 +57,7 @@ class Socketer : NonCopyableMovable {
   void DisableWriteEvents();
   void ClearAllEvents();
 
-  std::shared_ptr<Eventer> HostEventer();
+  EventerPtr HostEventer();
 
   void RemoveMyself();
 
