@@ -30,7 +30,7 @@ class Socketer : NonCopyableMovable {
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(/*TODO:*/)> ReadCallback;
 
-  Socketer(Eventer& eventer, int fd);
+  Socketer(Eventer* eventer, int fd);
   ~Socketer();
 
   // Handle all events
@@ -56,7 +56,7 @@ class Socketer : NonCopyableMovable {
   void DisableWriteEvents();
   void ClearAllEvents();
 
-  Eventer& HostEventer();
+  Eventer* HostEventer();
 
   void RemoveMyself();
 

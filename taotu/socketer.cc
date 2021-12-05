@@ -16,8 +16,8 @@
 
 using namespace taotu;
 
-Socketer::Socketer(Eventer& eventer, int fd)
-    : eventer_(eventer),
+Socketer::Socketer(Eventer* eventer, int fd)
+    : eventer_(*eventer),
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
@@ -74,7 +74,7 @@ void Socketer::ClearAllEvents() {
   UpdateEvents();
 }
 
-Eventer& Socketer::HostEventer() { return eventer_; }
+Eventer* Socketer::HostEventer() { return &eventer_; }
 
 void Socketer::RemoveMyself() { eventer_.RemoveSocketer(this); }
 
