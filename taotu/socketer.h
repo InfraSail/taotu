@@ -29,9 +29,8 @@ class Socketer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(/*TODO:*/)> ReadCallback;
-  typedef std::shared_ptr<Eventer> EventerPtr;
 
-  Socketer(EventerPtr eventer, int fd);
+  Socketer(Eventer& eventer, int fd);
   ~Socketer();
 
   // Handle all events
@@ -57,20 +56,21 @@ class Socketer : NonCopyableMovable {
   void DisableWriteEvents();
   void ClearAllEvents();
 
-  EventerPtr HostEventer();
+  Eventer& HostEventer();
 
   void RemoveMyself();
 
  private:
   void UpdateEvents();
 
+  // In <poll.h> or <sys/epoll.h>
   enum {
     kNoEvent = 0x0000,
     kReadEvents = 0x0001 | 0x0002,
     kWriteEvents = 0x0004,
   };
 
-  EventerPtr eventer_;
+  Eventer& eventer_;
 
   int fd_;
 
@@ -79,6 +79,8 @@ class Socketer : NonCopyableMovable {
 
   // For setting
   int out_events_;
+
+  bool is_handling_;
 
   ReadCallback read_callback_;
   NormalCallback write_callback_;

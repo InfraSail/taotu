@@ -17,8 +17,14 @@
 
 namespace taotu {
 
+class Socketer;
+
 class Eventer : NonCopyableMovable,
-                public std::__enable_shared_from_this<Eventer> {};
+                public std::__enable_shared_from_this<Eventer> {
+ public:
+  void RemoveSocketer(Socketer *Socketer);
+  void UpdateSocketer(Socketer *Socketer);
+};
 
 }  // namespace taotu
 
