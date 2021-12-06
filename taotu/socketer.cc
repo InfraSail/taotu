@@ -28,7 +28,35 @@ Socketer::~Socketer() {
 }
 
 void Socketer::Work(/*TODO:*/) {
-  // TODO:
+  is_handling_ = true;
+  // Hung up and no data to read
+  if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
+    if (close_callback_) {
+      close_callback_();
+    }
+  }
+  // Invalid request
+  if (in_events_ & 0x020) {
+  }
+  // Invalid request and error condition
+  if (in_events_ & (0x020 | 0x008)) {
+    if (error_callback_) {
+      error_callback_();
+    }
+  }
+  // Readable, urgent (read) and half-closed
+  if (in_events_ & (0x001 | 0x002 | 0x2000)) {
+    if (read_callback_) {
+      read_callback_(/*TODO:*/);
+    }
+  }
+  // Writable
+  if (in_events_ & 0x004) {
+    if (write_callback_) {
+      write_callback_();
+    }
+  }
+  is_handling_ = false;
 }
 
 void Socketer::RegisterReadCallBack(ReadCallback cb) {
