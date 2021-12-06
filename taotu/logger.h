@@ -1,6 +1,6 @@
 /**
  * @file logger.h
- * @author Sigma711 (sigma711@foxmail.com)
+ * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief Declaration of class "Logger" which is the log recorder of this
  * library but only 3 Marco APIs are open.
  * @date 2021-11-23

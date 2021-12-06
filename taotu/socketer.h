@@ -1,6 +1,6 @@
 /**
  * @file socketer.h
- * @author Sigma711 (sigma711@foxmail.com)
+ * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-11-28
  *

@@ -1,6 +1,6 @@
 /**
  * @file logger.cc
- * @author Sigma711 (sigma711@foxmail.com)
+ * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief Implementation of class "Logger" which is the log.
  * recorder of this library.
  * @date 2021-11-23
