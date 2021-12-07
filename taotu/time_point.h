@@ -8,9 +8,19 @@
  *
  */
 
+#include "non_copyable_movable.h"
+
 #ifndef TAOTU_TAOTU_TIME_POINT_H_
 #define TAOTU_TAOTU_TIME_POINT_H_
 
-namespace taotu {}  // namespace taotu
+namespace taotu {
+
+/**
+ * @brief
+ *
+ */
+class TimePoint : NonCopyableMovable {};
+
+}  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_TIME_POINT_H_
