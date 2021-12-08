@@ -19,7 +19,13 @@ namespace taotu {
  * @brief  // TODO:
  *
  */
-class Socketer : NonCopyableMovable {};
+class Socketer : NonCopyableMovable {
+ public:
+  explicit Socketer(int socket_fd);
+
+ private:
+  int fd_;
+};
 
 }  // namespace taotu
 
