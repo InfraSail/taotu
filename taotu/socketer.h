@@ -8,6 +8,8 @@
  *
  */
 
+#include "non_copyable_movable.h"
+
 #ifndef TAOTU_TAOTU_SOCKETER_H_
 #define TAOTU_TAOTU_SOCKETER_H_
 
@@ -17,7 +19,7 @@ namespace taotu {
  * @brief  // TODO:
  *
  */
-class Socketer {};
+class Socketer : NonCopyableMovable {};
 
 }  // namespace taotu
 
