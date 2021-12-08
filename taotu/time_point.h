@@ -27,7 +27,7 @@ class TimePoint {
 
  public:
   TimePoint();
-  TimePoint(int64_t duration_micro_seconds);
+  explicit TimePoint(int64_t duration_micro_seconds);
 
   int64_t time_point_micro_seconds_;
 };
