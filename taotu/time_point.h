@@ -22,12 +22,6 @@ namespace taotu {
  *
  */
 class TimePoint {
- private:
-  int64_t time_point_micro_seconds_;
-  int64_t context_;
-
-  static int64_t FNow();
-
  public:
   TimePoint();
   TimePoint(int64_t duration_micro_seconds, bool repeated);
@@ -35,6 +29,12 @@ class TimePoint {
   int64_t Context() const;
   bool operator<(const TimePoint& tp) const;
   bool operator==(const TimePoint& tp) const;
+
+ private:
+  static int64_t FNow();
+
+  int64_t time_point_micro_seconds_;
+  int64_t context_;
 };
 
 }  // namespace taotu
