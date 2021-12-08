@@ -16,6 +16,7 @@
 
 #include "eventer.h"
 #include "non_copyable_movable.h"
+#include "time_point.h"
 
 namespace taotu {
 
@@ -28,13 +29,13 @@ class Eventer;
 class Socketer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
-  typedef std::function<void(/*TODO:*/)> ReadCallback;
+  typedef std::function<void(TimePoint tp)> ReadCallback;
 
   Socketer(Eventer* eventer, int fd);
   ~Socketer();
 
   // Handle all events
-  void Work(/*TODO:*/);
+  void Work(TimePoint tp);
 
   void RegisterReadCallBack(ReadCallback cb);
   void RegisterWriteCallback(NormalCallback cb);

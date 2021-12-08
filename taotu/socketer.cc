@@ -27,7 +27,7 @@ Socketer::~Socketer() {
   }
 }
 
-void Socketer::Work(/*TODO:*/) {
+void Socketer::Work(TimePoint tp) {
   is_handling_ = true;
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
@@ -47,7 +47,7 @@ void Socketer::Work(/*TODO:*/) {
   // Readable, urgent (read) and half-closed
   if (in_events_ & (0x001 | 0x002 | 0x2000)) {
     if (read_callback_) {
-      read_callback_(/*TODO:*/);
+      read_callback_(tp);
     }
   }
   // Writable
