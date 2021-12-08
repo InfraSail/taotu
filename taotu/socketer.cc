@@ -32,27 +32,37 @@ void Socketer::Work(TimePoint tp) {
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
     if (close_callback_) {
+      LOG(logger::kDebug, "I/O multiplexing event is triggered now: The fd(" +
+                              std::to_string(fd_) + ") is closed.");
       close_callback_();
     }
   }
   // Invalid request
   if (in_events_ & 0x020) {
+    LOG(logger::kWarn, "I/O multiplexing event is triggered now: The fd(" +
+                           std::to_string(fd_) + ") is not open!");
   }
   // Invalid request and error condition
   if (in_events_ & (0x020 | 0x008)) {
     if (error_callback_) {
+      LOG(logger::kError, "I/O multiplexing event is triggered now: The fd(" +
+                              std::to_string(fd_) + ") occurs an error!!!");
       error_callback_();
     }
   }
   // Readable, urgent (read) and half-closed
   if (in_events_ & (0x001 | 0x002 | 0x2000)) {
     if (read_callback_) {
+      LOG(logger::kDebug, "I/O multiplexing event is triggered now: The fd(" +
+                              std::to_string(fd_) + ") is readable.");
       read_callback_(tp);
     }
   }
   // Writable
   if (in_events_ & 0x004) {
     if (write_callback_) {
+      LOG(logger::kDebug, "I/O multiplexing event is triggered now: The fd(" +
+                              std::to_string(fd_) + ") is writable.");
       write_callback_();
     }
   }
