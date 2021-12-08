@@ -1,5 +1,5 @@
 /**
- * @file socketer.h
+ * @file filer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-11-28
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_SOCKETER_H_
-#define TAOTU_TAOTU_SOCKETER_H_
+#ifndef TAOTU_TAOTU_FILER_H_
+#define TAOTU_TAOTU_FILER_H_
 
 #include <functional>
 #include <memory>
@@ -26,13 +26,13 @@ class Eventer;
  * @brief  // TODO:
  *
  */
-class Socketer : NonCopyableMovable {
+class Filer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(TimePoint tp)> ReadCallback;
 
-  Socketer(Eventer* eventer, int fd);
-  ~Socketer();
+  Filer(Eventer* eventer, int fd);
+  ~Filer();
 
   // Handle all events
   void Work(TimePoint tp);
@@ -91,4 +91,4 @@ class Socketer : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_SOCKETER_H_
+#endif  // !TAOTU_TAOTU_FILER_H_
