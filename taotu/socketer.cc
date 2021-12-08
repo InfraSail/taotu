@@ -13,3 +13,4 @@
 using namespace taotu;
 
 Socketer::Socketer(int socket_fd) : fd_(socket_fd) {}
+Socketer::~Socketer() {}
