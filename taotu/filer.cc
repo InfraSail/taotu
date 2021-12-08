@@ -1,5 +1,5 @@
 /**
- * @file socketer.cc
+ * @file filer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-11-28
@@ -8,7 +8,7 @@
  *
  */
 
-#include "socketer.h"
+#include "filer.h"
 
 #include <utility>
 
@@ -16,18 +16,18 @@
 
 using namespace taotu;
 
-Socketer::Socketer(Eventer* eventer, int fd)
+Filer::Filer(Eventer* eventer, int fd)
     : eventer_(*eventer),
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
       is_handling_(false) {}
-Socketer::~Socketer() {
+Filer::~Filer() {
   while (is_handling_) {
   }
 }
 
-void Socketer::Work(TimePoint tp) {
+void Filer::Work(TimePoint tp) {
   is_handling_ = true;
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
@@ -73,51 +73,51 @@ void Socketer::Work(TimePoint tp) {
   is_handling_ = false;
 }
 
-void Socketer::RegisterReadCallBack(ReadCallback cb) {
+void Filer::RegisterReadCallBack(ReadCallback cb) {
   read_callback_ = std::move(cb);
 }
-void Socketer::RegisterWriteCallback(NormalCallback cb) {
+void Filer::RegisterWriteCallback(NormalCallback cb) {
   write_callback_ = std::move(cb);
 }
-void Socketer::RegisterCloseCallback(NormalCallback cb) {
+void Filer::RegisterCloseCallback(NormalCallback cb) {
   close_callback_ = std::move(cb);
 }
-void Socketer::RegisterErrorCallback(NormalCallback cb) {
+void Filer::RegisterErrorCallback(NormalCallback cb) {
   error_callback_ = std::move(cb);
 }
 
-int Socketer::Fd() const { return fd_; }
-int Socketer::Events() const { return out_events_; }
+int Filer::Fd() const { return fd_; }
+int Filer::Events() const { return out_events_; }
 
-void Socketer::ReceiveEvents(int in_events) { in_events_ = in_events; }
+void Filer::ReceiveEvents(int in_events) { in_events_ = in_events; }
 
-bool Socketer::HasNoEvent() const { return out_events_ == kNoEvent; }
-bool Socketer::HasReadEvents() const { return out_events_ & kReadEvents; }
-bool Socketer::HasWriteEvents() const { return out_events_ & kWriteEvents; }
+bool Filer::HasNoEvent() const { return out_events_ == kNoEvent; }
+bool Filer::HasReadEvents() const { return out_events_ & kReadEvents; }
+bool Filer::HasWriteEvents() const { return out_events_ & kWriteEvents; }
 
-void Socketer::EnableReadEvents() {
+void Filer::EnableReadEvents() {
   out_events_ |= kReadEvents;
   UpdateEvents();
 }
-void Socketer::DisableReadEvents() {
+void Filer::DisableReadEvents() {
   out_events_ &= ~kReadEvents;
   UpdateEvents();
 }
-void Socketer::EnableWriteEvents() {
+void Filer::EnableWriteEvents() {
   out_events_ |= kWriteEvents;
   UpdateEvents();
 }
-void Socketer::DisableWriteEvents() {
+void Filer::DisableWriteEvents() {
   out_events_ &= ~kWriteEvents;
   UpdateEvents();
 }
-void Socketer::ClearAllEvents() {
+void Filer::ClearAllEvents() {
   out_events_ = kNoEvent;
   UpdateEvents();
 }
 
-Eventer* Socketer::HostEventer() { return &eventer_; }
+Eventer* Filer::HostEventer() { return &eventer_; }
 
-void Socketer::RemoveMyself() { eventer_.RemoveSocketer(this); }
+void Filer::RemoveMyself() { eventer_.RemoveFiler(this); }
 
-void Socketer::UpdateEvents() { eventer_.UpdateSocketer(this); }
+void Filer::UpdateEvents() { eventer_.UpdateFiler(this); }
