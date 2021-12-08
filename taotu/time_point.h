@@ -8,7 +8,9 @@
  *
  */
 
-#include "non_copyable_movable.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/time.h>
 
 #ifndef TAOTU_TAOTU_TIME_POINT_H_
 #define TAOTU_TAOTU_TIME_POINT_H_
@@ -19,7 +21,16 @@ namespace taotu {
  * @brief
  *
  */
-class TimePoint : NonCopyableMovable {};
+class TimePoint {
+ private:
+  static int64_t FNow();
+
+ public:
+  TimePoint();
+  TimePoint(int64_t duration_micro_seconds);
+
+  int64_t time_point_micro_seconds_;
+};
 
 }  // namespace taotu
 
