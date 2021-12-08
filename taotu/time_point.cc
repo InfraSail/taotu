@@ -19,5 +19,18 @@ int64_t TimePoint::FNow() {
 }
 
 TimePoint::TimePoint() : time_point_micro_seconds_(FNow()) {}
-TimePoint::TimePoint(int64_t duration_micro_seconds)
-    : time_point_micro_seconds_(FNow() + duration_micro_seconds) {}
+TimePoint::TimePoint(int64_t duration_micro_seconds, bool repeated)
+    : time_point_micro_seconds_(FNow() + duration_micro_seconds),
+      context_(repeated ? duration_micro_seconds : 0) {}
+
+int64_t TimePoint::TimePointMicroSeconds() const {
+  return time_point_micro_seconds_;
+}
+int64_t TimePoint::Context() const { return context_; }
+
+bool TimePoint::operator<(const TimePoint& tp) const {
+  return time_point_micro_seconds_ < tp.time_point_micro_seconds_;
+}
+bool TimePoint::operator==(const TimePoint& tp) const {
+  return time_point_micro_seconds_ == tp.time_point_micro_seconds_;
+}
