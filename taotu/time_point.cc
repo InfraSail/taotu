@@ -22,13 +22,6 @@ int64_t TimePoint::TimePointMicroSeconds() const {
 }
 int64_t TimePoint::Context() const { return context_; }
 
-bool TimePoint::operator<(const TimePoint& tp) const {
-  return time_point_micro_seconds_ < tp.time_point_micro_seconds_;
-}
-bool TimePoint::operator==(const TimePoint& tp) const {
-  return time_point_micro_seconds_ == tp.time_point_micro_seconds_;
-}
-
 int64_t TimePoint::FNow() {
   struct timeval tv;
   ::gettimeofday(&tv, NULL);
