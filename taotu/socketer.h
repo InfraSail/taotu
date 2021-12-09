@@ -21,8 +21,10 @@ namespace taotu {
  */
 class Socketer : NonCopyableMovable {
  public:
-  explicit Socketer(int socket_fd);
+  Socketer(int socket_fd);
   ~Socketer();
+
+  int Fd();
 
  private:
   int fd_;
