@@ -73,7 +73,7 @@ class Filer : NonCopyableMovable {
 
   Eventer& eventer_;
 
-  int fd_;
+  const int fd_;
 
   // For receiving
   int in_events_;
