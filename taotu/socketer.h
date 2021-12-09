@@ -8,6 +8,8 @@
  *
  */
 
+#include <sys/socket.h>
+
 #include "non_copyable_movable.h"
 
 #ifndef TAOTU_TAOTU_SOCKETER_H_
@@ -25,6 +27,8 @@ class Socketer : NonCopyableMovable {
   ~Socketer();
 
   int Fd();
+
+  void BindAddress(const struct sockaddr* addr);
 
  private:
   int fd_;
