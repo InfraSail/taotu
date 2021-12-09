@@ -33,8 +33,12 @@ class Socketer : NonCopyableMovable {
   void Listen();
   int Accept(struct sockaddr_in6* peer_address);
 
+  void ShutdownWrite();
+
+  // TODO: TcpNoDelay, ReuseAddress, ReusePort, KeepAlive
+
  private:
-  int fd_;
+  const int fd_;
 };
 
 }  // namespace taotu

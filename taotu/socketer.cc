@@ -78,3 +78,10 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
   }
   return conn_fd;
 }
+
+void Socketer::ShutdownWrite() {
+  if (::shutdown(fd_, SHUT_WR) < 0) {
+    LOG(logger::kError,
+        "Fd(" + std::to_string(fd_) + ") failed to shutdown writing end!!!");
+  }
+}
