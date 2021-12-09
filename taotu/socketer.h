@@ -8,6 +8,7 @@
  *
  */
 
+#include <netinet/in.h>
 #include <sys/socket.h>
 
 #include "non_copyable_movable.h"
@@ -28,7 +29,9 @@ class Socketer : NonCopyableMovable {
 
   int Fd();
 
-  void BindAddress(const struct sockaddr* addr);
+  void BindAddress(const struct sockaddr* local_address);
+  void Listen();
+  int Accept(struct sockaddr_in6* peer_address);
 
  private:
   int fd_;
