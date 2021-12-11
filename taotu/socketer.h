@@ -35,8 +35,6 @@ class Socketer : NonCopyableMovable {
 
   void ShutdownWrite();
 
-  // TODO: TcpNoDelay, ReuseAddress, ReusePort, KeepAlive
-
   void SetTcpNoDelay(bool on);
   void SetReuseAddress(bool on);
   void SetReusePort(bool on);
