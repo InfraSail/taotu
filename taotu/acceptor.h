@@ -20,6 +20,10 @@
 
 namespace taotu {
 
+/**
+ * @brief  // TODO:
+ *
+ */
 class Acceptor : NonCopyableMovable {
  public:
   typedef std::function<void(int, struct sockaddr_in6*)> NewConnectionCallback;
