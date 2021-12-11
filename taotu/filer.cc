@@ -33,11 +33,11 @@ void Filer::Work(TimePoint tp) {
   is_handling_ = true;
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
-    if (close_callback_) {
+    if (CloseCallback_) {
       LOG(logger::kDebug,
           "An I/O multiplexing event is triggered now: The fd(" +
               std::to_string(fd_) + ") is closed.");
-      close_callback_();
+      CloseCallback_();
     }
   }
   // Invalid request
@@ -47,45 +47,45 @@ void Filer::Work(TimePoint tp) {
   }
   // Invalid request and error condition
   if (in_events_ & (0x020 | 0x008)) {
-    if (error_callback_) {
+    if (ErrorCallback_) {
       LOG(logger::kError,
           "An I/O multiplexing event is triggered now: The fd(" +
               std::to_string(fd_) + ") occurs an error!!!");
-      error_callback_();
+      ErrorCallback_();
     }
   }
   // Readable, urgent (read) and half-closed
   if (in_events_ & (0x001 | 0x002 | 0x2000)) {
-    if (read_callback_) {
+    if (ReadCallback_) {
       LOG(logger::kDebug,
           "An I/O multiplexing event is triggered now: The fd(" +
               std::to_string(fd_) + ") is readable.");
-      read_callback_(tp);
+      ReadCallback_(tp);
     }
   }
   // Writable
   if (in_events_ & 0x004) {
-    if (write_callback_) {
+    if (WriteCallback_) {
       LOG(logger::kDebug,
           "An I/O multiplexing event is triggered now: The fd(" +
               std::to_string(fd_) + ") is writable.");
-      write_callback_();
+      WriteCallback_();
     }
   }
   is_handling_ = false;
 }
 
 void Filer::RegisterReadCallBack(ReadCallback cb) {
-  read_callback_ = std::move(cb);
+  ReadCallback_ = std::move(cb);
 }
 void Filer::RegisterWriteCallback(NormalCallback cb) {
-  write_callback_ = std::move(cb);
+  WriteCallback_ = std::move(cb);
 }
 void Filer::RegisterCloseCallback(NormalCallback cb) {
-  close_callback_ = std::move(cb);
+  CloseCallback_ = std::move(cb);
 }
 void Filer::RegisterErrorCallback(NormalCallback cb) {
-  error_callback_ = std::move(cb);
+  ErrorCallback_ = std::move(cb);
 }
 
 int Filer::Fd() const { return fd_; }

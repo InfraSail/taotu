@@ -29,7 +29,7 @@ class Eventer;
 class Filer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
-  typedef std::function<void(TimePoint tp)> ReadCallback;
+  typedef std::function<void(TimePoint)> ReadCallback;
 
   Filer(Eventer* eventer, int fd);
   ~Filer();
@@ -83,10 +83,10 @@ class Filer : NonCopyableMovable {
 
   bool is_handling_;
 
-  ReadCallback read_callback_;
-  NormalCallback write_callback_;
-  NormalCallback close_callback_;
-  NormalCallback error_callback_;
+  ReadCallback ReadCallback_;
+  NormalCallback WriteCallback_;
+  NormalCallback CloseCallback_;
+  NormalCallback ErrorCallback_;
 };
 
 }  // namespace taotu
