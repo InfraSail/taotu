@@ -12,8 +12,8 @@
 
 #include <errno.h>
 #include <netinet/tcp.h>
-#include <sys/types.h>
 #include <strings.h>
+#include <sys/types.h>
 
 #include <string>
 
@@ -30,8 +30,8 @@ void Socketer::BindAddress(const struct sockaddr* local_address) {
   int ret = ::bind(socket_fd_, local_address,
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   if (ret < 0) {
-    LOG(logger::kError,
-        "SocketFd(" + std::to_string(socket_fd_) + ") failed to bind an address!!!");
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
+                            ") failed to bind an address!!!");
   }
 }
 void Socketer::Listen() {
@@ -46,7 +46,7 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
   ::memset(&addr, 0, sizeof(addr));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(addr));
   int conn_fd = ::accept4(
-	  socket_fd_, static_cast<struct sockaddr*>(reinterpret_cast<void*>(&addr)),
+      socket_fd_, static_cast<struct sockaddr*>(reinterpret_cast<void*>(&addr)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
   if (conn_fd < 0) {
     int savedErrno = errno;
@@ -72,8 +72,8 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
                                 ") accept: unexpected error!!!");
         break;
       default:
-        LOG(logger::kError,
-            "SocketFd(" + std::to_string(socket_fd_) + ") accept: unknown error!!!");
+        LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
+                                ") accept: unknown error!!!");
         break;
     }
   } else {
