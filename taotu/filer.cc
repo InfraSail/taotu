@@ -111,7 +111,7 @@ void Filer::DisableWriteEvents() {
   out_events_ &= ~kWriteEvents;
   UpdateEvents();
 }
-void Filer::ClearAllEvents() {
+void Filer::DisableAllEvents() {
   out_events_ = kNoEvent;
   UpdateEvents();
 }

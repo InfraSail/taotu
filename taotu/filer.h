@@ -55,7 +55,7 @@ class Filer : NonCopyableMovable {
   void DisableReadEvents();
   void EnableWriteEvents();
   void DisableWriteEvents();
-  void ClearAllEvents();
+  void DisableAllEvents();
 
   Eventer* HostEventer();
 
