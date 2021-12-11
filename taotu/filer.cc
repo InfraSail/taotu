@@ -10,8 +10,6 @@
 
 #include "filer.h"
 
-#include <unistd.h>
-
 #include <utility>
 
 #include "logger.h"
