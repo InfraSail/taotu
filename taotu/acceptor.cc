@@ -38,6 +38,7 @@ Acceptor::Acceptor(Eventer* eventer, const struct sockaddr_in6* listen_fd,
   accept_filer_.RegisterReadCallBack(std::bind(&Acceptor::Accept, this));
 }
 Acceptor::~Acceptor() {
+  is_listening_ = false;
   accept_filer_.DisableAllEvents();
   accept_filer_.RemoveMyself();
   ::close(accept_filer_.Fd());
