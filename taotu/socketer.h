@@ -41,7 +41,7 @@ class Socketer : NonCopyableMovable {
   void SetKeepAlive(bool on);
 
  private:
-  const int fd_;
+  const int socket_fd_;
 };
 
 }  // namespace taotu

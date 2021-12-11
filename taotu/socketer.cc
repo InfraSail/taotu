@@ -12,6 +12,7 @@
 
 #include <errno.h>
 #include <netinet/tcp.h>
+#include <sys/types.h>
 #include <strings.h>
 
 #include <string>
@@ -20,24 +21,24 @@
 
 using namespace taotu;
 
-Socketer::Socketer(int socket_fd) : fd_(socket_fd) {}
+Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
 Socketer::~Socketer() {}
 
-int Socketer::Fd() { return fd_; }
+int Socketer::Fd() { return socket_fd_; }
 
 void Socketer::BindAddress(const struct sockaddr* local_address) {
-  int ret = ::bind(fd_, local_address,
+  int ret = ::bind(socket_fd_, local_address,
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   if (ret < 0) {
     LOG(logger::kError,
-        "SocketFd(" + std::to_string(fd_) + ") failed to bind an address!!!");
+        "SocketFd(" + std::to_string(socket_fd_) + ") failed to bind an address!!!");
   }
 }
 void Socketer::Listen() {
-  int ret = ::listen(fd_, SOMAXCONN);
+  int ret = ::listen(socket_fd_, SOMAXCONN);
   if (ret < 0) {
     LOG(logger::kError,
-        "SocketFd(" + std::to_string(fd_) + ") failed to listen!!!");
+        "SocketFd(" + std::to_string(socket_fd_) + ") failed to listen!!!");
   }
 }
 int Socketer::Accept(struct sockaddr_in6* peer_address) {
@@ -45,7 +46,7 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
   ::memset(&addr, 0, sizeof(addr));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(addr));
   int conn_fd = ::accept4(
-      fd_, static_cast<struct sockaddr*>(reinterpret_cast<void*>(&addr)),
+	  socket_fd_, static_cast<struct sockaddr*>(reinterpret_cast<void*>(&addr)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
   if (conn_fd < 0) {
     int savedErrno = errno;
@@ -67,12 +68,12 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
       case ENOTSOCK:
       case EOPNOTSUPP:
         // unexpected errors
-        LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+        LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                                 ") accept: unexpected error!!!");
         break;
       default:
         LOG(logger::kError,
-            "SocketFd(" + std::to_string(fd_) + ") accept: unknown error!!!");
+            "SocketFd(" + std::to_string(socket_fd_) + ") accept: unknown error!!!");
         break;
     }
   } else {
@@ -82,17 +83,17 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
 }
 
 void Socketer::ShutdownWrite() {
-  if (::shutdown(fd_, SHUT_WR) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+  if (::shutdown(socket_fd_, SHUT_WR) < 0) {
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to shutdown writing end!!!");
   }
 }
 
 void Socketer::SetTcpNoDelay(bool on) {
   int opt = on ? 1 : 0;
-  if (::setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
+  if (::setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to set no delay(TCP) " +
                             (on ? "on" : "off") + " !!!");
   }
@@ -100,9 +101,9 @@ void Socketer::SetTcpNoDelay(bool on) {
 
 void Socketer::SetReuseAddress(bool on) {
   int opt = on ? 1 : 0;
-  if (::setsockopt(fd_, SOL_SOCKET, SO_REUSEADDR, &opt,
+  if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to set reuse address " +
                             (on ? "on" : "off") + " !!!");
   }
@@ -110,9 +111,9 @@ void Socketer::SetReuseAddress(bool on) {
 
 void Socketer::SetReusePort(bool on) {
   int opt = on ? 1 : 0;
-  if (::setsockopt(fd_, SOL_SOCKET, SO_REUSEPORT, &opt,
+  if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEPORT, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to set reuse port " +
                             (on ? "on" : "off") + " !!!");
   }
@@ -120,9 +121,9 @@ void Socketer::SetReusePort(bool on) {
 
 void Socketer::SetKeepAlive(bool on) {
   int opt = on ? 1 : 0;
-  if (::setsockopt(fd_, SOL_SOCKET, SO_KEEPALIVE, &opt,
+  if (::setsockopt(socket_fd_, SOL_SOCKET, SO_KEEPALIVE, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(fd_) +
+    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to set keep alive " +
                             (on ? "on" : "off") + " !!!");
   }
