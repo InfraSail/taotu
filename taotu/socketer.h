@@ -37,6 +37,11 @@ class Socketer : NonCopyableMovable {
 
   // TODO: TcpNoDelay, ReuseAddress, ReusePort, KeepAlive
 
+  void SetTcpNoDelay(bool on);
+  void SetReuseAddress(bool on);
+  void SetReusePort(bool on);
+  void SetKeepAlive(bool on);
+
  private:
   const int fd_;
 };
