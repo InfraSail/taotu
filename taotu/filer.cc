@@ -27,7 +27,6 @@ Filer::Filer(Eventer* eventer, int fd)
 Filer::~Filer() {
   while (is_handling_) {
   }
-  ::close(fd_);
 }
 
 void Filer::Work(TimePoint tp) {
