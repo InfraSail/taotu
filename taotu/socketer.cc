@@ -24,7 +24,7 @@ using namespace taotu;
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
 Socketer::~Socketer() {}
 
-int Socketer::Fd() { return socket_fd_; }
+int Socketer::Fd() const { return socket_fd_; }
 
 void Socketer::BindAddress(const struct sockaddr* local_address) {
   int ret = ::bind(socket_fd_, local_address,

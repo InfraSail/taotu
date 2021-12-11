@@ -27,7 +27,7 @@ class Socketer : NonCopyableMovable {
   Socketer(int socket_fd);
   ~Socketer();
 
-  int Fd();
+  int Fd() const;
 
   void BindAddress(const struct sockaddr* local_address);
   void Listen();
