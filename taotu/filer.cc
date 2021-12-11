@@ -10,6 +10,8 @@
 
 #include "filer.h"
 
+#include <unistd.h>
+
 #include <utility>
 
 #include "logger.h"
@@ -25,6 +27,7 @@ Filer::Filer(Eventer* eventer, int fd)
 Filer::~Filer() {
   while (is_handling_) {
   }
+  ::close(fd_);
 }
 
 void Filer::Work(TimePoint tp) {
