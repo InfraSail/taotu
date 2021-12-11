@@ -8,14 +8,41 @@
  *
  */
 
+#include <functional>
+
+#include "eventer.h"
+#include "filer.h"
+#include "non_copyable_movable.h"
+#include "socketer.h"
+
 #ifndef TAOTU_TAOTU_ACCEPTOR_H_
 #define TAOTU_TAOTU_ACCEPTOR_H_
 
-#include "non_copyable_movable.h"
-
 namespace taotu {
 
-class Acceptor : NonCopyableMovable {};
+class Acceptor : NonCopyableMovable {
+ public:
+  typedef std::function<void(int, struct sockaddr_in6*)> NewConnectionCallback;
+
+  Acceptor(Eventer* eventer, const struct sockaddr_in6* listen_fd,
+           bool reuse_port);
+  ~Acceptor();
+
+  void RegisterNewConnectionCallback(NewConnectionCallback cb);
+
+  void Listen();
+  bool IsListening();
+
+ private:
+  void Accept();
+
+  const Eventer* eventer_;
+  Socketer accept_soketer_;
+  Filer accept_filer_;
+  bool is_listening_;
+  NewConnectionCallback NewConnectionCallback_;
+  int idle_fd_;
+};
 
 }  // namespace taotu
 
