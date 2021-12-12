@@ -24,10 +24,10 @@
 
 using namespace taotu;
 
-Acceptor::Acceptor(Eventer* eventer, const struct sockaddr_in6* listen_fd,
+Acceptor::Acceptor(Eventer* eventer, const SocketAddress& listen_address,
                    bool reuse_port)
     : eventer_(eventer),
-      accept_soketer_(::socket(listen_fd->sin6_family,
+      accept_soketer_(::socket(listen_address.GetFamily(),
                                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                                IPPROTO_TCP)),
       accept_filer_(eventer, accept_soketer_.Fd()),
@@ -35,8 +35,7 @@ Acceptor::Acceptor(Eventer* eventer, const struct sockaddr_in6* listen_fd,
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(reuse_port);
-  accept_soketer_.BindAddress(
-      reinterpret_cast<const struct sockaddr*>(listen_fd));
+  accept_soketer_.BindAddress(listen_address);
   accept_filer_.RegisterReadCallBack(std::bind(&Acceptor::Accept, this));
 }
 Acceptor::~Acceptor() {
@@ -59,11 +58,11 @@ void Acceptor::Listen() {
 bool Acceptor::IsListening() { return is_listening_; }
 
 void Acceptor::Accept() {
-  struct sockaddr_in6 addr;
-  int conn_fd = accept_soketer_.Accept(&addr);
+  SocketAddress peer_address;
+  int conn_fd = accept_soketer_.Accept(&peer_address);
   if (conn_fd >= 0) {
     if (NewConnectionCallback_) {
-      NewConnectionCallback_(conn_fd, &addr);
+      NewConnectionCallback_(conn_fd, peer_address);
     } else {
       ::close(conn_fd);
     }
