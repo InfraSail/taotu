@@ -8,13 +8,13 @@
  *
  */
 
+#ifndef TAOTU_TAOTU_SOCKETER_H_
+#define TAOTU_TAOTU_SOCKETER_H_
+
 #include <netinet/in.h>
 #include <sys/socket.h>
 
 #include "non_copyable_movable.h"
-
-#ifndef TAOTU_TAOTU_SOCKETER_H_
-#define TAOTU_TAOTU_SOCKETER_H_
 
 namespace taotu {
 
