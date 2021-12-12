@@ -45,17 +45,11 @@ Acceptor::~Acceptor() {
   ::close(idle_fd_);
 }
 
-void Acceptor::RegisterNewConnectionCallback(NewConnectionCallback cb) {
-  NewConnectionCallback_ = std::move(cb);
-}
-
 void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
   accept_filer_.DisableReadEvents();
 }
-
-bool Acceptor::IsListening() { return is_listening_; }
 
 void Acceptor::Accept() {
   SocketAddress peer_address;

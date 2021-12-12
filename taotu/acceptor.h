@@ -31,10 +31,12 @@ class Acceptor : NonCopyableMovable {
   Acceptor(Eventer* eventer, const SocketAddress& listen_fd, bool reuse_port);
   ~Acceptor();
 
-  void RegisterNewConnectionCallback(NewConnectionCallback cb);
+  void RegisterNewConnectionCallback(NewConnectionCallback cb) {
+    NewConnectionCallback_ = std::move(cb);
+  }
 
   void Listen();
-  bool IsListening();
+  bool IsListening() const { return is_listening_; }
 
  private:
   void Accept();
