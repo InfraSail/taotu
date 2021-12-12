@@ -32,6 +32,10 @@ class SocketAddress {
   std::string GetIp() const;
   uint16_t GetPort() const;
 
+  const struct sockaddr* GetSocketAddress() const {
+    return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
+  };
+
  private:
   union {
     struct sockaddr_in socket_address_;
