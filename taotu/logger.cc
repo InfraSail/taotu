@@ -197,5 +197,3 @@ Logger::Logger()
       wrote_index_(-1L),
       write_index_(0L),
       time_now_sec_(0) {}
-
-Logger::~Logger() {}
