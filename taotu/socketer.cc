@@ -27,8 +27,8 @@ Socketer::~Socketer() { ::close(socket_fd_); }
 
 int Socketer::Fd() const { return socket_fd_; }
 
-void Socketer::BindAddress(const struct sockaddr* local_address) {
-  int ret = ::bind(socket_fd_, local_address,
+void Socketer::BindAddress(const SocketAddress& local_address) {
+  int ret = ::bind(socket_fd_, local_address.GetSocketAddress(),
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   if (ret < 0) {
     LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
@@ -42,12 +42,13 @@ void Socketer::Listen() {
         "SocketFd(" + std::to_string(socket_fd_) + ") failed to listen!!!");
   }
 }
-int Socketer::Accept(struct sockaddr_in6* peer_address) {
-  struct sockaddr_in6 addr;
-  ::memset(&addr, 0, sizeof(addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(addr));
+int Socketer::Accept(SocketAddress* peer_address) {
+  struct sockaddr_in6 socket_address6;
+  ::memset(&socket_address6, 0, sizeof(socket_address6));
+  socklen_t addr_len = static_cast<socklen_t>(sizeof(socket_address6));
   int conn_fd = ::accept4(
-      socket_fd_, static_cast<struct sockaddr*>(reinterpret_cast<void*>(&addr)),
+      socket_fd_,
+      static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
   if (conn_fd < 0) {
     int savedErrno = errno;
@@ -78,7 +79,7 @@ int Socketer::Accept(struct sockaddr_in6* peer_address) {
         break;
     }
   } else {
-    *peer_address = addr;
+    peer_address->SetSocketAddress6(socket_address6);
   }
   return conn_fd;
 }

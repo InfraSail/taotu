@@ -11,10 +11,8 @@
 #ifndef TAOTU_TAOTU_SOCKETER_H_
 #define TAOTU_TAOTU_SOCKETER_H_
 
-#include <netinet/in.h>
-#include <sys/socket.h>
-
 #include "non_copyable_movable.h"
+#include "socket_address.h"
 
 namespace taotu {
 
@@ -29,9 +27,9 @@ class Socketer : NonCopyableMovable {
 
   int Fd() const;
 
-  void BindAddress(const struct sockaddr* local_address);
+  void BindAddress(const SocketAddress& local_address);
   void Listen();
-  int Accept(struct sockaddr_in6* peer_address);
+  int Accept(SocketAddress* peer_address);
 
   void ShutdownWrite();
 
