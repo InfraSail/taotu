@@ -8,12 +8,12 @@
  *
  */
 
+#ifndef TAOTU_TAOTU_TIME_POINT_H_
+#define TAOTU_TAOTU_TIME_POINT_H_
+
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
-
-#ifndef TAOTU_TAOTU_TIME_POINT_H_
-#define TAOTU_TAOTU_TIME_POINT_H_
 
 namespace taotu {
 
