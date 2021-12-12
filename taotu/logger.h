@@ -59,8 +59,8 @@ const std::string Log_level_info_prefix[3]{
 
 /**
  * @brief "Logger" uses a special ring buffer called "Disruptor": the index of
- * writable position is atomic. And it uses "Sigleton" pattern, so there is only
- * one actual "Logger" object in the global environment of one process.
+ * writable position is atomic. And it uses "Singleton" pattern, so there is
+ * only one actual "Logger" object in the global environment of one process.
  *
  */
 class Logger : NonCopyableMovable {
@@ -69,7 +69,7 @@ class Logger : NonCopyableMovable {
   typedef std::shared_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, configurations::kLogBufferSize> LogBuffer;
 
-  // The unique method to creat the unique actual "Logger" object ("Sigleton"
+  // The unique method to creat the unique actual "Logger" object ("Singleton"
   // pattern)
   static LoggerPtr GetLogger();
   static void DestroyLogger(Logger* logger);
