@@ -11,16 +11,13 @@
 #ifndef TAOTU_TAOTU_EVENTER_H_
 #define TAOTU_TAOTU_EVENTER_H_
 
-#include <memory>
-
 #include "non_copyable_movable.h"
 
 namespace taotu {
 
 class Filer;
 
-class Eventer : NonCopyableMovable,
-                public std::__enable_shared_from_this<Eventer> {
+class Eventer : NonCopyableMovable {
  public:
   void RemoveFiler(Filer *Socketer);
   void UpdateFiler(Filer *Socketer);
