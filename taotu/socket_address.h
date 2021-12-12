@@ -35,6 +35,9 @@ class SocketAddress {
   const struct sockaddr* GetSocketAddress() const {
     return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
   };
+  void SetSocketAddress6(const struct sockaddr_in6& socket_address6) {
+    socket_address6_ = socket_address6;
+  }
 
  private:
   union {
