@@ -14,6 +14,7 @@
 #include <netinet/tcp.h>
 #include <strings.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <string>
 
@@ -22,7 +23,7 @@
 using namespace taotu;
 
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
-Socketer::~Socketer() {}
+Socketer::~Socketer() { ::close(socket_fd_); }
 
 int Socketer::Fd() const { return socket_fd_; }
 
