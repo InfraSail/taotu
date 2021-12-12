@@ -11,6 +11,14 @@
 #ifndef TAOTU_TAOTU_CONNECTOR_H_
 #define TAOTU_TAOTU_CONNECTOR_H_
 
-namespace taotu {}  // namespace taotu
+namespace taotu {
+
+/**
+ * @brief  // TODO:
+ *
+ */
+class Connector {};
+
+}  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_CONNECTOR_H_
