@@ -11,13 +11,18 @@
 #ifndef TAOTU_TAOTU_CONNECTION_H_
 #define TAOTU_TAOTU_CONNECTION_H_
 
+#include <memory>
+
+#include "non_copyable_movable.h"
+
 namespace taotu {
 
 /**
  * @brief  // TODO:
  *
  */
-class Connection {};
+class Connection : NonCopyableMovable,
+                   public std::__enable_shared_from_this<Connection> {};
 
 }  // namespace taotu
 
