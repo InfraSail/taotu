@@ -22,7 +22,13 @@ namespace taotu {
  *
  */
 class Connection : NonCopyableMovable,
-                   public std::__enable_shared_from_this<Connection> {};
+                   public std::__enable_shared_from_this<Connection> {
+ public:
+  Connection();
+  ~Connection();
+
+ private:
+};
 
 }  // namespace taotu
 
