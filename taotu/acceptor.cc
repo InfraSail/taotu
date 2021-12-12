@@ -43,7 +43,6 @@ Acceptor::~Acceptor() {
   is_listening_ = false;
   accept_filer_.DisableAllEvents();
   accept_filer_.RemoveMyself();
-  ::close(accept_filer_.Fd());
   ::close(idle_fd_);
 }
 
