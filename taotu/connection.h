@@ -18,6 +18,8 @@
 
 namespace taotu {
 
+class Eventer;
+
 /**
  * @brief  // TODO:
  *
