@@ -13,6 +13,7 @@
 
 #include <memory>
 
+#include "eventer.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
