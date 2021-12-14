@@ -24,31 +24,31 @@
 
 using namespace taotu;
 
-Acceptor::Acceptor(Eventer* eventer, const SocketAddress& listen_address,
-                   bool reuse_port)
-    : eventer_(eventer),
+Acceptor::Acceptor(EventManager* event_manager,
+                   const SocketAddress& listen_address, bool reuse_port)
+    : event_manager_(event_manager),
       accept_soketer_(::socket(listen_address.GetFamily(),
                                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                                IPPROTO_TCP)),
-      accept_filer_(eventer, accept_soketer_.Fd()),
+      accept_eventer_(event_manager, accept_soketer_.Fd()),
       is_listening_(false),
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(reuse_port);
   accept_soketer_.BindAddress(listen_address);
-  accept_filer_.RegisterReadCallBack(std::bind(&Acceptor::Accept, this));
+  accept_eventer_.RegisterReadCallBack(std::bind(&Acceptor::Accept, this));
 }
 Acceptor::~Acceptor() {
   is_listening_ = false;
-  accept_filer_.DisableAllEvents();
-  accept_filer_.RemoveMyself();
+  accept_eventer_.DisableAllEvents();
+  accept_eventer_.RemoveMyself();
   ::close(idle_fd_);
 }
 
 void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
-  accept_filer_.DisableReadEvents();
+  accept_eventer_.DisableReadEvents();
 }
 
 void Acceptor::Accept() {

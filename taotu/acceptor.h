@@ -28,7 +28,8 @@ class Acceptor : NonCopyableMovable {
  public:
   typedef std::function<void(int, const SocketAddress&)> NewConnectionCallback;
 
-  Acceptor(Eventer* eventer, const SocketAddress& listen_fd, bool reuse_port);
+  Acceptor(EventManager* eventer, const SocketAddress& listen_fd,
+           bool reuse_port);
   ~Acceptor();
 
   void RegisterNewConnectionCallback(NewConnectionCallback cb) {
@@ -41,9 +42,9 @@ class Acceptor : NonCopyableMovable {
  private:
   void Accept();
 
-  const Eventer* eventer_;
+  const EventManager* event_manager_;
   Socketer accept_soketer_;
-  Filer accept_filer_;
+  Filer accept_eventer_;
   bool is_listening_;
   NewConnectionCallback NewConnectionCallback_;
   int idle_fd_;
