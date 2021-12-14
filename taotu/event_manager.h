@@ -15,12 +15,12 @@
 
 namespace taotu {
 
-class Filer;
+class Eventer;
 
 class EventManager : NonCopyableMovable {
  public:
-  void RemoveFiler(Filer *Socketer);
-  void UpdateFiler(Filer *Socketer);
+  void RemoveEventer(Eventer *Socketer);
+  void UpdateEventer(Eventer *Socketer);
 };
 
 }  // namespace taotu
