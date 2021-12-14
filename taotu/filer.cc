@@ -1,7 +1,7 @@
 /**
  * @file filer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Filer" which is "single event operator".
  * @date 2021-11-28
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -17,7 +17,7 @@
 using namespace taotu;
 
 Filer::Filer(Eventer* eventer, int fd)
-    : eventer_(*eventer),
+    : eventer_(eventer),
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
@@ -116,8 +116,8 @@ void Filer::DisableAllEvents() {
   UpdateEvents();
 }
 
-Eventer* Filer::HostEventer() { return &eventer_; }
+Eventer* Filer::HostEventer() { return eventer_; }
 
-void Filer::RemoveMyself() { eventer_.RemoveFiler(this); }
+void Filer::RemoveMyself() { eventer_->RemoveFiler(this); }
 
-void Filer::UpdateEvents() { eventer_.UpdateFiler(this); }
+void Filer::UpdateEvents() { eventer_->UpdateFiler(this); }

@@ -1,7 +1,7 @@
 /**
  * @file filer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Filer" which is "single event operator".
  * @date 2021-11-28
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -23,7 +23,9 @@ namespace taotu {
 class Eventer;
 
 /**
- * @brief  // TODO:
+ * @brief "Filer" is the encapsulation of "event" which is relavant to I/O
+ * multiplexing and I/O callbacks. Everything is file in Linux so just call it
+ * "filer".
  *
  */
 class Filer : NonCopyableMovable {
@@ -71,7 +73,7 @@ class Filer : NonCopyableMovable {
     kWriteEvents = 0x0004,
   };
 
-  Eventer& eventer_;
+  Eventer* eventer_;
 
   const int fd_;
 
