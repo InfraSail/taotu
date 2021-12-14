@@ -20,7 +20,7 @@
 
 namespace taotu {
 
-class Eventer;
+class EventerManager;
 
 /**
  * @brief "Filer" is the encapsulation of "event" which is relavant to I/O
