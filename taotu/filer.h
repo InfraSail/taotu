@@ -24,7 +24,8 @@ class Eventer;
 
 /**
  * @brief "Filer" is the encapsulation of "event" which is relavant to I/O
- * multiplexing and I/O callbacks.
+ * multiplexing and I/O callbacks. Everything is file in Linux so just call it
+ * "filer".
  *
  */
 class Filer : NonCopyableMovable {
