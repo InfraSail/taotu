@@ -1,5 +1,5 @@
 /**
- * @file eventer.h
+ * @file event_manager.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-12-03
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_EVENTER_H_
-#define TAOTU_TAOTU_EVENTER_H_
+#ifndef TAOTU_TAOTU_EVENT_MANAGER_H_
+#define TAOTU_TAOTU_EVENT_MANAGER_H_
 
 #include "non_copyable_movable.h"
 
@@ -25,4 +25,4 @@ class EventManager : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_EVENTER_H_
+#endif  // !TAOTU_TAOTU_EVENT_MANAGER_H_
