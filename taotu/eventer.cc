@@ -1,14 +1,14 @@
 /**
- * @file filer.cc
+ * @file eventer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Implementation of class "Filer" which is "single event operator".
+ * @brief Implementation of class "Eventer" which is "single event operator".
  * @date 2021-11-28
  *
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
 
-#include "filer.h"
+#include "eventer.h"
 
 #include <utility>
 
@@ -16,18 +16,18 @@
 
 using namespace taotu;
 
-Filer::Filer(Eventer* eventer, int fd)
-    : eventer_(eventer),
+Eventer::Eventer(EventManager* event_manager, int fd)
+    : event_manager_(event_manager),
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
       is_handling_(false) {}
-Filer::~Filer() {
+Eventer::~Eventer() {
   while (is_handling_) {
   }
 }
 
-void Filer::Work(TimePoint tp) {
+void Eventer::Work(TimePoint tp) {
   is_handling_ = true;
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
@@ -73,51 +73,51 @@ void Filer::Work(TimePoint tp) {
   is_handling_ = false;
 }
 
-void Filer::RegisterReadCallBack(ReadCallback cb) {
+void Eventer::RegisterReadCallBack(ReadCallback cb) {
   ReadCallback_ = std::move(cb);
 }
-void Filer::RegisterWriteCallback(NormalCallback cb) {
+void Eventer::RegisterWriteCallback(NormalCallback cb) {
   WriteCallback_ = std::move(cb);
 }
-void Filer::RegisterCloseCallback(NormalCallback cb) {
+void Eventer::RegisterCloseCallback(NormalCallback cb) {
   CloseCallback_ = std::move(cb);
 }
-void Filer::RegisterErrorCallback(NormalCallback cb) {
+void Eventer::RegisterErrorCallback(NormalCallback cb) {
   ErrorCallback_ = std::move(cb);
 }
 
-int Filer::Fd() const { return fd_; }
-int Filer::Events() const { return out_events_; }
+int Eventer::Fd() const { return fd_; }
+int Eventer::Events() const { return out_events_; }
 
-void Filer::ReceiveEvents(int in_events) { in_events_ = in_events; }
+void Eventer::ReceiveEvents(int in_events) { in_events_ = in_events; }
 
-bool Filer::HasNoEvent() const { return out_events_ == kNoEvent; }
-bool Filer::HasReadEvents() const { return out_events_ & kReadEvents; }
-bool Filer::HasWriteEvents() const { return out_events_ & kWriteEvents; }
+bool Eventer::HasNoEvent() const { return out_events_ == kNoEvent; }
+bool Eventer::HasReadEvents() const { return out_events_ & kReadEvents; }
+bool Eventer::HasWriteEvents() const { return out_events_ & kWriteEvents; }
 
-void Filer::EnableReadEvents() {
+void Eventer::EnableReadEvents() {
   out_events_ |= kReadEvents;
   UpdateEvents();
 }
-void Filer::DisableReadEvents() {
+void Eventer::DisableReadEvents() {
   out_events_ &= ~kReadEvents;
   UpdateEvents();
 }
-void Filer::EnableWriteEvents() {
+void Eventer::EnableWriteEvents() {
   out_events_ |= kWriteEvents;
   UpdateEvents();
 }
-void Filer::DisableWriteEvents() {
+void Eventer::DisableWriteEvents() {
   out_events_ &= ~kWriteEvents;
   UpdateEvents();
 }
-void Filer::DisableAllEvents() {
+void Eventer::DisableAllEvents() {
   out_events_ = kNoEvent;
   UpdateEvents();
 }
 
-Eventer* Filer::HostEventer() { return eventer_; }
+EventManager* Eventer::HostEventer() { return event_manager_; }
 
-void Filer::RemoveMyself() { eventer_->RemoveFiler(this); }
+void Eventer::RemoveMyself() { event_manager_->RemoveEventer(this); }
 
-void Filer::UpdateEvents() { eventer_->UpdateFiler(this); }
+void Eventer::UpdateEvents() { event_manager_->UpdateEventer(this); }

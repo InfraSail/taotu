@@ -1,15 +1,15 @@
 /**
- * @file filer.h
+ * @file eventer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "Filer" which is "single event operator".
+ * @brief Declaration of class "Eventer" which is "single event operator".
  * @date 2021-11-28
  *
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
 
-#ifndef TAOTU_TAOTU_FILER_H_
-#define TAOTU_TAOTU_FILER_H_
+#ifndef TAOTU_TAOTU_Eventer_H_
+#define TAOTU_TAOTU_Eventer_H_
 
 #include <functional>
 #include <memory>
@@ -20,20 +20,20 @@
 
 namespace taotu {
 
-class EventerManager;
+class EventManager;
 
 /**
- * @brief "Filer" is the encapsulation of "event" which is relavant to I/O
+ * @brief "Eventer" is the encapsulation of "event" which is relavant to I/O
  * multiplexing and I/O callbacks.
  *
  */
-class Filer : NonCopyableMovable {
+class Eventer : NonCopyableMovable {
  public:
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(TimePoint)> ReadCallback;
 
-  Filer(Eventer* eventer, int fd);
-  ~Filer();
+  Eventer(EventManager* event_manager, int fd);
+  ~Eventer();
 
   // Handle all events
   void Work(TimePoint tp);
@@ -58,7 +58,7 @@ class Filer : NonCopyableMovable {
   void DisableWriteEvents();
   void DisableAllEvents();
 
-  Eventer* HostEventer();
+  EventManager* HostEventer();
 
   void RemoveMyself();
 
@@ -72,7 +72,7 @@ class Filer : NonCopyableMovable {
     kWriteEvents = 0x0004,
   };
 
-  Eventer* eventer_;
+  EventManager* event_manager_;
 
   const int fd_;
 
@@ -92,4 +92,4 @@ class Filer : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_FILER_H_
+#endif  // !TAOTU_TAOTU_Eventer_H_
