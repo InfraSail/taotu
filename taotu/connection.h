@@ -18,7 +18,7 @@
 
 namespace taotu {
 
-class Eventer;
+class EventerManager;
 
 /**
  * @brief  // TODO:
