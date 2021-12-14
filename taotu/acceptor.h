@@ -44,7 +44,7 @@ class Acceptor : NonCopyableMovable {
 
   const EventManager* event_manager_;
   Socketer accept_soketer_;
-  Filer accept_eventer_;
+  Eventer accept_eventer_;
   bool is_listening_;
   NewConnectionCallback NewConnectionCallback_;
   int idle_fd_;
