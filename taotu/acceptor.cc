@@ -48,7 +48,7 @@ Acceptor::~Acceptor() {
 void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
-  accept_eventer_.DisableReadEvents();
+  accept_eventer_.EnableReadEvents();
 }
 
 void Acceptor::Accept() {
