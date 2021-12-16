@@ -11,7 +11,10 @@
 #ifndef TAOTU_TAOTU_EVENT_MANAGER_H_
 #define TAOTU_TAOTU_EVENT_MANAGER_H_
 
+#include <memory>
+
 #include "non_copyable_movable.h"
+#include "poller.h"
 
 namespace taotu {
 
@@ -25,6 +28,7 @@ class EventManager : NonCopyableMovable {
   void UpdateEventer(Eventer *eventer);
 
  private:
+  std::unique_ptr<Poller> poller;
 };
 
 }  // namespace taotu
