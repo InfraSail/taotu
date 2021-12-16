@@ -7,3 +7,18 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
+
+#ifndef TAOTU_TAOTU_REACTOR_H_
+#define TAOTU_TAOTU_REACTOR_H_
+
+namespace taotu {
+
+/**
+ * @brief  // TODO:
+ *
+ */
+class Reactor {};
+
+}  // namespace taotu
+
+#endif  // !TAOTU_TAOTU_REACTOR_H_
