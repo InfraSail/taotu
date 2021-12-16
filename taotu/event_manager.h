@@ -19,8 +19,12 @@ class Eventer;
 
 class EventManager : NonCopyableMovable {
  public:
+  EventManager();
+  ~EventManager();
   void RemoveEventer(Eventer *Socketer);
   void UpdateEventer(Eventer *Socketer);
+
+ private:
 };
 
 }  // namespace taotu
