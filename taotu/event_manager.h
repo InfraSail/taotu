@@ -21,8 +21,8 @@ class EventManager : NonCopyableMovable {
  public:
   EventManager();
   ~EventManager();
-  void RemoveEventer(Eventer *Socketer);
-  void UpdateEventer(Eventer *Socketer);
+  void RemoveEventer(Eventer *eventer);
+  void UpdateEventer(Eventer *eventer);
 
  private:
 };
