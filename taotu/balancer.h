@@ -11,7 +11,6 @@
 #ifndef TAOTU_TAOTU_BALANCER_H_
 #define TAOTU_TAOTU_BALANCER_H_
 
-#include <memory>
 #include <vector>
 
 namespace taotu {
