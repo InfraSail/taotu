@@ -10,8 +10,19 @@
 
 #include "reactor.h"
 
+#include <stdlib.h>
+
+#include "logger.h"
+
 using namespace taotu;
 
 Reactor::Reactor(SocketAddress& listen_address)
-    : acceptor_(listen_address, true) {}
+    : acceptor_(listen_address, true) {
+  if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
+    acceptor_.Listen();
+  } else {
+    LOG(logger::kError, "Fail to init the  acceptor!!!");
+    ::exit(-1);
+  }
+}
 Reactor::~Reactor() {}
