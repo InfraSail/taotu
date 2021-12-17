@@ -25,6 +25,9 @@ class EventManager : NonCopyableMovable {
  public:
   EventManager();
   ~EventManager();
+
+  void Loop();
+
   void RemoveEventer(Eventer *eventer);
   void UpdateEventer(Eventer *eventer);
 
