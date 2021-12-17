@@ -32,7 +32,7 @@ class Reactor : NonCopyableMovable {
 
  private:
   Acceptor acceptor_;
-  std::vector<EventManager*> active_events_;
+  std::vector<EventManager*> event_managers_;
   std::unique_ptr<Balancer> balancer_;
 };
 
