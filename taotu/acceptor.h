@@ -31,6 +31,8 @@ class Acceptor : NonCopyableMovable {
   Acceptor(const SocketAddress& listen_fd, bool reuse_port);
   ~Acceptor();
 
+  int Fd() const { return accept_soketer_.Fd(); }
+
   void Listen();
   bool IsListening() const { return is_listening_; }
 
