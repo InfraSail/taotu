@@ -30,6 +30,8 @@ class Reactor : NonCopyableMovable {
   Reactor(SocketAddress& listen_address, int thread_amout = 6);
   ~Reactor();
 
+  void Loop();
+
  private:
   Acceptor acceptor_;
   std::vector<EventManager*> event_managers_;
