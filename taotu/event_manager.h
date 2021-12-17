@@ -29,6 +29,8 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
+  uint32_t GetEventerAmount() { return eventer_amount_; }
+
   void RemoveEventer(Eventer *eventer);
   void UpdateEventer(Eventer *eventer);
 
@@ -36,6 +38,8 @@ class EventManager : NonCopyableMovable {
   std::unique_ptr<Poller> poller;
   std::vector<Eventer> eventers_;
   std::unique_ptr<std::thread> thread_;
+
+  uint32_t eventer_amount_;
 };
 
 }  // namespace taotu
