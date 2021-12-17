@@ -8,15 +8,16 @@
  *
  */
 
+#ifndef TAOTU_TAOTU_ACCEPTOR_H_
+#define TAOTU_TAOTU_ACCEPTOR_H_
+
 #include <functional>
 
 #include "event_manager.h"
 #include "eventer.h"
 #include "non_copyable_movable.h"
+#include "reactor.h"
 #include "socketer.h"
-
-#ifndef TAOTU_TAOTU_ACCEPTOR_H_
-#define TAOTU_TAOTU_ACCEPTOR_H_
 
 namespace taotu {
 
@@ -28,25 +29,17 @@ class Acceptor : NonCopyableMovable {
  public:
   typedef std::function<void(int, const SocketAddress&)> NewConnectionCallback;
 
-  Acceptor(EventManager* eventer, const SocketAddress& listen_fd,
-           bool reuse_port);
+  Acceptor(const SocketAddress& listen_fd, bool reuse_port);
   ~Acceptor();
-
-  void RegisterNewConnectionCallback(NewConnectionCallback cb) {
-    NewConnectionCallback_ = std::move(cb);
-  }
 
   void Listen();
   bool IsListening() const { return is_listening_; }
 
- private:
-  void Accept();
+  int Accept();
 
-  const EventManager* event_manager_;
+ private:
   Socketer accept_soketer_;
-  Eventer accept_eventer_;
   bool is_listening_;
-  NewConnectionCallback NewConnectionCallback_;
   int idle_fd_;
 };
 
