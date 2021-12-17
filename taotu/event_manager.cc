@@ -13,4 +13,8 @@
 using namespace taotu;
 
 EventManager::EventManager() {}
-EventManager::~EventManager() {}
+EventManager::~EventManager() {
+  if (thread_->joinable()) {
+    thread_->join();
+  }
+}
