@@ -28,11 +28,14 @@ class Balancer {
   Balancer(std::vector<EventManager*>& event_managers,
            int strategy = BalancerStrategy::kMinEvents);
 
+  void SetStrategy(int strategy) { strategy_ = strategy; }
+
   EventManager* PickOneEventManager();
 
  private:
   std::vector<EventManager*>& event_managers_;
   int strategy_;
+  int cursor_;
 };
 
 }  // namespace taotu
