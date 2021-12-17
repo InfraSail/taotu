@@ -16,13 +16,24 @@
 
 using namespace taotu;
 
-Reactor::Reactor(SocketAddress& listen_address)
-    : acceptor_(listen_address, true) {
+Reactor::Reactor(SocketAddress& listen_address, int thread_amout = 6)
+    : acceptor_(listen_address, true), balancer_(nullptr) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
   } else {
     LOG(logger::kError, "Fail to init the  acceptor!!!");
     ::exit(-1);
   }
+  for (int i = 0; i < thread_amout; ++i) {
+    event_managers_.push_back(new EventManager);
+  }
+  balancer_.reset(new Balancer(event_managers_));
 }
-Reactor::~Reactor() {}
+Reactor::~Reactor() {
+  int thread_amout = event_managers_.size();
+  for (int i = 0; i < thread_amout; ++i) {
+    delete event_managers_[i];
+    event_managers_[i] = nullptr;
+  }
+  event_managers_.clear();
+}

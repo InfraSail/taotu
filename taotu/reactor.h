@@ -27,12 +27,12 @@ namespace taotu {
  */
 class Reactor : NonCopyableMovable {
  public:
-  Reactor(SocketAddress& listen_address);
+  Reactor(SocketAddress& listen_address, int thread_amout = 6);
   ~Reactor();
 
  private:
   Acceptor acceptor_;
-  std::vector<EventManager> event_managers_;
+  std::vector<EventManager*> event_managers_;
   std::unique_ptr<Balancer> balancer_;
 };
 
