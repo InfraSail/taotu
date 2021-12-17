@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "acceptor.h"
+#include "balancer.h"
 #include "non_copyable_movable.h"
 #include "socket_address.h"
 
@@ -32,6 +33,7 @@ class Reactor : NonCopyableMovable {
  private:
   Acceptor acceptor_;
   std::vector<std::unique_ptr<EventManager>> event_managers_;
+  std::unique_ptr<Balancer> balancer_;
 };
 
 }  // namespace taotu
