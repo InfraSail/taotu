@@ -11,6 +11,9 @@
 #ifndef TAOTU_TAOTU_REACTOR_H_
 #define TAOTU_TAOTU_REACTOR_H_
 
+#include <memory>
+#include <vector>
+
 #include "acceptor.h"
 #include "non_copyable_movable.h"
 
@@ -27,6 +30,7 @@ class Reactor : NonCopyableMovable {
 
  private:
   Acceptor acceptor_;
+  std::vector<std::unique_ptr<EventManager>> event_managers_;
 };
 
 }  // namespace taotu
