@@ -11,3 +11,6 @@
 #include "event_manager.h"
 
 using namespace taotu;
+
+EventManager::EventManager() {}
+EventManager::~EventManager() {}
