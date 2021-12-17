@@ -11,6 +11,8 @@
 #ifndef TAOTU_TAOTU_POLLER_H_
 #define TAOTU_TAOTU_POLLER_H_
 
+#include <sys/epoll.h>
+
 namespace taotu {
 
 /**
