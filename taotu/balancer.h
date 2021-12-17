@@ -11,13 +11,30 @@
 #ifndef TAOTU_TAOTU_BALANCER_H_
 #define TAOTU_TAOTU_BALANCER_H_
 
+#include <memory>
+#include <vector>
+
 namespace taotu {
+
+class EventManager;
+
+enum BalancerStrategy { kRoundRobin = 0, kMinEvents = 1 };
 
 /**
  * @brief  // TODO:
  *
  */
-class Balancer {};
+class Balancer {
+ public:
+  Balancer(std::vector<EventManager*>& event_managers,
+           int strategy = BalancerStrategy::kMinEvents);
+
+  EventManager* PickOneEventManager();
+
+ private:
+  std::vector<EventManager*>& event_managers_;
+  int strategy_;
+};
 
 }  // namespace taotu
 

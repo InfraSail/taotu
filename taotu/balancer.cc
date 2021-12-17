@@ -11,3 +11,15 @@
 #include "balancer.h"
 
 using namespace taotu;
+
+Balancer::Balancer(std::vector<EventManager*>& event_managers,
+                   int strategy = BalancerStrategy::kMinEvents)
+    : event_managers_(event_managers), strategy_(strategy) {}
+
+EventManager* Balancer::PickOneEventManager() {
+  int evt_mng_num = event_managers_.size();
+  switch (strategy_) {
+    case BalancerStrategy::kRoundRobin:
+    case BalancerStrategy::kMinEvents:
+  }
+}
