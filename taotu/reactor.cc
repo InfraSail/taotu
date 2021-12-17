@@ -12,5 +12,6 @@
 
 using namespace taotu;
 
-Reactor::Reactor() {}
+Reactor::Reactor(SocketAddress& listen_address)
+    : acceptor_(listen_address, true) {}
 Reactor::~Reactor() {}

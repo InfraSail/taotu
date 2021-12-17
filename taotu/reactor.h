@@ -16,6 +16,7 @@
 
 #include "acceptor.h"
 #include "non_copyable_movable.h"
+#include "socket_address.h"
 
 namespace taotu {
 
@@ -25,7 +26,7 @@ namespace taotu {
  */
 class Reactor : NonCopyableMovable {
  public:
-  Reactor();
+  Reactor(SocketAddress& listen_address);
   ~Reactor();
 
  private:
