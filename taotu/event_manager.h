@@ -12,6 +12,7 @@
 #define TAOTU_TAOTU_EVENT_MANAGER_H_
 
 #include <memory>
+#include <thread>
 #include <vector>
 
 #include "non_copyable_movable.h"
@@ -34,6 +35,7 @@ class EventManager : NonCopyableMovable {
  private:
   std::unique_ptr<Poller> poller;
   std::vector<Eventer> eventers_;
+  std::unique_ptr<std::thread> thread_;
 };
 
 }  // namespace taotu
