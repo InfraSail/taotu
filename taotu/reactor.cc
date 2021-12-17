@@ -11,3 +11,6 @@
 #include "reactor.h"
 
 using namespace taotu;
+
+Reactor::Reactor() {}
+Reactor::~Reactor() {}

@@ -11,13 +11,23 @@
 #ifndef TAOTU_TAOTU_REACTOR_H_
 #define TAOTU_TAOTU_REACTOR_H_
 
+#include "acceptor.h"
+#include "non_copyable_movable.h"
+
 namespace taotu {
 
 /**
  * @brief  // TODO:
  *
  */
-class Reactor {};
+class Reactor : NonCopyableMovable {
+ public:
+  Reactor();
+  ~Reactor();
+
+ private:
+  Acceptor acceptor_;
+};
 
 }  // namespace taotu
 
