@@ -26,8 +26,6 @@ namespace taotu {
  */
 class Acceptor : NonCopyableMovable {
  public:
-  typedef std::function<void(int, const SocketAddress&)> NewConnectionCallback;
-
   Acceptor(const SocketAddress& listen_fd, bool reuse_port);
   ~Acceptor();
 
