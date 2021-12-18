@@ -26,7 +26,11 @@ class TimePoint {
   TimePoint();
   TimePoint(int64_t duration_micro_seconds, bool repeated);
   int64_t TimePointMicroSeconds() const;
-  int64_t Context() const;
+  bool ShouldRepeat() const { return context_ != 0; }
+  int64_t Context() const { return context_; }
+
+  int GetMillisecond() const;
+
   bool operator<(const TimePoint& tp) const {
     return time_point_micro_seconds_ < tp.time_point_micro_seconds_;
   }

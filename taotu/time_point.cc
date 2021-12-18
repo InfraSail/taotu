@@ -20,7 +20,10 @@ TimePoint::TimePoint(int64_t duration_micro_seconds, bool repeated)
 int64_t TimePoint::TimePointMicroSeconds() const {
   return time_point_micro_seconds_;
 }
-int64_t TimePoint::Context() const { return context_; }
+
+int TimePoint::GetMillisecond() const {
+  return static_cast<int>(time_point_micro_seconds_ / 1000);
+}
 
 int64_t TimePoint::FNow() {
   struct timeval tv;
