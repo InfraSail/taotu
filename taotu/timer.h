@@ -31,6 +31,7 @@ class Timer : NonCopyableMovable {
  public:
   typedef std::function<void()> TimeCallback;
   typedef std::multimap<TimePoint, TimeCallback> TimePoints;
+  typedef std::vector<std::pair<TimePoint, TimeCallback>> ExpiredTimeTasks;
 
   Timer(EventManager* event_manager);
   ~Timer() {}
@@ -41,7 +42,7 @@ class Timer : NonCopyableMovable {
     return time_points_.begin()->first.GetMillisecond();
   }
 
-  std::vector<TimeCallback> GetExpiredTimeTasks();
+  ExpiredTimeTasks GetExpiredTimeTasks();
 
  private:
   TimePoints time_points_;

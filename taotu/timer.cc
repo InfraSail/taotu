@@ -17,10 +17,12 @@ using namespace taotu;
 Timer::Timer(EventManager* event_manager) : event_manager_(event_manager) {}
 
 void Timer::AddTimeTask(TimePoint time_point, TimeCallback time_callback) {
+  LockGuard lock_guard(mutex_lock_);
   time_points_.insert({time_point, std::move(time_callback)});
 }
 
-std::vector<Timer::TimeCallback> Timer::GetExpiredTimeTasks() {
-  std::vector<TimeCallback> expired_time_tasks;
+Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {
+  ExpiredTimeTasks expired_time_tasks;
+  TimePoint now;
   return expired_time_tasks;
 }
