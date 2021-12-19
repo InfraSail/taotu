@@ -17,6 +17,7 @@
 
 #include "non_copyable_movable.h"
 #include "poller.h"
+#include "timer.h"
 
 namespace taotu {
 
@@ -39,6 +40,7 @@ class EventManager : NonCopyableMovable {
   std::unique_ptr<Poller> poller;
   std::vector<Eventer> eventers_;
   std::unique_ptr<std::thread> thread_;
+  std::unique_ptr<Timer> timer_;
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
