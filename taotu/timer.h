@@ -33,21 +33,18 @@ class Timer : NonCopyableMovable {
   typedef std::multimap<TimePoint, TimeCallback> TimePoints;
   typedef std::vector<std::pair<TimePoint, TimeCallback>> ExpiredTimeTasks;
 
-  Timer(EventManager* event_manager);
+  Timer() {}
   ~Timer() {}
 
   void AddTimeTask(TimePoint time_point, TimeCallback time_callback);
 
-  int GetMinTimeSet() const {
-    return time_points_.begin()->first.GetMillisecond();
-  }
+  int GetMinTimeSet() const;
 
   ExpiredTimeTasks GetExpiredTimeTasks();
 
  private:
   TimePoints time_points_;
-  MutexLock mutex_lock_;
-  EventManager* event_manager_;
+  mutable MutexLock mutex_lock_;
 };
 
 }  // namespace taotu
