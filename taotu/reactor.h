@@ -27,6 +27,8 @@ namespace taotu {
  */
 class Reactor : NonCopyableMovable {
  public:
+  typedef std::vector<EventManager*> EventManagers;
+
   Reactor(SocketAddress& listen_address, int thread_amout = 6);
   ~Reactor();
 
@@ -34,7 +36,7 @@ class Reactor : NonCopyableMovable {
 
  private:
   Acceptor acceptor_;
-  std::vector<EventManager*> event_managers_;
+  EventManagers event_managers_;
   std::unique_ptr<Balancer> balancer_;
 };
 
