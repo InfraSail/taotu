@@ -10,7 +10,6 @@
 
 #include "timer.h"
 
-#include <algorithm>
 #include <utility>
 
 using namespace taotu;
