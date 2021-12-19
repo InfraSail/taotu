@@ -40,7 +40,7 @@ class EventManager : NonCopyableMovable {
   std::unique_ptr<Poller> poller;
   std::vector<Eventer> eventers_;
   std::unique_ptr<std::thread> thread_;
-  std::unique_ptr<Timer> timer_;
+  Timer timer_;
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
