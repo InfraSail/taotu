@@ -29,6 +29,7 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
+  // For the Balancer to pick a EventManager with lowest load
   uint32_t GetEventerAmount() { return eventer_amount_; }
 
   void RemoveEventer(Eventer *eventer);
@@ -39,6 +40,7 @@ class EventManager : NonCopyableMovable {
   std::vector<Eventer> eventers_;
   std::unique_ptr<std::thread> thread_;
 
+  // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
 };
 
