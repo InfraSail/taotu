@@ -15,6 +15,7 @@
 
 namespace taotu {
 
+class Reactor;
 class EventManager;
 
 enum BalancerStrategy { kRoundRobin = 0, kMinEvents = 1 };
@@ -25,7 +26,7 @@ enum BalancerStrategy { kRoundRobin = 0, kMinEvents = 1 };
  */
 class Balancer {
  public:
-  Balancer(std::vector<EventManager*>& event_managers,
+  Balancer(Reactor::EventManagers& event_managers,
            int strategy = BalancerStrategy::kMinEvents);
 
   void SetStrategy(int strategy) { strategy_ = strategy; }
@@ -33,7 +34,7 @@ class Balancer {
   EventManager* PickOneEventManager();
 
  private:
-  std::vector<EventManager*>& event_managers_;
+  Reactor::EventManagers& event_managers_;
   int strategy_;
   int cursor_;
 };
