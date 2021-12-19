@@ -11,13 +11,43 @@
 #ifndef TAOTU_TAOTU_TIMER_H_
 #define TAOTU_TAOTU_TIMER_H_
 
+#include <functional>
+#include <map>
+#include <vector>
+
+#include "non_copyable_movable.h"
+#include "spin_lock.h"
+#include "time_point.h"
+
 namespace taotu {
+
+class EventManager;
 
 /**
  * @brief  // TODO:
  *
  */
-class Timer {};
+class Timer : NonCopyableMovable {
+ public:
+  typedef std::function<void()> TimeCallback;
+  typedef std::multimap<TimePoint, TimeCallback> TimePoints;
+
+  Timer(EventManager* event_manager);
+  ~Timer() {}
+
+  void AddTimeTask(TimePoint time_point, TimeCallback time_callback);
+
+  int GetMinTimeSet() const {
+    return time_points_.begin()->first.GetMillisecond();
+  }
+
+  std::vector<TimeCallback> GetExpiredTimeTasks();
+
+ private:
+  TimePoints time_points_;
+  MutexLock mutex_lock_;
+  EventManager* event_manager_;
+};
 
 }  // namespace taotu
 
