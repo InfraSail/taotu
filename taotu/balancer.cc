@@ -10,8 +10,6 @@
 
 #include "balancer.h"
 
-#include <algorithm>
-
 #include "event_manager.h"
 #include "logger.h"
 #include "reactor.h"
