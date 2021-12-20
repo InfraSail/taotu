@@ -26,7 +26,7 @@ namespace taotu {
 class TimePoint {
  public:
   TimePoint();
-  TimePoint(int64_t duration_micro_seconds, bool repeated);
+  TimePoint(int64_t duration_micro_seconds, bool repeated = false);
   int64_t TimePointMicroSeconds() const;
   bool ShouldRepeat() const { return context_ != 0; }
   int64_t Context() const { return context_; }
