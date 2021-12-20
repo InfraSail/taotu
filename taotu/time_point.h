@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <sys/time.h>
 
+#include <functional>
+
 namespace taotu {
 
 /**
@@ -41,11 +43,16 @@ class TimePoint {
     return time_point_micro_seconds_ == tp.time_point_micro_seconds_;
   }
 
+  void SetTaskStopingCondition(std::function<bool()> IsStoping);
+  std::function<bool()> GetTaskStopingCondition() const;
+
  private:
   static int64_t FNow();
 
   int64_t time_point_micro_seconds_;
   int64_t context_;
+
+  std::function<bool()> IsStoping_;
 };
 
 }  // namespace taotu

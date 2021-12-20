@@ -10,6 +10,8 @@
 
 #include "time_point.h"
 
+#include <utility>
+
 using namespace taotu;
 
 TimePoint::TimePoint() : time_point_micro_seconds_(FNow()), context_(0) {}
@@ -23,6 +25,18 @@ int64_t TimePoint::TimePointMicroSeconds() const {
 
 int TimePoint::GetMillisecond() const {
   return static_cast<int>(time_point_micro_seconds_ / 1000);
+}
+
+void TimePoint::SetTaskStopingCondition(std::function<bool()> IsStoping) {
+  if (0 != context_) {
+    IsStoping_ = std::move(IsStoping);
+  }
+}
+std::function<bool()> TimePoint::GetTaskStopingCondition() const {
+  if (0 != context_) {
+    return IsStoping_;
+  }
+  return []() { return false; };
 }
 
 int64_t TimePoint::FNow() {
