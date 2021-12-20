@@ -45,6 +45,8 @@ class EventManager : NonCopyableMovable {
   void RemoveEventer(Eventer *eventer);
   void UpdateEventer(Eventer *eventer);
 
+  void DoExpiredTimeTasks();
+
  private:
   std::unique_ptr<Poller> poller;
   std::vector<Eventer> eventers_;
