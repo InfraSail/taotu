@@ -36,7 +36,7 @@ std::function<bool()> TimePoint::GetTaskContinueCallback() const {
   if (0 != context_) {
     return IsContinue_;
   }
-  return []() { return false; };
+  return std::function<bool()>{};
 }
 
 int64_t TimePoint::FNow() {
