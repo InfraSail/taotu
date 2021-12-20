@@ -43,8 +43,8 @@ class TimePoint {
     return time_point_micro_seconds_ == tp.time_point_micro_seconds_;
   }
 
-  void SetTaskStopingCondition(std::function<bool()> IsStoping);
-  std::function<bool()> GetTaskStopingCondition() const;
+  void SetTaskContinueCallback(std::function<bool()> IsContinue);
+  std::function<bool()> GetTaskContinueCallback() const;
 
  private:
   static int64_t FNow();
@@ -52,7 +52,7 @@ class TimePoint {
   int64_t time_point_micro_seconds_;
   int64_t context_;
 
-  std::function<bool()> IsStoping_;
+  std::function<bool()> IsContinue_;
 };
 
 }  // namespace taotu

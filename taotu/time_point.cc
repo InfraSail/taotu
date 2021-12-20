@@ -27,14 +27,14 @@ int TimePoint::GetMillisecond() const {
   return static_cast<int>(time_point_micro_seconds_ / 1000);
 }
 
-void TimePoint::SetTaskStopingCondition(std::function<bool()> IsStoping) {
+void TimePoint::SetTaskContinueCallback(std::function<bool()> IsContinue) {
   if (0 != context_) {
-    IsStoping_ = std::move(IsStoping);
+    IsContinue_ = std::move(IsContinue);
   }
 }
-std::function<bool()> TimePoint::GetTaskStopingCondition() const {
+std::function<bool()> TimePoint::GetTaskContinueCallback() const {
   if (0 != context_) {
-    return IsStoping_;
+    return IsContinue_;
   }
   return []() { return false; };
 }
