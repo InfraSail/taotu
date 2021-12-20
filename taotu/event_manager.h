@@ -11,12 +11,16 @@
 #ifndef TAOTU_TAOTU_EVENT_MANAGER_H_
 #define TAOTU_TAOTU_EVENT_MANAGER_H_
 
+#include <stdint.h>
+
+#include <functional>
 #include <memory>
 #include <thread>
 #include <vector>
 
 #include "non_copyable_movable.h"
 #include "poller.h"
+#include "time_point.h"
 #include "timer.h"
 
 namespace taotu {
@@ -32,6 +36,11 @@ class EventManager : NonCopyableMovable {
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t GetEventerAmount() { return eventer_amount_; }
+
+  void RunAt(TimePoint time_point, Timer::TimeCallback TimeTask);
+  void RunAfter(int64_t delay_seconds, Timer::TimeCallback TimeTask);
+  void RunEveryUntil(int64_t interval_seconds, Timer::TimeCallback TimeTask,
+                     std::function<bool()> IsContinue);
 
   void RemoveEventer(Eventer *eventer);
   void UpdateEventer(Eventer *eventer);
