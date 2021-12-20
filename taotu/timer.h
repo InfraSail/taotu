@@ -36,7 +36,7 @@ class Timer : NonCopyableMovable {
   Timer() {}
   ~Timer() {}
 
-  void AddTimeTask(TimePoint time_point, TimeCallback time_callback);
+  void AddTimeTask(TimePoint time_point, TimeCallback TimeTask);
 
   int GetMinTimeSet() const;
 
