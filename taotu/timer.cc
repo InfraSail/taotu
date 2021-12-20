@@ -14,9 +14,9 @@
 
 using namespace taotu;
 
-void Timer::AddTimeTask(TimePoint time_point, TimeCallback time_callback) {
+void Timer::AddTimeTask(TimePoint time_point, TimeCallback TimeTask) {
   LockGuard lock_guard(mutex_lock_);
-  time_points_.insert({time_point, std::move(time_callback)});
+  time_points_.insert({time_point, std::move(TimeTask)});
 }
 
 int Timer::GetMinTimeSet() const {
