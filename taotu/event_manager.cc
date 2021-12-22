@@ -25,7 +25,7 @@ void EventManager::Loop() {  // TODO:
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
-  timer_.AddTimeTask(time_point, std::move(TimeTask));
+  timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
 void EventManager::RunAfter(int64_t delay_seconds,
                             Timer::TimeCallback TimeTask) {
