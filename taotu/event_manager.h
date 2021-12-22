@@ -43,8 +43,8 @@ class EventManager : NonCopyableMovable {
       int64_t interval_seconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
 
-  void RemoveEventer(Eventer *eventer);
   void UpdateEventer(Eventer *eventer);
+  void RemoveEventer(Eventer *eventer);
 
   void DoExpiredTimeTasks();
 

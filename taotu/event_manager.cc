@@ -41,9 +41,12 @@ void EventManager::RunEveryUntil(
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
 
+void EventManager::UpdateEventer(Eventer *eventer) {}
+void EventManager::RemoveEventer(Eventer *eventer) {}
+
 void EventManager::DoExpiredTimeTasks() {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();
-  for (auto& expired_time_task : expired_time_tasks) {
+  for (auto &expired_time_task : expired_time_tasks) {
     auto ExpiredTimeCallback = expired_time_task.second;
     if (ExpiredTimeCallback) {
       ExpiredTimeCallback();
