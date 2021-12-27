@@ -14,13 +14,13 @@
 #include <functional>
 #include <memory>
 
-#include "event_manager.h"
 #include "non_copyable_movable.h"
+#include "poller.h"
 #include "time_point.h"
 
 namespace taotu {
 
-class EventManager;
+class Poller;
 
 /**
  * @brief "Eventer" is the encapsulation of "event" which is relavant to I/O
@@ -32,7 +32,7 @@ class Eventer : NonCopyableMovable {
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(TimePoint)> ReadCallback;
 
-  Eventer(EventManager* event_manager, int fd);
+  Eventer(Poller* poller, int fd);
   ~Eventer();
 
   // Handle all events
@@ -58,7 +58,7 @@ class Eventer : NonCopyableMovable {
   void DisableWriteEvents();
   void DisableAllEvents();
 
-  EventManager* HostEventer();
+  Poller* HostPoller();
 
   void RemoveMyself();
 
@@ -72,7 +72,7 @@ class Eventer : NonCopyableMovable {
     kWriteEvents = 0x0004,
   };
 
-  EventManager* event_manager_;
+  Poller* poller_;
 
   const int fd_;
 

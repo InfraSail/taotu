@@ -16,8 +16,8 @@
 
 using namespace taotu;
 
-Eventer::Eventer(EventManager* event_manager, int fd)
-    : event_manager_(event_manager),
+Eventer::Eventer(Poller* poller, int fd)
+    : poller_(poller),
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
@@ -116,8 +116,12 @@ void Eventer::DisableAllEvents() {
   UpdateEvents();
 }
 
-EventManager* Eventer::HostEventer() { return event_manager_; }
+Poller* Eventer::HostPoller() { return poller_; }
 
-void Eventer::RemoveMyself() { event_manager_->RemoveEventer(this); }
+void Eventer::RemoveMyself() {
+  // poller_->RemoveEventer(this);
+}
 
-void Eventer::UpdateEvents() { event_manager_->UpdateEventer(this); }
+void Eventer::UpdateEvents() {
+  // poller_->UpdateEventer(this);
+}
