@@ -26,7 +26,7 @@ namespace taotu {
  */
 class Acceptor : NonCopyableMovable {
  public:
-  Acceptor(const SocketAddress& listen_fd, bool reuse_port);
+  Acceptor(const NetAddress& listen_fd, bool reuse_port);
   ~Acceptor();
 
   int Fd() const { return accept_soketer_.Fd(); }

@@ -24,7 +24,7 @@
 
 using namespace taotu;
 
-Acceptor::Acceptor(const SocketAddress& listen_address, bool reuse_port)
+Acceptor::Acceptor(const NetAddress& listen_address, bool reuse_port)
     : accept_soketer_(::socket(listen_address.GetFamily(),
                                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                                IPPROTO_TCP)),
