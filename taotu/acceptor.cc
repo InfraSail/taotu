@@ -45,7 +45,7 @@ void Acceptor::Listen() {
 }
 
 int Acceptor::Accept() {
-  SocketAddress peer_address;
+  NetAddress peer_address;
   int conn_fd = accept_soketer_.Accept(&peer_address);
   if (conn_fd >= 0) {
     return conn_fd;
