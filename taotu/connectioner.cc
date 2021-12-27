@@ -13,8 +13,8 @@
 using namespace taotu;
 
 Connectioner::Connectioner(Poller* poller, int socket_fd,
-                           const SocketAddress& local_address,
-                           const SocketAddress& peer_address)
+                           const NetAddress& local_address,
+                           const NetAddress& peer_address)
     : socketer_(socket_fd),
       eventer_(poller, socket_fd),
       local_address_(local_address),
