@@ -21,7 +21,8 @@ EventManager::~EventManager() {
   }
 }
 
-void EventManager::Loop() {  // TODO:
+void EventManager::Loop() {
+  // TODO:
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
