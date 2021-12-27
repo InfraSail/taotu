@@ -1,5 +1,5 @@
 /**
- * @file socket_address.h
+ * @file net_address.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-12-12
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_SOCKET_ADDRESS_H_
-#define TAOTU_TAOTU_SOCKET_ADDRESS_H_
+#ifndef TAOTU_TAOTU_NET_ADDRESS_H_
+#define TAOTU_TAOTU_NET_ADDRESS_H_
 
 #include <netinet/in.h>
 #include <stdint.h>
@@ -18,24 +18,24 @@
 
 namespace taotu {
 
-class SocketAddress {
+class NetAddress {
  public:
-  explicit SocketAddress(uint16_t port = 0, bool loop_back = false,
-                         bool use_ipv6 = false);
-  SocketAddress(std::string ip, uint16_t port, bool use_ipv6 = false);
-  explicit SocketAddress(const struct sockaddr_in& socket_address)
+  explicit NetAddress(uint16_t port = 0, bool loop_back = false,
+                      bool use_ipv6 = false);
+  NetAddress(std::string ip, uint16_t port, bool use_ipv6 = false);
+  explicit NetAddress(const struct sockaddr_in& socket_address)
       : socket_address_(socket_address) {}
-  explicit SocketAddress(const struct sockaddr_in6& socket_address6)
+  explicit NetAddress(const struct sockaddr_in6& socket_address6)
       : socket_address6_(socket_address6) {}
 
   sa_family_t GetFamily() const { return socket_address_.sin_family; }
   std::string GetIp() const;
   uint16_t GetPort() const;
 
-  const struct sockaddr* GetSocketAddress() const {
+  const struct sockaddr* GetNetAddress() const {
     return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
   };
-  void SetSocketAddress6(const struct sockaddr_in6& socket_address6) {
+  void SetNetAddress6(const struct sockaddr_in6& socket_address6) {
     socket_address6_ = socket_address6;
   }
 
@@ -48,4 +48,4 @@ class SocketAddress {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_SOCKET_ADDRESS_H_
+#endif  // !TAOTU_TAOTU_NET_ADDRESS_H_

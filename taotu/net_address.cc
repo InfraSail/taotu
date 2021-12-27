@@ -1,5 +1,5 @@
 /**
- * @file socket_address.cc
+ * @file net_address.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-12-12
@@ -8,7 +8,7 @@
  *
  */
 
-#include "socket_address.h"
+#include "net_address.h"
 
 #include <arpa/inet.h>
 #include <string.h>
@@ -17,8 +17,8 @@
 
 using namespace taotu;
 
-SocketAddress::SocketAddress(uint16_t port = 0, bool loop_back = false,
-                             bool use_ipv6 = false) {
+NetAddress::NetAddress(uint16_t port = 0, bool loop_back = false,
+                       bool use_ipv6 = false) {
   if (use_ipv6) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
@@ -32,8 +32,7 @@ SocketAddress::SocketAddress(uint16_t port = 0, bool loop_back = false,
     socket_address_.sin_port = ::htons(port);
   }
 }
-SocketAddress::SocketAddress(std::string ip, uint16_t port,
-                             bool use_ipv6 = false) {
+NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6 = false) {
   if (use_ipv6 || ::strchr(ip.c_str(), ':')) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
@@ -53,7 +52,7 @@ SocketAddress::SocketAddress(std::string ip, uint16_t port,
   }
 }
 
-std::string SocketAddress::GetIp() const {
+std::string NetAddress::GetIp() const {
   char ip[64]{""};
   if (socket_address_.sin_family == AF_INET6) {
     ::inet_ntop(AF_INET6, &socket_address6_, ip, sizeof(ip));
@@ -62,6 +61,6 @@ std::string SocketAddress::GetIp() const {
   }
   return std::string{ip};
 }
-uint16_t SocketAddress::GetPort() const {
+uint16_t NetAddress::GetPort() const {
   return ::htons(socket_address_.sin_port);
 }
