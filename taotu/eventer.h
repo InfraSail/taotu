@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_Eventer_H_
-#define TAOTU_TAOTU_Eventer_H_
+#ifndef TAOTU_TAOTU_EVENTER_H_
+#define TAOTU_TAOTU_EVENTER_H_
 
 #include <functional>
 #include <memory>
@@ -92,4 +92,4 @@ class Eventer : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_Eventer_H_
+#endif  // !TAOTU_TAOTU_EVENTER_H_
