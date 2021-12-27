@@ -34,6 +34,8 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
+  Poller *GetPoller() const { return poller_.get(); }
+
   // For the Balancer to pick a EventManager with lowest load
   uint32_t GetEventerAmount() { return eventer_amount_; }
 
@@ -49,7 +51,7 @@ class EventManager : NonCopyableMovable {
   void DoExpiredTimeTasks();
 
  private:
-  std::unique_ptr<Poller> poller;
+  std::unique_ptr<Poller> poller_;
   std::vector<Eventer> eventers_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
