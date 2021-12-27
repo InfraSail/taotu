@@ -16,8 +16,8 @@
 
 #include "acceptor.h"
 #include "balancer.h"
+#include "net_address.h"
 #include "non_copyable_movable.h"
-#include "socket_address.h"
 
 namespace taotu {
 
@@ -29,7 +29,7 @@ class Reactor : NonCopyableMovable {
  public:
   typedef std::vector<EventManager*> EventManagers;
 
-  Reactor(SocketAddress& listen_address, int thread_amout = 6);
+  Reactor(NetAddress& listen_address, int thread_amout = 6);
   ~Reactor();
 
   void Loop();
