@@ -11,3 +11,13 @@
 #include "connectioner.h"
 
 using namespace taotu;
+
+Connectioner::Connectioner(Poller* poller, int socket_fd,
+                           const SocketAddress& local_address,
+                           const SocketAddress& peer_address)
+    : socketer_(socket_fd),
+      eventer_(poller, socket_fd),
+      local_address_(local_address),
+      peer_address_(peer_address) {
+  socketer_.SetKeepAlive(true);
+}

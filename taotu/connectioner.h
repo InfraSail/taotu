@@ -12,10 +12,12 @@
 #define TAOTU_TAOTU_CONNECTIONER_H_
 
 #include "eventer.h"
+#include "net_address.h"
 #include "socketer.h"
 
 namespace taotu {
 
+class Poller;
 class Socketer;
 class Eventer;
 
@@ -25,9 +27,14 @@ class Eventer;
  */
 class Connectioner {
  public:
+  Connectioner(Poller* poller, int socket_fd, const NetAddress& local_address,
+               const NetAddress& peer_address);
+
  private:
   Socketer socketer_;
   Eventer eventer_;
+  NetAddress local_address_;
+  NetAddress peer_address_;
 };
 
 }  // namespace taotu
