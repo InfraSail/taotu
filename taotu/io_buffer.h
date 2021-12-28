@@ -17,7 +17,10 @@ namespace taotu {
  * @brief  // TODO:
  *
  */
-class IoBuffer {};
+class IoBuffer {
+ public:
+ private:
+};
 
 }  // namespace taotu
 
