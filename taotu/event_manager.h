@@ -25,7 +25,7 @@
 
 namespace taotu {
 
-class Eventer;
+class Connectioner;
 
 class EventManager : NonCopyableMovable {
  public:
@@ -45,14 +45,14 @@ class EventManager : NonCopyableMovable {
       int64_t interval_seconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
 
-  void UpdateEventer(Eventer *eventer);
-  void RemoveEventer(Eventer *eventer);
+  // void UpdateEventer(Eventer *eventer);
+  // void RemoveEventer(Eventer *eventer);
 
   void DoExpiredTimeTasks();
 
  private:
   std::unique_ptr<Poller> poller_;
-  std::vector<Eventer> eventers_;
+  std::vector<Connectioner> eventers_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
 
