@@ -79,7 +79,7 @@ int Socketer::Accept(NetAddress* peer_address) {
         break;
     }
   } else {
-    peer_address->SetSocketAddress6(socket_address6);
+    peer_address->SetNetAddress6(socket_address6);
   }
   return conn_fd;
 }
