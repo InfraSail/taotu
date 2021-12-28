@@ -1,5 +1,5 @@
 /**
- * @file configurer.h
+ * @file configurations.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief Configurations of "taotu".
  * @date 2021-11-25
