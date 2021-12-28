@@ -13,6 +13,7 @@
 
 #include "eventer.h"
 #include "net_address.h"
+#include "non_copyable_movable.h"
 #include "socketer.h"
 
 namespace taotu {
@@ -25,7 +26,7 @@ class Eventer;
  * @brief  // TODO:
  *
  */
-class Connectioner {
+class Connectioner : NonCopyableMovable {
  public:
   Connectioner(Poller* poller, int socket_fd, const NetAddress& local_address,
                const NetAddress& peer_address);
