@@ -73,28 +73,6 @@ void Eventer::Work(TimePoint tp) {
   is_handling_ = false;
 }
 
-void Eventer::RegisterReadCallBack(ReadCallback cb) {
-  ReadCallback_ = std::move(cb);
-}
-void Eventer::RegisterWriteCallback(NormalCallback cb) {
-  WriteCallback_ = std::move(cb);
-}
-void Eventer::RegisterCloseCallback(NormalCallback cb) {
-  CloseCallback_ = std::move(cb);
-}
-void Eventer::RegisterErrorCallback(NormalCallback cb) {
-  ErrorCallback_ = std::move(cb);
-}
-
-int Eventer::Fd() const { return fd_; }
-int Eventer::Events() const { return out_events_; }
-
-void Eventer::ReceiveEvents(int in_events) { in_events_ = in_events; }
-
-bool Eventer::HasNoEvent() const { return out_events_ == kNoEvent; }
-bool Eventer::HasReadEvents() const { return out_events_ & kReadEvents; }
-bool Eventer::HasWriteEvents() const { return out_events_ & kWriteEvents; }
-
 void Eventer::EnableReadEvents() {
   out_events_ |= kReadEvents;
   UpdateEvents();
