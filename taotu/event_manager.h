@@ -52,7 +52,7 @@ class EventManager : NonCopyableMovable {
 
  private:
   std::unique_ptr<Poller> poller_;
-  std::vector<Connectioner> eventers_;
+  std::vector<std::unique_ptr<Connectioner>> eventers_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
 
