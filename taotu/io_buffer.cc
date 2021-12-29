@@ -10,7 +10,8 @@
 
 #include "io_buffer.h"
 
-#include <string.h>
+#include <errno.h>
+#include <sys/uio.h>
 
 #include <utility>
 
@@ -110,7 +111,32 @@ void IoBuffer::ShrinkWritableSpace(size_t len) {
   Swap(buffer);
 }
 
-ssize_t ReadFd(int fd, int* tmp_errno) {}
+ssize_t IoBuffer::ReadFd(int fd, int* tmp_errno) {
+  char extra_buffer[64 * 1024];  // 64k bytes
+  struct iovec discrete_buffers[2];
+  int writable_bytes = GetWritableBytes();
+  discrete_buffers[0].iov_base =
+      static_cast<void*>(const_cast<char*>(GetWritablePosition()));
+  discrete_buffers[0].iov_len = writable_bytes;
+  discrete_buffers[1].iov_base = static_cast<void*>(extra_buffer);
+  discrete_buffers[1].iov_len = 64 * 1024;
+  // Use extra buffer to receive data if the writable space is not enough
+  const int iov_seq = writable_bytes < 64 * 1024 ? 2 : 1;
+  ssize_t n =
+      ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
+  if (n < 0) {
+    *tmp_errno = errno;
+    LOG(logger::kWarn,
+        "Discrete reading in Fd(" + std::to_string(fd) + ") failed!");
+  } else if (static_cast<size_t>(n) <= writable_bytes) {
+    writing_index_ += n;
+  } else {
+    writing_index_ = buffer_.size();
+    Append(static_cast<const void*>(extra_buffer),
+           static_cast<size_t>(n - writable_bytes));
+  }
+  return n;
+}
 
 void IoBuffer::ReserveWritableSpace(size_t len) {
   if (GetWritableBytes() + GetReservedBytes() - kReservedCapacity < len) {

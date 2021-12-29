@@ -12,6 +12,7 @@
 #define TAOTU_TAOTU_IO_BUFFER_H_
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <string>
 #include <vector>
