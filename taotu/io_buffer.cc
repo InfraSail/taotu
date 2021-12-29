@@ -78,4 +78,23 @@ void IoBuffer::Append(const void* str, size_t len) {
   RefreshW(len);
 }
 
-void IoBuffer::EnsureWritableBytes(size_t len) {}
+void IoBuffer::EnsureWritableBytes(size_t len) {
+  if (len > GetWritableBytes()) {
+    ReserveBytes(len);
+  }
+}
+
+void IoBuffer::ReserveBytes(size_t len) {
+  if (GetWritableBytes() + GetReservedBytes() - kReservedCapacity < len) {
+    buffer_.resize(writing_index_ + len);
+  } else {
+    // Move forward to-read contents if too much space are reserved in the
+    // front of the buffer
+    // Then there will be enough writable space without dilatating
+    ::memcpy(static_cast<void*>(GetBufferBegin() + kReservedCapacity),
+             static_cast<const void*>(GetBufferBegin() + reading_index_),
+             GetReadableBytes());
+    reading_index_ = kReservedCapacity;
+    writing_index_ = reading_index_ + GetReadableBytes();
+  }
+}

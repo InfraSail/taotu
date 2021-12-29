@@ -69,6 +69,8 @@ class IoBuffer {
   char* GetBufferBegin() { return &*buffer_.begin(); }
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
+  void ReserveBytes(size_t len);
+
   std::vector<char> buffer_;
   size_t reading_index_;
   size_t writing_index_;
