@@ -96,8 +96,8 @@ void IoBuffer::EnsureWritableSpace(size_t len) {
 }
 
 void IoBuffer::ShrinkWritableSpace(size_t len) {
-  // We do not use the function of vector<> -- shrink_to_fit() because it is a
-  // non-binding request
+  // We do not use the member function of vector<> -- shrink_to_fit() because it
+  // is a non-binding request
   if (len <= 32) {  // Reserving too little writable space is meaningless
     LOG(logger::kWarn,
         "Shrinking buffer to " + std::to_string(len) + "bytes failed!");
