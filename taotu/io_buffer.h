@@ -40,6 +40,9 @@ class IoBuffer {
   size_t GetWritableBytes() const { return buffer_.size() - writing_index_; }
   size_t GetReservedBytes() const { return reading_index_; }
 
+  size_t GetBufferSize() const { return buffer_.size(); }
+  size_t GetBufferCapacity() const { return buffer_.capacity(); }
+
   const char* GetReadablePosition() const {
     return GetBufferBegin() + reading_index_;
   }
@@ -59,6 +62,8 @@ class IoBuffer {
 
   std::string RetrieveAString(size_t len);
   std::string RetrieveAll() { return RetrieveAString(GetReadableBytes()); }
+
+  void SetHeadContent(const void* str, size_t len);
 
   void Append(const void* str, size_t len);
 

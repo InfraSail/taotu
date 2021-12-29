@@ -72,6 +72,16 @@ std::string IoBuffer::RetrieveAString(size_t len) {
   return ret;
 }
 
+void IoBuffer::SetHeadContent(const void* str, size_t len) {
+  if (len > GetReservedBytes()) {
+    LOG(logger::kError, "Reserved head space is not enough!!!");
+    return;
+  }
+  reading_index_ -= len;
+  ::memcpy(static_cast<void*>(const_cast<char*>(GetReadablePosition())), str,
+           len);
+}
+
 void IoBuffer::Append(const void* str, size_t len) {
   EnsureWritableBytes(len);
   ::memcpy(static_cast<void*>(const_cast<char*>(GetWritablePosition())), str,
@@ -88,9 +98,9 @@ void IoBuffer::EnsureWritableBytes(size_t len) {
 void IoBuffer::ShrinkWritableBytes(
     size_t len) {  // We do not use the function of vector<> -- shrink_to_fit()
                    // because it is a non-binding request
-  if (len < 16) {
+  if (len < 16) {  // Reserving too little writable space is meaningless
     LOG(logger::kWarn,
-        "Shrinking buffer to " + std::to_string(len) + "bytes failed!!!");
+        "Shrinking buffer to " + std::to_string(len) + "bytes failed!");
     return;
   }
   IoBuffer buffer;
