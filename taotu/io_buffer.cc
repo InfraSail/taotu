@@ -14,6 +14,8 @@
 
 #include <algorithm>
 
+#include "logger.h"
+
 using namespace taotu;
 
 IoBuffer::IoBuffer(size_t initial_capacity = kInitialCapacity)
@@ -46,4 +48,27 @@ const char* IoBuffer::FindEof() const {
 const char* IoBuffer::FindEof(const char* start_position) const {
   return static_cast<const char*>(
       ::memchr(start_position, '\n', GetWritablePosition() - start_position));
+}
+
+void IoBuffer::RefreshRW() {
+  reading_index_ = kReservedCapacity;
+  writing_index_ = kReservedCapacity;
+}
+
+void IoBuffer::Refresh(size_t len) {
+  if (len < GetReadableBytes()) {
+    reading_index_ += len;
+  } else {
+    RefreshRW();
+  }
+}
+
+std::string IoBuffer::ReadAString(size_t len) {
+  if (len > GetReadableBytes()) {
+    LOG(logger::kError, "Read too many bytes from the buffer!!!");
+    return std::string{};
+  }
+  std::string ret(GetReadablePosition(), len);
+  Refresh(len);
+  return ret;
 }

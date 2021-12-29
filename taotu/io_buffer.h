@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 
+#include <string>
 #include <vector>
 
 namespace taotu {
@@ -51,6 +52,12 @@ class IoBuffer {
 
   const char* FindEof() const;
   const char* FindEof(const char* start_position) const;
+
+  void RefreshRW();
+
+  void Refresh(size_t len);
+
+  std::string ReadAString(size_t len);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
