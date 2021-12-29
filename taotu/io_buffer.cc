@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-#include <algorithm>
+#include <utility>
 
 #include "logger.h"
 
@@ -54,7 +54,6 @@ void IoBuffer::RefreshRW() {
   reading_index_ = kReservedCapacity;
   writing_index_ = kReservedCapacity;
 }
-
 void IoBuffer::Refresh(size_t len) {
   if (len < GetReadableBytes()) {
     reading_index_ += len;
@@ -63,7 +62,7 @@ void IoBuffer::Refresh(size_t len) {
   }
 }
 
-std::string IoBuffer::ReadAString(size_t len) {
+std::string IoBuffer::RetrieveAString(size_t len) {
   if (len > GetReadableBytes()) {
     LOG(logger::kError, "Read too many bytes from the buffer!!!");
     return std::string{};
@@ -72,3 +71,11 @@ std::string IoBuffer::ReadAString(size_t len) {
   Refresh(len);
   return ret;
 }
+
+void IoBuffer::Append(const void* str, size_t len) {
+  EnsureWritableBytes(len);
+  ::memcpy(static_cast<void*>(GetWritablePosition()), str, len);
+  RefreshW(len);
+}
+
+void IoBuffer::EnsureWritableBytes(size_t len) {}

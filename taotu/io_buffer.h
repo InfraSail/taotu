@@ -43,6 +43,7 @@ class IoBuffer {
   const char* GetReadablePosition() const {
     return GetBufferBegin() + reading_index_;
   }
+  char* GetWritablePosition() { return GetBufferBegin() + writing_index_; }
   const char* GetWritablePosition() const {
     return GetBufferBegin() + writing_index_;
   }
@@ -54,12 +55,18 @@ class IoBuffer {
   const char* FindEof(const char* start_position) const;
 
   void RefreshRW();
-
+  void RefreshW(size_t len) { writing_index_ += len; }
   void Refresh(size_t len);
 
-  std::string ReadAString(size_t len);
+  std::string RetrieveAString(size_t len);
+  std::string RetrieveAll() { return RetrieveAString(GetReadableBytes()); }
+
+  void Append(const void* str, size_t len);
+
+  void EnsureWritableBytes(size_t len);
 
  private:
+  char* GetBufferBegin() { return &*buffer_.begin(); }
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
   std::vector<char> buffer_;
