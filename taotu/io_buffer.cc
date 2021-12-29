@@ -10,4 +10,40 @@
 
 #include "io_buffer.h"
 
+#include <string.h>
+
+#include <algorithm>
+
 using namespace taotu;
+
+IoBuffer::IoBuffer(size_t initial_capacity = kInitialCapacity)
+    : buffer_(kReservedCapacity + initial_capacity),
+      reading_index_(kReservedCapacity),
+      writing_index_(kReservedCapacity) {}
+
+void IoBuffer::Swap(IoBuffer& io_buffer) {
+  buffer_.swap(io_buffer.buffer_);
+  std::swap(reading_index_, io_buffer.reading_index_);
+  std::swap(writing_index_, io_buffer.writing_index_);
+}
+
+const char* IoBuffer::FindCrlf() const {
+  return static_cast<const char*>(::memmem(GetReadablePosition(),
+                                           GetReadableBytes(), kCrlf,
+                                           static_cast<size_t>(2)));
+}
+
+const char* IoBuffer::FindCrlf(const char* start_position) const {
+  return static_cast<const char*>(
+      ::memmem(start_position, GetWritablePosition() - start_position, kCrlf,
+               static_cast<size_t>(2)));
+}
+
+const char* IoBuffer::FindEof() const {
+  return static_cast<const char*>(
+      ::memchr(GetReadablePosition(), '\n', GetReadableBytes()));
+}
+const char* IoBuffer::FindEof(const char* start_position) const {
+  return static_cast<const char*>(
+      ::memchr(start_position, '\n', GetWritablePosition() - start_position));
+}
