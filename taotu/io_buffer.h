@@ -67,14 +67,16 @@ class IoBuffer {
 
   void Append(const void* str, size_t len);
 
-  void EnsureWritableBytes(size_t len);
+  void EnsureWritableSpace(size_t len);
 
-  void ShrinkWritableBytes(size_t len);
+  void ShrinkWritableSpace(size_t len);
+
+  ssize_t ReadFd(int fd, int* tmp_errno);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
-  void ReserveBytes(size_t len);
+  void ReserveWritableSpace(size_t len);
 
   std::vector<char> buffer_;
   size_t reading_index_;

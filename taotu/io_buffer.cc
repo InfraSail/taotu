@@ -83,34 +83,36 @@ void IoBuffer::SetHeadContent(const void* str, size_t len) {
 }
 
 void IoBuffer::Append(const void* str, size_t len) {
-  EnsureWritableBytes(len);
+  EnsureWritableSpace(len);
   ::memcpy(static_cast<void*>(const_cast<char*>(GetWritablePosition())), str,
            len);
   RefreshW(len);
 }
 
-void IoBuffer::EnsureWritableBytes(size_t len) {
+void IoBuffer::EnsureWritableSpace(size_t len) {
   if (len > GetWritableBytes()) {
-    ReserveBytes(len);
+    ReserveWritableSpace(len);
   }
 }
 
-void IoBuffer::ShrinkWritableBytes(
-    size_t len) {  // We do not use the function of vector<> -- shrink_to_fit()
-                   // because it is a non-binding request
-  if (len < 16) {  // Reserving too little writable space is meaningless
+void IoBuffer::ShrinkWritableSpace(size_t len) {
+  // We do not use the function of vector<> -- shrink_to_fit() because it is a
+  // non-binding request
+  if (len <= 32) {  // Reserving too little writable space is meaningless
     LOG(logger::kWarn,
         "Shrinking buffer to " + std::to_string(len) + "bytes failed!");
     return;
   }
   IoBuffer buffer;
-  buffer.EnsureWritableBytes(kReservedCapacity + GetReadableBytes() + len);
+  buffer.EnsureWritableSpace(kReservedCapacity + GetReadableBytes() + len);
   buffer.Append(static_cast<const void*>(GetReadablePosition()),
                 GetReadableBytes());
   Swap(buffer);
 }
 
-void IoBuffer::ReserveBytes(size_t len) {
+ssize_t ReadFd(int fd, int* tmp_errno) {}
+
+void IoBuffer::ReserveWritableSpace(size_t len) {
   if (GetWritableBytes() + GetReservedBytes() - kReservedCapacity < len) {
     buffer_.resize(writing_index_ + len);
   } else {
