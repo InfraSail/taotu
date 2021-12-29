@@ -58,7 +58,7 @@ void IoBuffer::RefreshRW() {
 void IoBuffer::Refresh(size_t len) {
   if (len < GetReadableBytes()) {
     reading_index_ += len;
-  } else {
+  } else {  // len == GetReadableBytes()
     RefreshRW();
   }
 }
