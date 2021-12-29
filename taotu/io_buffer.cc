@@ -85,13 +85,28 @@ void IoBuffer::EnsureWritableBytes(size_t len) {
   }
 }
 
+void IoBuffer::ShrinkWritableBytes(
+    size_t len) {  // We do not use the function of vector<> -- shrink_to_fit()
+                   // because it is a non-binding request
+  if (len < 16) {
+    LOG(logger::kWarn,
+        "Shrinking buffer to " + std::to_string(len) + "bytes failed!!!");
+    return;
+  }
+  IoBuffer buffer;
+  buffer.EnsureWritableBytes(kReservedCapacity + GetReadableBytes() + len);
+  buffer.Append(static_cast<const void*>(GetReadablePosition()),
+                GetReadableBytes());
+  Swap(buffer);
+}
+
 void IoBuffer::ReserveBytes(size_t len) {
   if (GetWritableBytes() + GetReservedBytes() - kReservedCapacity < len) {
     buffer_.resize(writing_index_ + len);
   } else {
     // Move forward to-read contents if too much space are reserved in the
     // front of the buffer
-    // Then there will be enough writable space without dilatating
+    // Then the writable space will be enough without dilatating
     ::memcpy(static_cast<void*>(
                  const_cast<char*>(GetBufferBegin() + kReservedCapacity)),
              static_cast<const void*>(GetBufferBegin() + reading_index_),

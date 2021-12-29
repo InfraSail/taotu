@@ -64,6 +64,8 @@ class IoBuffer {
 
   void EnsureWritableBytes(size_t len);
 
+  void ShrinkWritableBytes(size_t len);
+
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
