@@ -74,7 +74,8 @@ std::string IoBuffer::RetrieveAString(size_t len) {
 
 void IoBuffer::Append(const void* str, size_t len) {
   EnsureWritableBytes(len);
-  ::memcpy(static_cast<void*>(GetWritablePosition()), str, len);
+  ::memcpy(static_cast<void*>(const_cast<char*>(GetWritablePosition())), str,
+           len);
   RefreshW(len);
 }
 
@@ -91,7 +92,8 @@ void IoBuffer::ReserveBytes(size_t len) {
     // Move forward to-read contents if too much space are reserved in the
     // front of the buffer
     // Then there will be enough writable space without dilatating
-    ::memcpy(static_cast<void*>(GetBufferBegin() + kReservedCapacity),
+    ::memcpy(static_cast<void*>(
+                 const_cast<char*>(GetBufferBegin() + kReservedCapacity)),
              static_cast<const void*>(GetBufferBegin() + reading_index_),
              GetReadableBytes());
     reading_index_ = kReservedCapacity;

@@ -43,7 +43,6 @@ class IoBuffer {
   const char* GetReadablePosition() const {
     return GetBufferBegin() + reading_index_;
   }
-  char* GetWritablePosition() { return GetBufferBegin() + writing_index_; }
   const char* GetWritablePosition() const {
     return GetBufferBegin() + writing_index_;
   }
@@ -66,7 +65,6 @@ class IoBuffer {
   void EnsureWritableBytes(size_t len);
 
  private:
-  char* GetBufferBegin() { return &*buffer_.begin(); }
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
   void ReserveBytes(size_t len);
