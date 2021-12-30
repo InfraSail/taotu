@@ -74,7 +74,7 @@ class IoBuffer {
   }
   template <class Int>
   Int RetrieveInt() {
-    Int result = GetHeadContentInt<Int>();
+    Int result = GetReadableInt<Int>();
     RefreshInt<Int>();
     return result;
   }
@@ -105,7 +105,7 @@ class IoBuffer {
   void ReserveWritableSpace(size_t len);
 
   template <class Int>
-  Int GetHeadContentInt() const {
+  Int GetReadableInt() const {
     if (sizeof(Int) > GetReadableBytes()) {
       LOG(logger::kError,
           "Reading the Integer number in Head content failed!!!");
