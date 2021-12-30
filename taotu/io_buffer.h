@@ -11,11 +11,14 @@
 #ifndef TAOTU_TAOTU_IO_BUFFER_H_
 #define TAOTU_TAOTU_IO_BUFFER_H_
 
+#include <netinet/in.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <string>
 #include <vector>
+
+#include "logger.h"
 
 namespace taotu {
 
@@ -60,13 +63,35 @@ class IoBuffer {
   void RefreshRW();
   void RefreshW(size_t len) { writing_index_ += len; }
   void Refresh(size_t len);
+  template <class Int>
+  void RefreshInt() {
+    Refresh(sizeof(Int));
+  }
 
   std::string RetrieveAString(size_t len);
-  std::string RetrieveAll() { return RetrieveAString(GetReadableBytes()); }
+  std::string RetrieveAllAsString() {
+    return RetrieveAString(GetReadableBytes());
+  }
+  template <class Int>
+  Int RetrieveInt() {
+    Int result = GetHeadContentInt<Int>();
+    RefreshInt<Int>();
+    return result;
+  }
 
   void SetHeadContent(const void* str, size_t len);
+  template <class Int>
+  void SetHeadContentInt(Int x) {
+    Int int_str = static_cast<Int>(::htonl(static_cast<uint32_t>(x)));
+    SetHeadContent(static_cast<const void*>(&int_str), sizeof(Int));
+  }
 
   void Append(const void* str, size_t len);
+  template <class Int>
+  void AppendInt(Int x) {
+    Int int_str = static_cast<Int>(::htonl(static_cast<uint32_t>(x)));
+    Append(static_cast<const void*>(&int_str), sizeof(Int));
+  }
 
   void EnsureWritableSpace(size_t len);
 
@@ -78,6 +103,18 @@ class IoBuffer {
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
   void ReserveWritableSpace(size_t len);
+
+  template <class Int>
+  Int GetHeadContentInt() const {
+    if (sizeof(Int) > GetReadableBytes()) {
+      LOG(logger::kError,
+          "Reading the Integer number in Head content failed!!!");
+      return static_cast<Int>(-111);
+    }
+    Int result = static_cast<Int>(0);
+    ::memcpy(static_cast<void*>(result), GetBufferBegin(), sizeof(Int));
+    return static_cast<Int>(::ntohl(static_cast<uint32_t>(result)));
+  }
 
   std::vector<char> buffer_;
   size_t reading_index_;
