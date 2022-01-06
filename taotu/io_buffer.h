@@ -11,7 +11,17 @@
 #ifndef TAOTU_TAOTU_IO_BUFFER_H_
 #define TAOTU_TAOTU_IO_BUFFER_H_
 
-#include <netinet/in.h>
+#ifdef __MACH__
+#include <libkern/OSByteOrder.h>
+#define htobe16(x) OSSwapHostToBigInt16(x)
+#define be16toh(x) OSSwapBigToHostInt16(x)
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#define be32toh(x) OSSwapBigToHostInt32(x)
+#define htobe64(x) OSSwapHostToBigInt64(x)
+#define be64toh(x) OSSwapBigToHostInt64(x)
+#else
+#include <endian.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,6 +39,12 @@ enum {
 };
 static const char kCrlf[] = "\r\n";
 }  // namespace
+
+#if defined(__clang__) || __GNUC_MINOR__ >= 6
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 
 /**
  * @brief  // TODO:
@@ -82,14 +98,14 @@ class IoBuffer {
   void SetHeadContent(const void* str, size_t len);
   template <class Int>
   void SetHeadContentInt(Int x) {
-    Int int_str = static_cast<Int>(::htonl(static_cast<uint32_t>(x)));
+    Int int_str = Host2Network<Int>(x);
     SetHeadContent(static_cast<const void*>(&int_str), sizeof(Int));
   }
 
   void Append(const void* str, size_t len);
   template <class Int>
   void AppendInt(Int x) {
-    Int int_str = static_cast<Int>(::htonl(static_cast<uint32_t>(x)));
+    Int int_str = Host2Network<Int>(x);
     Append(static_cast<const void*>(&int_str), sizeof(Int));
   }
 
@@ -109,11 +125,43 @@ class IoBuffer {
     if (sizeof(Int) > GetReadableBytes()) {
       LOG(logger::kError,
           "Reading the Integer number in Head content failed!!!");
-      return static_cast<Int>(-111);
+      return static_cast<Int>(0);
     }
     Int result = static_cast<Int>(0);
     ::memcpy(static_cast<void*>(result), GetBufferBegin(), sizeof(Int));
-    return static_cast<Int>(::ntohl(static_cast<uint32_t>(result)));
+    return Network2Host<Int>(result);
+  }
+
+  template <class Int>
+  static Int Host2Network(Int x) {
+    switch (sizeof(x)) {
+      case 8:
+        return x;
+      case 16:
+        return static_cast<int16_t>(htobe16(static_cast<uint16_t>(x)));
+      case 32:
+        return static_cast<int32_t>(htobe32(static_cast<uint32_t>(x)));
+      case 64:
+        return static_cast<int64_t>(htobe64(static_cast<uint64_t>(x)));
+      default:
+        return static_cast<Int>(0);
+    }
+  }
+
+  template <class Int>
+  static Int Network2Host(Int x) {
+    switch (sizeof(x)) {
+      case 8:
+        return x;
+      case 16:
+        return static_cast<int16_t>(be16toh(static_cast<uint16_t>(x)));
+      case 32:
+        return static_cast<int32_t>(be32toh(static_cast<uint32_t>(x)));
+      case 64:
+        return static_cast<int64_t>(be64toh(static_cast<uint64_t>(x)));
+      default:
+        return static_cast<Int>(0);
+    }
   }
 
   std::vector<char> buffer_;
