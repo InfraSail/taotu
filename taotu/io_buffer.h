@@ -1,7 +1,7 @@
 /**
  * @file io_buffer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "IoBuffer" which is the buffer of I/O.
  * @date 2021-12-28
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -47,7 +47,10 @@ static const char kCrlf[] = "\r\n";
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 
 /**
- * @brief  // TODO:
+ * @brief "IoBuffer" uses multiple contiguous and scalable memory blocks as the
+ * I/O buffer. It records the read and write indexes and always leaves empty 8
+ * bytes in the header as an optional header. For large traffic reads, it
+ * provides a solution using discrete reads.
  *
  */
 class IoBuffer {

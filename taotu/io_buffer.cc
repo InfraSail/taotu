@@ -1,7 +1,7 @@
 /**
  * @file io_buffer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "IoBuffer" which is the buffer of I/O.
  * @date 2021-12-28
  *
  * @copyright Copyright (c) 2021 Sigma711
