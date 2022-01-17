@@ -34,7 +34,8 @@ namespace taotu {
 
 namespace {
 enum {
-  kReservedCapacity = 8,
+  kReservedCapacity = 8,  // vacates 8 bytes in the front of the buffer as an
+                          // optional message header
   kInitialCapacity = 1024,
 };
 static const char kCrlf[] = "\r\n";
@@ -48,9 +49,9 @@ static const char kCrlf[] = "\r\n";
 
 /**
  * @brief "IoBuffer" uses multiple contiguous and scalable memory blocks as the
- * I/O buffer. It records the read and write indexes and always leaves empty 8
- * bytes in the header as an optional header. For large traffic reads, it
- * provides a solution using discrete reads.
+ * I/O buffer. It records the reading and writing indexes and always reserves 8
+ * bytes in the front of the buffer as an optional message header. For Coping
+ * with large traffic, it provides a solution using discrete reading.
  *
  */
 class IoBuffer {
@@ -79,14 +80,21 @@ class IoBuffer {
   const char* FindEof() const;
   const char* FindEof(const char* start_position) const;
 
+  // Reset reading and writing index to initial status
   void RefreshRW();
+
+  // Reset writing index after writing
   void RefreshW(size_t len) { writing_index_ += len; }
+
+  // Reset indexes
   void Refresh(size_t len);
+
   template <class Int>
   void RefreshInt() {
     Refresh(sizeof(Int));
   }
 
+  // Read content
   std::string RetrieveAString(size_t len);
   std::string RetrieveAllAsString() {
     return RetrieveAString(GetReadableBytes());
@@ -98,6 +106,7 @@ class IoBuffer {
     return result;
   }
 
+  // Set the optional message header
   void SetHeadContent(const void* str, size_t len);
   template <class Int>
   void SetHeadContentInt(Int x) {
@@ -105,6 +114,7 @@ class IoBuffer {
     SetHeadContent(static_cast<const void*>(&int_str), sizeof(Int));
   }
 
+  // Write content
   void Append(const void* str, size_t len);
   template <class Int>
   void AppendInt(Int x) {
@@ -114,13 +124,16 @@ class IoBuffer {
 
   void EnsureWritableSpace(size_t len);
 
+  // Only be called in user code
   void ShrinkWritableSpace(size_t len);
 
+  // Discrete reading coping with sudden large traffic
   ssize_t ReadFd(int fd, int* tmp_errno);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
+  // Reserve space for writing
   void ReserveWritableSpace(size_t len);
 
   template <class Int>
