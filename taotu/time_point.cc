@@ -1,7 +1,8 @@
 /**
  * @file time_point.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "TimePoint" which is the encapsulation of one
+ * time point for the timer.
  * @date 2021-12-06
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -19,9 +20,7 @@ TimePoint::TimePoint(int64_t duration_micro_seconds, bool repeated = false)
     : time_point_micro_seconds_(FNow() + duration_micro_seconds),
       context_(repeated ? duration_micro_seconds : 0) {}
 
-int64_t TimePoint::TimePointMicroSeconds() const {
-  return time_point_micro_seconds_;
-}
+int64_t TimePoint::GetMicroseconds() const { return time_point_micro_seconds_; }
 
 int TimePoint::GetMillisecond() const {
   return static_cast<int>(time_point_micro_seconds_ / 1000);
