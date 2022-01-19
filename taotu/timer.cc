@@ -1,7 +1,8 @@
 /**
  * @file timer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Timer" which is the container of time points
+ * and the corresponding tasks (callback).
  * @date 2021-12-17
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -19,7 +20,7 @@ void Timer::AddTimeTask(TimePoint time_point, TimeCallback TimeTask) {
   time_points_.insert({time_point, std::move(TimeTask)});
 }
 
-int Timer::GetMinTimeSet() const {
+int Timer::GetMinTimePointSet() const {
   LockGuard lock_guard(mutex_lock_);
   return time_points_.begin()->first.GetMillisecond();
 }

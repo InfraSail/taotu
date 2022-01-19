@@ -1,7 +1,8 @@
 /**
  * @file timer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Timer" which is the container of time points and
+ * the corresponding tasks (callback).
  * @date 2021-12-17
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -24,7 +25,7 @@ namespace taotu {
 class EventManager;
 
 /**
- * @brief  // TODO:
+ * @brief "Timer" can be used to manage time tasks.
  *
  */
 class Timer : NonCopyableMovable {
@@ -36,10 +37,13 @@ class Timer : NonCopyableMovable {
   Timer() {}
   ~Timer() {}
 
+  // Register a time task
   void AddTimeTask(TimePoint time_point, TimeCallback TimeTask);
 
-  int GetMinTimeSet() const;
+  // Get a time point for next epoll waiting
+  int GetMinTimePointSet() const;
 
+  // Get a set of expired time tasks
   ExpiredTimeTasks GetExpiredTimeTasks();
 
  private:
