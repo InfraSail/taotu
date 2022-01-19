@@ -1,5 +1,5 @@
 /**
- * @file connectioner.h
+ * @file connecting.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-12-27
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_CONNECTIONER_H_
-#define TAOTU_TAOTU_CONNECTIONER_H_
+#ifndef TAOTU_TAOTU_CONNECTING_H_
+#define TAOTU_TAOTU_CONNECTING_H_
 
 #include "eventer.h"
 #include "net_address.h"
@@ -26,10 +26,10 @@ class Eventer;
  * @brief  // TODO:
  *
  */
-class Connectioner : NonCopyableMovable {
+class Connecting : NonCopyableMovable {
  public:
-  Connectioner(Poller* poller, int socket_fd, const NetAddress& local_address,
-               const NetAddress& peer_address);
+  Connecting(Poller* poller, int socket_fd, const NetAddress& local_address,
+             const NetAddress& peer_address);
 
  private:
   Socketer socketer_;
@@ -40,4 +40,4 @@ class Connectioner : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_CONNECTIONER_H_
+#endif  // !TAOTU_TAOTU_CONNECTING_H_
