@@ -1,7 +1,8 @@
 /**
  * @file spin_lock.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration and implementation of class "MutexLock" which is a mutex
+ * lock and class "LockGuard" which is a life auto manager for mutex locks.
  * @date 2021-12-16
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -18,8 +19,8 @@
 namespace taotu {
 
 /**
- * @brief  // TODO:
- *
+ * @brief "MutexLock" is a mutex lock which improves the performance of the
+ * program when locking time is short by using lock-free programing.
  */
 class MutexLock : NonCopyableMovable {
  public:
@@ -39,7 +40,8 @@ class MutexLock : NonCopyableMovable {
 };
 
 /**
- * @brief  // TODO:
+ * @brief "LockGuard" is a life auto manager for mutex locks by using RAII
+ * mechanism.
  *
  */
 class LockGuard : NonCopyableMovable {
