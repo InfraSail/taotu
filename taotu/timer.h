@@ -40,8 +40,8 @@ class Timer : NonCopyableMovable {
   // Register a time task
   void AddTimeTask(TimePoint time_point, TimeCallback TimeTask);
 
-  // Get a time point for next epoll waiting
-  int GetMinTimePointSet() const;
+  // Get a time duration for next epoll waiting
+  int GetMinTimeDurationSet() const;
 
   // Get a set of expired time tasks
   ExpiredTimeTasks GetExpiredTimeTasks();
