@@ -1,7 +1,8 @@
 /**
  * @file socketer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  //TODO:
+ * @brief Declaration of class "Socketer" which is the encapsulation of socket
+ * file descriptor.
  * @date 2021-12-08
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -17,7 +18,8 @@
 namespace taotu {
 
 /**
- * @brief  // TODO:
+ * @brief "Socketer" provides the ability of creating new connection and setting
+ * a few of its socket options.
  *
  */
 class Socketer : NonCopyableMovable {
@@ -25,12 +27,20 @@ class Socketer : NonCopyableMovable {
   Socketer(int socket_fd);
   ~Socketer();
 
+  // Get the file descriptor
   int Fd() const;
 
+  // Bind local address info (IP address, port and so on)
   void BindAddress(const NetAddress& local_address);
+
+  // Listen to the port of the IP address
   void Listen();
+
+  // Accept a connection, allocate a corresponding file descriptor and record
+  // its address info
   int Accept(NetAddress* peer_address);
 
+  // Shut down writing-end(self)
   void ShutdownWrite();
 
   void SetTcpNoDelay(bool on);
@@ -39,6 +49,7 @@ class Socketer : NonCopyableMovable {
   void SetKeepAlive(bool on);
 
  private:
+  // The file descriptor
   const int socket_fd_;
 };
 

@@ -1,7 +1,8 @@
 /**
  * @file socketer.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  //TODO:
+ * @brief Implementation of class "Socketer" which is the encapsulation of
+ * socket file descriptor.
  * @date 2021-12-08
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -23,7 +24,10 @@
 using namespace taotu;
 
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
-Socketer::~Socketer() { ::close(socket_fd_); }
+Socketer::~Socketer() {
+  // Close the file and give its descriptor back
+  ::close(socket_fd_);
+}
 
 int Socketer::Fd() const { return socket_fd_; }
 
@@ -50,7 +54,7 @@ int Socketer::Accept(NetAddress* peer_address) {
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
-  if (conn_fd < 0) {
+  if (conn_fd < 0) {  // Error occurs
     int savedErrno = errno;
     switch (savedErrno) {
       case EAGAIN:
