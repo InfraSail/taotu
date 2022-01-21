@@ -1,7 +1,8 @@
 /**
  * @file balancer.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Balancer" which can balance the number of
+ * "Eventer"s in each I/O thread("EventManager") as much as possible.
  * @date 2021-12-17
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -18,24 +19,40 @@ namespace taotu {
 class Reactor;
 class EventManager;
 
-enum BalancerStrategy { kRoundRobin = 0, kMinEvents = 1 };
+enum BalancerStrategy {
+  kRoundRobin = 0,  // Use "Round Robin" strategy
+  kMinEvents = 1  // Use the strategy which always picks the I/O thread holding
+                  // least "Eventer"s
+};
 
 /**
- * @brief  // TODO:
+ * @brief "Balancer" balances the load of file handles distributed to each I/O
+ * thread("EventManager") according to the specified strategy.
  *
  */
 class Balancer {
  public:
-  Balancer(Reactor::EventManagers& event_managers,
+  Balancer(Reactor::EventManagers* event_managers,
            int strategy = BalancerStrategy::kMinEvents);
+  ~Balancer() { event_managers_ = nullptr; }
 
+  // Set the strategy of balancing the load of file handles distributed to each
+  // I/O thread("EventManager")
   void SetStrategy(int strategy) { strategy_ = strategy; }
 
+  // Get one "EventManager" in the least busy I/O thread
   EventManager* PickOneEventManager();
 
  private:
-  Reactor::EventManagers& event_managers_;
+  // Weak reference from the set of "EventManager"s from "Reactor" in the main
+  // thread
+  Reactor::EventManagers* event_managers_;
+
+  // Strategy of balancing the load of file handles distributed to each I/O
+  // thread("EventManager")
   int strategy_;
+
+  // The mark of the index of the chosen "EventManager" in "event_managers_"
   int cursor_;
 };
 
