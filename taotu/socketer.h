@@ -18,8 +18,8 @@
 namespace taotu {
 
 /**
- * @brief "Socketer" provides the ability of creating new connection and setting
- * a few of its socket options.
+ * @brief "Socketer" provides the ability of creating new connections and
+ * setting a few of its socket options.
  *
  */
 class Socketer : NonCopyableMovable {
