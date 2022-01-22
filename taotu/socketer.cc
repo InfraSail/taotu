@@ -47,6 +47,7 @@ void Socketer::Listen() {
   }
 }
 int Socketer::Accept(NetAddress* peer_address) {
+  // Ignore whether IP address specification of client-end is IPv4 or IPv6
   struct sockaddr_in6 socket_address6;
   ::memset(&socket_address6, 0, sizeof(socket_address6));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(socket_address6));
@@ -55,15 +56,15 @@ int Socketer::Accept(NetAddress* peer_address) {
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
   if (conn_fd < 0) {  // Error occurs
-    int savedErrno = errno;
-    switch (savedErrno) {
+    int saved_errno = errno;
+    switch (saved_errno) {
       case EAGAIN:
       case ECONNABORTED:
       case EINTR:
       case EPROTO:
       case EPERM:
       case EMFILE:
-        errno = savedErrno;
+        errno = saved_errno;
         break;
       case EBADF:
       case EFAULT:
