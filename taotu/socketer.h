@@ -27,7 +27,7 @@ class Socketer : NonCopyableMovable {
   Socketer(int socket_fd);
   ~Socketer();
 
-  // Get the file descriptor
+  // Get the file descriptor of this socketer
   int Fd() const;
 
   // Bind local net address info (IP address, port and so on)
@@ -49,7 +49,7 @@ class Socketer : NonCopyableMovable {
   void SetKeepAlive(bool on);
 
  private:
-  // The file descriptor
+  // The file descriptor of this socketer
   const int socket_fd_;
 };
 
