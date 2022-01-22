@@ -45,16 +45,27 @@ namespace taotu {
 
 namespace logger {
 
-// relevant to Log_level_info_prefix
+// Relevant to Log_level_info_prefix
 enum LogLevel {
   kDebug = 0,
   kWarn,
   kError,
 };
 namespace {
-// relevant to LogLevel
+
+// Relevant to LogLevel
 const std::string Log_level_info_prefix[3]{
     "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
+
+// The file name of the log
+const std::string kLogName{"log.txt"};
+
+// 2GB
+constexpr int64_t kLogFileMaxByte = 1024 * 1024 * 1024;
+
+// Should be the nth power of 2 (for "Disruptor")
+constexpr int64_t kLogBufferSize = 1024 * 1024 * 16;
+
 }  // namespace
 
 /**
