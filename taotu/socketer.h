@@ -30,14 +30,15 @@ class Socketer : NonCopyableMovable {
   // Get the file descriptor of this socket
   int Fd() const;
 
-  // Bind local net address info (IP address, port and so on)
+  // Bind local net address info(IP address, port and so on) (For "Acceptor")
   void BindAddress(const NetAddress& local_address);
 
-  // Listen to the port of the IP address
+  // Listen to the port of the IP address (For "Acceptor")
   void Listen();
 
-  // Accept a connection, allocate a corresponding file descriptor and record
-  // its net address info
+  // Accept a connection request, create this connection, allocate a file
+  // descriptor of this connecting socket and record its net address info (For
+  // "Acceptor")
   int Accept(NetAddress* peer_address);
 
   // Shut down writing-end(self)
