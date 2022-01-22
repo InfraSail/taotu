@@ -45,7 +45,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
       // unavailable one given by user
       if (log_file_name_.empty() ||
           ((log_file_ = ::fopen(log_file_name_.c_str(), "wb")) == NULL)) {
-        log_file_name_ = configurations::kLogName;
+        log_file_name_ = kLogName;
         log_file_ =
             ::fopen(std::string{"n" + std::to_string(cur_log_file_seq_ & 1) +
                                 "_" + log_file_name_}
@@ -126,7 +126,7 @@ void Logger::WriteDownLogs() {
         }
         // Copy the content of one bucket of ring buffer to io buffer
         std::string& tmp_buf =
-            log_buffer_[cur_read_index & (configurations::kLogBufferSize - 1)];
+            log_buffer_[cur_read_index & (kLogBufferSize - 1)];
         int tmp_buf_len = tmp_buf.size();
         ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
         cur_log_file_byte_ += tmp_buf_len;
@@ -158,7 +158,7 @@ void Logger::RecordLogs(const std::string& log_info) {
 void Logger::RecordLogs(std::string&& log_info) {
   // Give up recording this time because the logs which have been in the file
   // are more valuable
-  if (write_index_.load() - read_index_ >= configurations::kLogBufferSize - 1) {
+  if (write_index_.load() - read_index_ >= kLogBufferSize - 1) {
     return;
   }
   // Update the index which can be written next time and get the previous value
@@ -173,8 +173,7 @@ void Logger::RecordLogs(std::string&& log_info) {
            log_info.c_str(), log_info.size());
   log_data.back() = '\n';
   // Put this log record into ring buffer
-  log_buffer_[write_index & (configurations::kLogBufferSize - 1)] =
-      std::move(log_data);
+  log_buffer_[write_index & (kLogBufferSize - 1)] = std::move(log_data);
   // Block for a while if ring buffer is full (a small probability event)
   while (write_index - 1L > wrote_index_) {
   }

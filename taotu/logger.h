@@ -25,7 +25,6 @@
 #include <string>
 #include <thread>
 
-#include "configurations.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
@@ -63,7 +62,7 @@ const std::string kLogName{"log.txt"};
 // 2GB
 constexpr int64_t kLogFileMaxByte = 1024 * 1024 * 1024;
 
-// Should be the nth power of 2 (for "Disruptor")
+// Should be the Nth power of 2 (for "Disruptor")
 constexpr int64_t kLogBufferSize = 1024 * 1024 * 16;
 
 }  // namespace
@@ -78,7 +77,7 @@ class Logger : NonCopyableMovable {
  public:
   typedef std::shared_ptr<Logger> LoggerPtr;
   typedef std::shared_ptr<std::thread> ThreadPtr;
-  typedef std::array<std::string, configurations::kLogBufferSize> LogBuffer;
+  typedef std::array<std::string, kLogBufferSize> LogBuffer;
 
   // The unique method to creat the unique actual "Logger" object ("Singleton"
   // pattern)
@@ -114,8 +113,7 @@ class Logger : NonCopyableMovable {
   static LoggerPtr logger_ptr;
   static bool is_initialized;
 
-  static constexpr int64_t kStandardLogFileByte =
-      configurations::kLogFileMaxByte / 2;
+  static constexpr int64_t kStandardLogFileByte = kLogFileMaxByte / 2;
 
   alignas(256) volatile int64_t is_stopping_;
   alignas(256) char filler1_;  // Only for solving "False Sharing"
