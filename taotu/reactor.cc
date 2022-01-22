@@ -21,7 +21,7 @@ Reactor::Reactor(NetAddress& listen_address, int thread_amout = 6)
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
   } else {
-    LOG(logger::kError, "Fail to init the  acceptor!!!");
+    LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
   for (int i = 0; i < thread_amout; ++i) {
