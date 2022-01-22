@@ -44,9 +44,11 @@ class Acceptor : NonCopyableMovable {
   int Accept();
 
  private:
+  // The file descriptor of this accepting socket
   Socketer accept_soketer_;
+
   bool is_listening_;
-  int idle_fd_;
+  int idle_fd_;  // For discarding failed connections
 };
 
 }  // namespace taotu

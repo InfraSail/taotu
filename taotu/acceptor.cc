@@ -53,7 +53,8 @@ int Acceptor::Accept() {
   } else {
     LOG(logger::kError, "Fd(" + std::to_string(accept_soketer_.Fd()) +
                             ") could not accept a new TCP connection");
-    if (errno == EMFILE) {
+    if (errno == EMFILE) {  // If it fails to connect, clear the waiting list of
+                            // listening
       ::close(idle_fd_);
       idle_fd_ = ::accept(accept_soketer_.Fd(), NULL, NULL);
       ::close(idle_fd_);
