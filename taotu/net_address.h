@@ -1,7 +1,8 @@
 /**
  * @file net_address.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "NetAddress" which is the encapsulation of net
+ * address info.
  * @date 2021-12-12
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -18,6 +19,11 @@
 
 namespace taotu {
 
+/**
+ * @brief "NetAddress" makes users ignore whether IP address specification of
+ * client-end is IPv4 or IPv6.
+ *
+ */
 class NetAddress {
  public:
   explicit NetAddress(uint16_t port = 0, bool loop_back = false,
@@ -40,6 +46,7 @@ class NetAddress {
   }
 
  private:
+  // Net address info struct (2 options: IPv4 and IPv6)
   union {
     struct sockaddr_in socket_address_;
     struct sockaddr_in6 socket_address6_;

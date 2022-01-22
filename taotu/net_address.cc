@@ -1,7 +1,8 @@
 /**
  * @file net_address.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "NetAddress" which is the encapsulation of net
+ * address info.
  * @date 2021-12-12
  *
  * @copyright Copyright (c) 2021 Sigma711
