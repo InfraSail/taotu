@@ -16,7 +16,6 @@
 
 #include "event_manager.h"
 #include "non_copyable_movable.h"
-#include "reactor.h"
 #include "socketer.h"
 
 namespace taotu {
