@@ -19,35 +19,34 @@
 
 using namespace taotu;
 
-IoBuffer::IoBuffer(size_t initial_capacity = kInitialCapacity)
+IoBuffer::IoBuffer(size_t initial_capacity)
     : buffer_(kReservedCapacity + initial_capacity),
-      reading_index_(kReservedCapacity),
-      writing_index_(kReservedCapacity) {}
+      reading_index_(kReservedCapacity), writing_index_(kReservedCapacity) {}
 
-void IoBuffer::Swap(IoBuffer& io_buffer) {
+void IoBuffer::Swap(IoBuffer &io_buffer) {
   buffer_.swap(io_buffer.buffer_);
   std::swap(reading_index_, io_buffer.reading_index_);
   std::swap(writing_index_, io_buffer.writing_index_);
 }
 
-const char* IoBuffer::FindCrlf() const {
-  return static_cast<const char*>(::memmem(GetReadablePosition(),
-                                           GetReadableBytes(), kCrlf,
-                                           static_cast<size_t>(2)));
+const char *IoBuffer::FindCrlf() const {
+  return static_cast<const char *>(::memmem(GetReadablePosition(),
+                                            GetReadableBytes(), kCrlf,
+                                            static_cast<size_t>(2)));
 }
 
-const char* IoBuffer::FindCrlf(const char* start_position) const {
-  return static_cast<const char*>(
+const char *IoBuffer::FindCrlf(const char *start_position) const {
+  return static_cast<const char *>(
       ::memmem(start_position, GetWritablePosition() - start_position, kCrlf,
                static_cast<size_t>(2)));
 }
 
-const char* IoBuffer::FindEof() const {
-  return static_cast<const char*>(
+const char *IoBuffer::FindEof() const {
+  return static_cast<const char *>(
       ::memchr(GetReadablePosition(), '\n', GetReadableBytes()));
 }
-const char* IoBuffer::FindEof(const char* start_position) const {
-  return static_cast<const char*>(
+const char *IoBuffer::FindEof(const char *start_position) const {
+  return static_cast<const char *>(
       ::memchr(start_position, '\n', GetWritablePosition() - start_position));
 }
 
@@ -58,7 +57,7 @@ void IoBuffer::RefreshRW() {
 void IoBuffer::Refresh(size_t len) {
   if (len < GetReadableBytes()) {
     reading_index_ += len;
-  } else {  // len == GetReadableBytes()
+  } else { // len == GetReadableBytes()
     RefreshRW();
   }
 }
@@ -73,19 +72,19 @@ std::string IoBuffer::RetrieveAString(size_t len) {
   return ret;
 }
 
-void IoBuffer::SetHeadContent(const void* str, size_t len) {
+void IoBuffer::SetHeadContent(const void *str, size_t len) {
   if (len > GetReservedBytes()) {
     LOG(logger::kError, "Reserved head space is not enough!!!");
     return;
   }
   reading_index_ -= len;
-  ::memcpy(static_cast<void*>(const_cast<char*>(GetReadablePosition())), str,
+  ::memcpy(static_cast<void *>(const_cast<char *>(GetReadablePosition())), str,
            len);
 }
 
-void IoBuffer::Append(const void* str, size_t len) {
+void IoBuffer::Append(const void *str, size_t len) {
   EnsureWritableSpace(len);
-  ::memcpy(static_cast<void*>(const_cast<char*>(GetWritablePosition())), str,
+  ::memcpy(static_cast<void *>(const_cast<char *>(GetWritablePosition())), str,
            len);
   RefreshW(len);
 }
@@ -99,31 +98,31 @@ void IoBuffer::EnsureWritableSpace(size_t len) {
 void IoBuffer::ShrinkWritableSpace(size_t len) {
   // We do not use the member function of vector<> -- shrink_to_fit() because it
   // is a non-binding request
-  if (len <= 32) {  // Reserving too little writable space is meaningless
+  if (len <= 32) { // Reserving too little writable space is meaningless
     LOG(logger::kWarn,
         "Shrinking buffer to " + std::to_string(len) + "bytes failed!");
     return;
   }
   IoBuffer buffer;
   buffer.EnsureWritableSpace(kReservedCapacity + GetReadableBytes() + len);
-  buffer.Append(static_cast<const void*>(GetReadablePosition()),
+  buffer.Append(static_cast<const void *>(GetReadablePosition()),
                 GetReadableBytes());
   Swap(buffer);
 }
 
-ssize_t IoBuffer::ReadFd(int fd, int* tmp_errno) {
-  char extra_buffer[64 * 1024];  // 64k bytes
+ssize_t IoBuffer::ReadFd(int fd, int *tmp_errno) {
+  char extra_buffer[64 * 1024]; // 64k bytes
   struct iovec discrete_buffers[2];
   int writable_bytes = GetWritableBytes();
   discrete_buffers[0].iov_base =
-      static_cast<void*>(const_cast<char*>(GetWritablePosition()));
+      static_cast<void *>(const_cast<char *>(GetWritablePosition()));
   discrete_buffers[0].iov_len = writable_bytes;
-  discrete_buffers[1].iov_base = static_cast<void*>(extra_buffer);
+  discrete_buffers[1].iov_base = static_cast<void *>(extra_buffer);
   discrete_buffers[1].iov_len = 64 * 1024;
   // Use extra buffer to receive data if the writable space is not enough
   const int iov_seq = writable_bytes < 64 * 1024 ? 2 : 1;
   ssize_t n =
-      ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
+      ::readv(fd, static_cast<const struct iovec *>(discrete_buffers), iov_seq);
   if (n < 0) {
     *tmp_errno = errno;
     LOG(logger::kWarn,
@@ -132,7 +131,7 @@ ssize_t IoBuffer::ReadFd(int fd, int* tmp_errno) {
     writing_index_ += n;
   } else {
     writing_index_ = buffer_.size();
-    Append(static_cast<const void*>(extra_buffer),
+    Append(static_cast<const void *>(extra_buffer),
            static_cast<size_t>(n - writable_bytes));
   }
   return n;
@@ -145,9 +144,9 @@ void IoBuffer::ReserveWritableSpace(size_t len) {
     // Move forward to-read contents if too much space are reserved in the
     // front of the buffer
     // Then the writable space will be enough without dilatating
-    ::memcpy(static_cast<void*>(
-                 const_cast<char*>(GetBufferBegin() + kReservedCapacity)),
-             static_cast<const void*>(GetBufferBegin() + reading_index_),
+    ::memcpy(static_cast<void *>(
+                 const_cast<char *>(GetBufferBegin() + kReservedCapacity)),
+             static_cast<const void *>(GetBufferBegin() + reading_index_),
              GetReadableBytes());
     reading_index_ = kReservedCapacity;
     writing_index_ = reading_index_ + GetReadableBytes();
