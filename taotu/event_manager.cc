@@ -32,9 +32,9 @@ void EventManager::RunAfter(int64_t delay_seconds,
                             Timer::TimeCallback TimeTask) {
   timer_.AddTimeTask(TimePoint{delay_seconds}, std::move(TimeTask));
 }
-void EventManager::RunEveryUntil(
-    int64_t interval_seconds, Timer::TimeCallback TimeTask,
-    std::function<bool()> IsContinue = std::function<bool()>{}) {
+void EventManager::RunEveryUntil(int64_t interval_seconds,
+                                 Timer::TimeCallback TimeTask,
+                                 std::function<bool()> IsContinue) {
   TimePoint time_point{interval_seconds, true};
   if (IsContinue) {
     time_point.SetTaskContinueCallback(std::move(IsContinue));
