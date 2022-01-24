@@ -15,11 +15,12 @@
 #include <vector>
 
 #include "acceptor.h"
-#include "balancer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
+
+class Balancer;
 
 /**
  * @brief  // TODO:
