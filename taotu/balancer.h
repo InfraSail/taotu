@@ -14,10 +14,9 @@
 
 #include <vector>
 
-namespace taotu {
+#include "reactor.h"
 
-class Reactor;
-class EventManager;
+namespace taotu {
 
 enum BalancerStrategy {
   kRoundRobin = 0,  // Use "Round Robin" strategy

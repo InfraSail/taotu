@@ -17,8 +17,7 @@
 
 using namespace taotu;
 
-Balancer::Balancer(Reactor::EventManagers* event_managers,
-                   int strategy = BalancerStrategy::kMinEvents)
+Balancer::Balancer(Reactor::EventManagers* event_managers, int strategy)
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {
@@ -42,8 +41,7 @@ EventManager* Balancer::PickOneEventManager() {
         }
         cursor_ = pos;
       }
-    default:
-      LOG(logger::kError, "Wrong strategy of Reactor's Balancer!!!");
+      break;
   }
   return (*event_managers_)[cursor_];
 }
