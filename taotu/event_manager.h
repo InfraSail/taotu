@@ -34,7 +34,7 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
-  Poller *GetPoller() { return poller_.get(); }
+  Poller* GetPoller() { return poller_.get(); }
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t GetEventerAmount() { return eventer_amount_; }
