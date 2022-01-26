@@ -24,7 +24,8 @@ int Timer::GetMinTimeDurationSet() const {
   LockGuard lock_guard(mutex_lock_);
   int duration = TimePoint().GetMillisecond() -
                  time_points_.begin()->first.GetMillisecond();
-  return duration > 0 ? duration : 0;
+  return duration > 0 ? duration
+                      : 0;  // Could not give a negtive value of the duration
 }
 
 Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {
