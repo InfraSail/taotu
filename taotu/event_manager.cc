@@ -28,14 +28,16 @@ void EventManager::Loop() {
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
-void EventManager::RunAfter(int64_t delay_seconds,
+void EventManager::RunAfter(int64_t delay_microseconds,
                             Timer::TimeCallback TimeTask) {
-  timer_.AddTimeTask(TimePoint{delay_seconds}, std::move(TimeTask));
+  timer_.AddTimeTask(TimePoint{delay_microseconds}, std::move(TimeTask));
 }
 void EventManager::RunEveryUntil(int64_t interval_seconds,
                                  Timer::TimeCallback TimeTask,
                                  std::function<bool()> IsContinue) {
   TimePoint time_point{interval_seconds, true};
+  // Check if the function which decides whether to continue the cycle should be
+  // set (for repeatable condition)
   if (IsContinue) {
     time_point.SetTaskContinueCallback(std::move(IsContinue));
   }
