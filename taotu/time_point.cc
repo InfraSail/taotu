@@ -16,9 +16,9 @@
 using namespace taotu;
 
 TimePoint::TimePoint() : time_point_micro_seconds_(FNow()), context_(0) {}
-TimePoint::TimePoint(int64_t duration_micro_seconds, bool repeated)
-    : time_point_micro_seconds_(FNow() + duration_micro_seconds),
-      context_(repeated ? duration_micro_seconds : 0) {}
+TimePoint::TimePoint(int64_t duration_microseconds, bool repeated)
+    : time_point_micro_seconds_(FNow() + duration_microseconds),
+      context_(repeated ? duration_microseconds : 0) {}
 
 int64_t TimePoint::GetMicroseconds() const { return time_point_micro_seconds_; }
 
