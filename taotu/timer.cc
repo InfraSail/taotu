@@ -22,8 +22,9 @@ void Timer::AddTimeTask(TimePoint time_point, TimeCallback TimeTask) {
 
 int Timer::GetMinTimeDurationSet() const {
   LockGuard lock_guard(mutex_lock_);
-  return TimePoint().GetMillisecond() -
-         time_points_.begin()->first.GetMillisecond();
+  int duration = TimePoint().GetMillisecond() -
+                 time_points_.begin()->first.GetMillisecond();
+  return duration > 0 ? duration : 0;
 }
 
 Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {
