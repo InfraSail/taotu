@@ -42,7 +42,7 @@ class EventManager : NonCopyableMovable {
   void RunAt(TimePoint time_point, Timer::TimeCallback TimeTask);
   void RunAfter(int64_t delay_microseconds, Timer::TimeCallback TimeTask);
   void RunEveryUntil(
-      int64_t interval_seconds, Timer::TimeCallback TimeTask,
+      int64_t interval_microseconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
 
   // void UpdateEventer(Eventer *eventer);

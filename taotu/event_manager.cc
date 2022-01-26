@@ -32,10 +32,10 @@ void EventManager::RunAfter(int64_t delay_microseconds,
                             Timer::TimeCallback TimeTask) {
   timer_.AddTimeTask(TimePoint{delay_microseconds}, std::move(TimeTask));
 }
-void EventManager::RunEveryUntil(int64_t interval_seconds,
+void EventManager::RunEveryUntil(int64_t interval_microseconds,
                                  Timer::TimeCallback TimeTask,
                                  std::function<bool()> IsContinue) {
-  TimePoint time_point{interval_seconds, true};
+  TimePoint time_point{interval_microseconds, true};
   // Check if the function which decides whether to continue the cycle should be
   // set (for repeatable condition)
   if (IsContinue) {
