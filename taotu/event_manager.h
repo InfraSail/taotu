@@ -25,7 +25,7 @@
 
 namespace taotu {
 
-class Connectioner;
+class Connecting;
 
 class EventManager : NonCopyableMovable {
  public:
@@ -52,7 +52,7 @@ class EventManager : NonCopyableMovable {
 
  private:
   std::unique_ptr<Poller> poller_;
-  std::vector<std::unique_ptr<Connectioner>> eventers_;
+  std::vector<std::unique_ptr<Connecting>> eventers_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
 
