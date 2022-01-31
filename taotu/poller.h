@@ -56,7 +56,8 @@ class Poller : NonCopyableMovable {
 
   typedef std::vector<struct epoll_event> PollEventList;
 
-  // The buffer for active event struct of the native "poll()"
+  // The buffer for active event struct of the native "poll()" (poll, epoll or
+  // kqueue)
   PollEventList poll_events_;
 };
 
