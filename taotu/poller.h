@@ -13,13 +13,47 @@
 
 #include <sys/epoll.h>
 
+#include <unordered_map>
+#include <vector>
+
+#include "non_copyable_movable.h"
+#include "time_point.h"
+
 namespace taotu {
+
+class Eventer;
 
 /**
  * @brief  // TODO:
  *
  */
-class Poller {};
+class Poller : NonCopyableMovable {
+ public:
+  typedef std::vector<Eventer*> EventerList;
+
+  Poller();
+  ~Poller();
+
+  void Poll(int timeout, EventerList* active_eventers);
+
+  void AddEventer(Eventer* eventer);
+  void ModifyEventer(Eventer* eventer);
+  void RemoveEventer(Eventer* eventer);
+
+ private:
+  void GetActiveEventer(int event_amount, EventerList* active_eventers) const;
+
+  bool IsPollFdEffective();
+
+  // File descriptor of native "poll()" (poll, epoll or kqueue)
+  int poll_fd_;
+
+  typedef std::unordered_map<int, Eventer*> EventerMap;
+  typedef std::vector<struct epoll_event> PollEventList;
+
+  EventerMap eventers_;
+  PollEventList poll_events_;
+};
 
 }  // namespace taotu
 
