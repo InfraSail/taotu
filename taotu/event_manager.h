@@ -27,6 +27,10 @@ namespace taotu {
 
 class Connecting;
 
+/**
+ * @brief  // TODO:
+ *
+ */
 class EventManager : NonCopyableMovable {
  public:
   EventManager();
