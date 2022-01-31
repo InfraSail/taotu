@@ -18,14 +18,13 @@
 #include <thread>
 #include <vector>
 
+#include "connecting.h"
 #include "non_copyable_movable.h"
 #include "poller.h"
 #include "time_point.h"
 #include "timer.h"
 
 namespace taotu {
-
-class Connecting;
 
 /**
  * @brief  // TODO:

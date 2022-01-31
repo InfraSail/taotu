@@ -12,8 +12,6 @@
 
 #include <utility>
 
-#include "connecting.h"
-
 using namespace taotu;
 
 EventManager::EventManager() {}
