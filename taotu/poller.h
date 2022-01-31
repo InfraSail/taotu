@@ -1,7 +1,8 @@
 /**
  * @file poller.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Poller" which is the encapsulation of I/O
+ * multiplexing.
  * @date 2021-12-16
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -24,16 +25,18 @@ namespace taotu {
 class Eventer;
 
 /**
- * @brief  // TODO:
+ * @brief "Poller" waits for triggered events and transmits them to "Eventer"
+ * (they will be handled by its member function "Loop()").
  *
  */
 class Poller : NonCopyableMovable {
  public:
   typedef std::vector<Eventer*> EventerList;
 
-  Poller();
+  Poller(int* event_amount);
   ~Poller();
 
+  // Polling (calls the native "poll()" (poll, epoll or kqueue))
   void Poll(int timeout, EventerList* active_eventers);
 
   void AddEventer(Eventer* eventer);
@@ -45,13 +48,15 @@ class Poller : NonCopyableMovable {
 
   bool IsPollFdEffective();
 
-  // File descriptor of native "poll()" (poll, epoll or kqueue)
+  // File descriptor of the native "poll()" (poll, epoll or kqueue)
   int poll_fd_;
 
-  typedef std::unordered_map<int, Eventer*> EventerMap;
+  // Referencing to the amount of regarding file descriptors
+  const int* event_amount_;
+
   typedef std::vector<struct epoll_event> PollEventList;
 
-  EventerMap eventers_;
+  // The buffer for active event struct of the native "poll()"
   PollEventList poll_events_;
 };
 

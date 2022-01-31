@@ -1,7 +1,8 @@
 /**
  * @file poller.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Poller" which is the encapsulation of I/O
+ * multiplexing.
  * @date 2021-12-16
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -28,8 +29,9 @@ namespace {
 const int kMaxInitPollerSize = 16;
 }
 
-Poller::Poller()
+Poller::Poller(int* event_amount)
     : poll_fd_(::epoll_create1(EPOLL_CLOEXEC)),
+      event_amount_(event_amount),
       poll_events_(kMaxInitPollerSize) {
   IsPollFdEffective();
 }
@@ -43,7 +45,7 @@ void Poller::Poll(int timeout, EventerList* active_eventers) {
   LOG(logger::kDebug,
       "In thread(" + std::to_string(::pthread_self()) +
           "), The amount of file descriptors in the native \"poll()\" is " +
-          std::to_string(eventers_.size()) + '.');
+          std::to_string(*event_amount_) + '.');
   int event_amount =
       ::epoll_wait(poll_fd_, &(*(poll_events_.begin())),
                    static_cast<int>(poll_events_.size()), timeout);
