@@ -75,8 +75,8 @@ class Connecting : NonCopyableMovable {
   HighWaterMarkCallback HighWaterMarkCallback_;
   NormalCallback CloseCallback_;
 
-  IoBuffer InputBuffer;
-  IoBuffer OutputBuffer;
+  IoBuffer input_buffer_;
+  IoBuffer output_buffer_;
 };
 
 }  // namespace taotu
