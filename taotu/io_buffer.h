@@ -128,7 +128,7 @@ class IoBuffer {
   void ShrinkWritableSpace(size_t len);
 
   // Discrete reading coping with sudden large traffic
-  ssize_t ReadFd(int fd, int* tmp_errno);
+  ssize_t Read(int fd, int* tmp_errno);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
