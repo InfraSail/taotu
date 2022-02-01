@@ -37,3 +37,7 @@ Connecting::~Connecting() {
                           std::to_string(socketer_.Fd()) +
                           ") is being closed.");
 }
+
+void Connecting::DoReading(TimePoint receive_time) {}
+void Connecting::DoWriting() {}
+void Connecting::DoClosing() {}

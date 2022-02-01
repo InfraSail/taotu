@@ -66,8 +66,8 @@ class Connecting : NonCopyableMovable {
  private:
   Eventer eventer_;
   Socketer socketer_;
-  NetAddress local_address_;
-  NetAddress peer_address_;
+  const NetAddress local_address_;
+  const NetAddress peer_address_;
 
   NormalCallback OnConnectionCallback_;
   OnMessageCallback OnMessageCallback_;
