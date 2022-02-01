@@ -64,6 +64,13 @@ class Connecting : NonCopyableMovable {
   void DoWithError();
 
  private:
+  enum ConnectionState {
+    kDisconnected,
+    kConnecting,
+    kConnected,
+    kDisconnecting
+  };
+
   Eventer eventer_;
   Socketer socketer_;
   const NetAddress local_address_;
@@ -75,8 +82,12 @@ class Connecting : NonCopyableMovable {
   HighWaterMarkCallback HighWaterMarkCallback_;
   NormalCallback CloseCallback_;
 
+  size_t high_water_mark_;
+
   IoBuffer input_buffer_;
   IoBuffer output_buffer_;
+
+  ConnectionState state_;
 };
 
 }  // namespace taotu

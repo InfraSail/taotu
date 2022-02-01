@@ -10,6 +10,10 @@
 
 #include "connecting.h"
 
+#include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <string>
 
 #include "logger.h"
@@ -38,7 +42,45 @@ Connecting::~Connecting() {
                           ") is being closed.");
 }
 
-void Connecting::DoReading(TimePoint receive_time) {}
-void Connecting::DoWriting() {}
+void Connecting::DoReading(TimePoint receive_time) {
+  int saved_errno = 0;
+  ssize_t n = input_buffer_.ReadFromFd(socketer_.Fd(), &saved_errno);
+  if (n > 0) {
+    OnMessageCallback_(*this, &input_buffer_, receive_time);
+  } else if (0 == n) {
+    DoClosing();
+  } else {
+    errno = saved_errno;
+    LOG(logger::kError,
+        "Fd(" + std::to_string(socketer_.Fd()) + ") reading failed!!!");
+    DoWithError();
+  }
+}
+void Connecting::DoWriting() {
+  if (eventer_.HasWriteEvents()) {
+    ssize_t n = output_buffer_.WriteToFd(eventer_.Fd());
+    if (n > 0) {
+      output_buffer_.Refresh(n);
+      if (0 == output_buffer_.GetReadableBytes()) {
+        eventer_.DisableWriteEvents();
+        if (WriteCallback_) {
+          WriteCallback_(*this);
+        }
+        if (kDisconnecting == state_) {
+          if (!eventer_.HasWriteEvents()) {
+            socketer_.ShutdownWrite();
+          }
+        }
+      }
+    } else {
+      LOG(logger::kError,
+          "Fd(" + std::to_string(socketer_.Fd()) + ") writing failed!!!");
+    }
+  } else {
+    LOG(logger::kWarn,
+        "Fd(" + std::to_string(socketer_.Fd()) +
+            ") should not be retried anymore because it is down!");
+  }
+}
 void Connecting::DoClosing() {}
 void Connecting::DoWithError() {}
