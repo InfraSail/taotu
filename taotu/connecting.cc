@@ -33,7 +33,6 @@ Connecting::Connecting(Poller* poller, int socket_fd,
                           ") is being created.");
   socketer_.SetKeepAlive(true);
 }
-
 Connecting::~Connecting() {
   LOG(logger::kDebug, "The TCP connection to fd(" +
                           std::to_string(socketer_.Fd()) +
