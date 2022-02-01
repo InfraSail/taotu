@@ -117,6 +117,7 @@ void Connecting::DoWithError() {
   }
   char errno_info[512];
   ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
-  LOG(logger::kError,
-      "Fd(" + std::to_string(socketer_.Fd()) + ") gets an error -- " + '.');
+  LOG(logger::kError, "Fd(" + std::to_string(socketer_.Fd()) +
+                          ") gets an error -- " + std::string{errno_info} +
+                          '.');
 }
