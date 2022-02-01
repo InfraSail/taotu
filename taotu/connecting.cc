@@ -41,3 +41,4 @@ Connecting::~Connecting() {
 void Connecting::DoReading(TimePoint receive_time) {}
 void Connecting::DoWriting() {}
 void Connecting::DoClosing() {}
+void Connecting::DoWithError() {}
