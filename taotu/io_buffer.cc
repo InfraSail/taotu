@@ -113,7 +113,7 @@ void IoBuffer::ShrinkWritableSpace(size_t len) {
   Swap(buffer);
 }
 
-ssize_t IoBuffer::Read(int fd, int* tmp_errno) {
+ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   char extra_buffer[64 * 1024];  // 64k bytes
   struct iovec discrete_buffers[2];
   int writable_bytes = GetWritableBytes();
@@ -140,7 +140,7 @@ ssize_t IoBuffer::Read(int fd, int* tmp_errno) {
   return n;
 }
 
-ssize_t IoBuffer::Write(int fd) {
+ssize_t IoBuffer::WriteToFd(int fd) {
   return ::write(
       fd, reinterpret_cast<void*>(const_cast<char*>(GetReadablePosition())),
       static_cast<size_t>(GetReadableBytes()));

@@ -128,11 +128,12 @@ class IoBuffer {
   // Only be called in user code
   void ShrinkWritableSpace(size_t len);
 
-  // Discrete reading (coping with sudden large traffic)
-  ssize_t Read(int fd, int* tmp_errno);
+  // Retrieve content from the file descriptor with discrete reading(coping with
+  // sudden large traffic) to the buffer
+  ssize_t ReadFromFd(int fd, int* tmp_errno);
 
-  // Writing
-  ssize_t Write(int fd);
+  // Stuff content of the buffer into the file descriptor
+  ssize_t WriteToFd(int fd);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
