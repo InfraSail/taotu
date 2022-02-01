@@ -11,9 +11,12 @@
 #include "connecting.h"
 
 #include <errno.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <iterator>
 #include <string>
 
 #include "logger.h"
@@ -82,5 +85,38 @@ void Connecting::DoWriting() {
             ") should not be retried anymore because it is down!");
   }
 }
-void Connecting::DoClosing() {}
-void Connecting::DoWithError() {}
+void Connecting::DoClosing() {
+  LOG(logger::kDebug, "Fd(" + std::to_string(socketer_.Fd()) +
+                          ") with state(\"" + ([this]() -> std::string {
+                            switch (this->state_) {
+                              case kDisconnected:
+                                return "Disconnected";
+                              case kConnecting:
+                                return "Connecting";
+                              case kConnected:
+                                return "Connected";
+                              case kDisconnecting:
+                                return "Disconnecting";
+                            }
+                            return std::string{};
+                          })() +
+                          "\") is closiong.");
+  SetState(kDisconnected);
+  eventer_.DisableAllEvents();
+  OnConnectionCallback_(*this);
+  CloseCallback_(*this);
+}
+void Connecting::DoWithError() {
+  int saved_errno = 0, opt_val;
+  socklen_t opt_len = static_cast<socklen_t>(sizeof(opt_val));
+  if (::getsockopt(socketer_.Fd(), SOL_SOCKET, SO_ERROR,
+                   reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
+    saved_errno = errno;
+  } else {
+    saved_errno = opt_val;
+  }
+  char errno_info[512];
+  ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+  LOG(logger::kError,
+      "Fd(" + std::to_string(socketer_.Fd()) + ") gets an error -- " + '.');
+}

@@ -71,6 +71,8 @@ class Connecting : NonCopyableMovable {
     kDisconnecting
   };
 
+  void SetState(ConnectionState state) { state_ = state; }
+
   Eventer eventer_;
   Socketer socketer_;
   const NetAddress local_address_;
