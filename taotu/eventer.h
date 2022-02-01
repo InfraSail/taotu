@@ -39,14 +39,14 @@ class Eventer : NonCopyableMovable {
   // Handle all events
   void Work(TimePoint tp);
 
-  void RegisterReadCallBack(ReadCallback cb) { ReadCallback_ = std::move(cb); }
-  void RegisterWriteCallBack(NormalCallback cb) {
+  void RegisterReadCallback(ReadCallback cb) { ReadCallback_ = std::move(cb); }
+  void RegisterWriteCallback(NormalCallback cb) {
     WriteCallback_ = std::move(cb);
   }
-  void RegisterCloseCallBack(NormalCallback cb) {
+  void RegisterCloseCallback(NormalCallback cb) {
     CloseCallback_ = std::move(cb);
   }
-  void RegisterErrorCallBack(NormalCallback cb) {
+  void RegisterErrorCallback(NormalCallback cb) {
     ErrorCallback_ = std::move(cb);
   }
 
