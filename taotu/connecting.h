@@ -51,8 +51,10 @@ class Connecting : NonCopyableMovable {
   void RegisterWriteCallback(NormalCallback cb) {
     WriteCallback_ = std::move(cb);
   }
-  void RegisterHighWaterMarkCallback(HighWaterMarkCallback cb) {
+  void RegisterHighWaterMarkCallback(HighWaterMarkCallback cb,
+                                     size_t high_water_mark) {
     HighWaterMarkCallback_ = std::move(cb);
+    high_water_mark_ = high_water_mark;
   }
   void RegisterCloseCallback(NormalCallback cb) {
     CloseCallback_ = std::move(cb);
@@ -62,6 +64,8 @@ class Connecting : NonCopyableMovable {
   void DoWriting();
   void DoClosing();
   void DoWithError();
+
+  void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
  private:
   enum ConnectionState {
