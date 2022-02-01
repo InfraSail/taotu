@@ -10,7 +10,6 @@
 
 #include "connecting.h"
 
-#include <functional>
 #include <string>
 
 #include "logger.h"

@@ -11,6 +11,8 @@
 #ifndef TAOTU_TAOTU_CONNECTING_H_
 #define TAOTU_TAOTU_CONNECTING_H_
 
+#include <cstddef>
+#include <functional>
 #include <utility>
 
 #include "eventer.h"
@@ -30,21 +32,29 @@ class Poller;
  */
 class Connecting : NonCopyableMovable {
  public:
+  typedef std::function<void(const Connecting&)> NormalCallback;
+  typedef std::function<void(const Connecting&, IoBuffer*, TimePoint)>
+      OnMessageCallback;
+  typedef std::function<void(const Connecting&, size_t)> HighWaterMarkCallback;
+
   Connecting(Poller* poller, int socket_fd, const NetAddress& local_address,
              const NetAddress& peer_address);
   ~Connecting();
 
-  void RegisterReadCallback(Eventer::ReadCallback cb) {
-    ReadCallback_ = std::move(cb);
+  void RegisterOnConnectionCallback(NormalCallback cb) {
+    OnConnectionCallback_ = std::move(cb);
   }
-  void RegisterWriteCallback(Eventer::NormalCallback cb) {
+  void RegisterOnMessageCallback(OnMessageCallback cb) {
+    OnMessageCallback_ = std::move(cb);
+  }
+  void RegisterWriteCallback(NormalCallback cb) {
     WriteCallback_ = std::move(cb);
   }
-  void RegisterCloseCallback(Eventer::NormalCallback cb) {
-    CloseCallback_ = std::move(cb);
+  void RegisterHighWaterMarkCallback(HighWaterMarkCallback cb) {
+    HighWaterMarkCallback_ = std::move(cb);
   }
-  void RegisterErrorCallback(Eventer::NormalCallback cb) {
-    ErrorCallback_ = std::move(cb);
+  void RegisterCloseCallback(NormalCallback cb) {
+    CloseCallback_ = std::move(cb);
   }
 
   void DoReading(TimePoint receive_time);
@@ -58,10 +68,14 @@ class Connecting : NonCopyableMovable {
   NetAddress local_address_;
   NetAddress peer_address_;
 
-  Eventer::ReadCallback ReadCallback_;
-  Eventer::NormalCallback WriteCallback_;
-  Eventer::NormalCallback CloseCallback_;
-  Eventer::NormalCallback ErrorCallback_;
+  NormalCallback OnConnectionCallback_;
+  OnMessageCallback OnMessageCallback_;
+  NormalCallback WriteCallback_;
+  HighWaterMarkCallback HighWaterMarkCallback_;
+  NormalCallback CloseCallback_;
+
+  IoBuffer InputBuffer;
+  IoBuffer OutputBuffer;
 };
 
 }  // namespace taotu
