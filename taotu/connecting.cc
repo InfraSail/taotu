@@ -10,14 +10,21 @@
 
 #include "connecting.h"
 
+#include <functional>
+
 using namespace taotu;
 
 Connecting::Connecting(Poller* poller, int socket_fd,
                        const NetAddress& local_address,
                        const NetAddress& peer_address)
-    : socketer_(socket_fd),
-      eventer_(poller, socket_fd),
+    : eventer_(poller, socket_fd),
+      socketer_(socket_fd),
       local_address_(local_address),
       peer_address_(peer_address) {
+  eventer_.RegisterReadCallback(
+      std::bind(&Connecting::DoReading, this, std::placeholders::_1));
+  eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));
+  eventer_.RegisterCloseCallback(std::bind(&Connecting::DoClosing, this));
+  eventer_.RegisterErrorCallback(std::bind(&Connecting::DoWithError, this));
   socketer_.SetKeepAlive(true);
 }
