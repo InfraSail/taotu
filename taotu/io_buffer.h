@@ -11,6 +11,7 @@
 #ifndef TAOTU_TAOTU_IO_BUFFER_H_
 #define TAOTU_TAOTU_IO_BUFFER_H_
 
+#include <sys/types.h>
 #ifdef __MACH__
 #include <libkern/OSByteOrder.h>
 #define htobe16(x) OSSwapHostToBigInt16(x)
@@ -127,8 +128,11 @@ class IoBuffer {
   // Only be called in user code
   void ShrinkWritableSpace(size_t len);
 
-  // Discrete reading coping with sudden large traffic
+  // Discrete reading (coping with sudden large traffic)
   ssize_t Read(int fd, int* tmp_errno);
+
+  // Writing
+  ssize_t Write(int fd);
 
  private:
   const char* GetBufferBegin() const { return &*buffer_.begin(); }

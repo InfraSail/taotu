@@ -11,7 +11,9 @@
 #include "io_buffer.h"
 
 #include <errno.h>
+#include <sys/types.h>
 #include <sys/uio.h>
+#include <unistd.h>
 
 #include <utility>
 
@@ -126,8 +128,8 @@ ssize_t IoBuffer::Read(int fd, int* tmp_errno) {
       ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
   if (n < 0) {
     *tmp_errno = errno;
-    LOG(logger::kWarn,
-        "Discrete reading in Fd(" + std::to_string(fd) + ") failed!");
+    LOG(logger::kError,
+        "Discrete reading in Fd(" + std::to_string(fd) + ") failed!!!");
   } else if (static_cast<size_t>(n) <= writable_bytes) {
     writing_index_ += n;
   } else {
@@ -136,6 +138,12 @@ ssize_t IoBuffer::Read(int fd, int* tmp_errno) {
            static_cast<size_t>(n - writable_bytes));
   }
   return n;
+}
+
+ssize_t IoBuffer::Write(int fd) {
+  return ::write(
+      fd, reinterpret_cast<void*>(const_cast<char*>(GetReadablePosition())),
+      static_cast<size_t>(GetReadableBytes()));
 }
 
 void IoBuffer::ReserveWritableSpace(size_t len) {
