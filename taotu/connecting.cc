@@ -11,6 +11,9 @@
 #include "connecting.h"
 
 #include <functional>
+#include <string>
+
+#include "logger.h"
 
 using namespace taotu;
 
@@ -26,5 +29,13 @@ Connecting::Connecting(Poller* poller, int socket_fd,
   eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));
   eventer_.RegisterCloseCallback(std::bind(&Connecting::DoClosing, this));
   eventer_.RegisterErrorCallback(std::bind(&Connecting::DoWithError, this));
+  LOG(logger::kDebug, "The TCP connection to fd(" + std::to_string(socket_fd) +
+                          ") is being created.");
   socketer_.SetKeepAlive(true);
+}
+
+Connecting::~Connecting() {
+  LOG(logger::kDebug, "The TCP connection to fd(" +
+                          std::to_string(socketer_.Fd()) +
+                          ") is being closed.");
 }

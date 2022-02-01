@@ -32,6 +32,7 @@ class Connecting : NonCopyableMovable {
  public:
   Connecting(Poller* poller, int socket_fd, const NetAddress& local_address,
              const NetAddress& peer_address);
+  ~Connecting();
 
   void RegisterReadCallback(Eventer::ReadCallback cb) {
     ReadCallback_ = std::move(cb);
