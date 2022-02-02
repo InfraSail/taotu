@@ -57,6 +57,7 @@ class EventManager : NonCopyableMovable {
  private:
   typedef std::unordered_map<int, std::unique_ptr<Connecting>> EventerMap;
 
+  void DoWithActiveTasks(TimePoint return_time);
   void DoExpiredTimeTasks();
   void DestroyClosedConnections();
 
@@ -72,7 +73,6 @@ class EventManager : NonCopyableMovable {
 
   bool is_looping_;
   bool should_quit_;
-  bool is_doing_with_tasks_;
 
   Poller::EventerList active_events_;
   std::vector<int> closed_fds;

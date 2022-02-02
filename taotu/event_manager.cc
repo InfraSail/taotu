@@ -38,21 +38,8 @@ void EventManager::Loop() {
                             ") is starting.");
     while (!should_quit_) {
       active_events_.clear();
-      TimePoint return_time =
-          poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_);
-      is_doing_with_tasks_ = true;
-      for (auto active_event : active_events_) {
-        active_event->Work(return_time);
-        int fd = active_event->Fd();
-        {
-          LockGuard lock_guard(eventer_map_mutex_lock_);
-          if (eventer_map_[fd]->IsClosed()) {
-            --eventer_amount_;
-            closed_fds.push_back(fd);
-          }
-        }
-      }
-      is_doing_with_tasks_ = false;
+      DoWithActiveTasks(
+          poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
       DoExpiredTimeTasks();
       DestroyClosedConnections();
     }
@@ -89,6 +76,20 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
     time_point.SetTaskContinueCallback(std::move(IsContinue));
   }
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
+}
+
+void EventManager::DoWithActiveTasks(TimePoint return_time) {
+  for (auto active_event : active_events_) {
+    active_event->Work(return_time);
+    int fd = active_event->Fd();
+    {
+      LockGuard lock_guard(eventer_map_mutex_lock_);
+      if (eventer_map_[fd]->IsClosed()) {
+        --eventer_amount_;
+        closed_fds.push_back(fd);
+      }
+    }
+  }
 }
 
 void EventManager::DoExpiredTimeTasks() {
