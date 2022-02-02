@@ -22,10 +22,11 @@
 #include "non_copyable_movable.h"
 #include "socketer.h"
 #include "time_point.h"
+#include "timer.h"
 
 namespace taotu {
 
-class Poller;
+class EventManager;
 
 /**
  * @brief  // TODO:
@@ -38,8 +39,8 @@ class Connecting : NonCopyableMovable {
       OnMessageCallback;
   typedef std::function<void(const Connecting&, size_t)> HighWaterMarkCallback;
 
-  Connecting(Poller* poller, int socket_fd, const NetAddress& local_address,
-             const NetAddress& peer_address);
+  Connecting(EventManager* event_manager, int socket_fd,
+             const NetAddress& local_address, const NetAddress& peer_address);
   ~Connecting();
 
   void RegisterOnConnectionCallback(NormalCallback cb) {
@@ -76,6 +77,8 @@ class Connecting : NonCopyableMovable {
   };
 
   void SetState(ConnectionState state) { state_ = state; }
+
+  EventManager* event_manager_;
 
   Eventer eventer_;
   Socketer socketer_;

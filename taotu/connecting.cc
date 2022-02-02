@@ -19,14 +19,16 @@
 #include <iterator>
 #include <string>
 
+#include "event_manager.h"
 #include "logger.h"
 
 using namespace taotu;
 
-Connecting::Connecting(Poller* poller, int socket_fd,
+Connecting::Connecting(EventManager* event_manager, int socket_fd,
                        const NetAddress& local_address,
                        const NetAddress& peer_address)
-    : eventer_(poller, socket_fd),
+    : event_manager_(event_manager),
+      eventer_(event_manager->GetPoller(), socket_fd),
       socketer_(socket_fd),
       local_address_(local_address),
       peer_address_(peer_address) {
