@@ -31,7 +31,8 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
       eventer_(event_manager->GetPoller(), socket_fd),
       socketer_(socket_fd),
       local_address_(local_address),
-      peer_address_(peer_address) {
+      peer_address_(peer_address),
+      state_(kConnecting) {
   eventer_.RegisterReadCallback(
       std::bind(&Connecting::DoReading, this, std::placeholders::_1));
   eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));

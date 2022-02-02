@@ -66,6 +66,11 @@ class Connecting : NonCopyableMovable {
   void DoClosing();
   void DoWithError();
 
+  void StartReading() { eventer_.EnableReadEvents(); }
+  void StopReading() { eventer_.DisableReadEvents(); }
+  void StartWriting() { eventer_.EnableWriteEvents(); }
+  void StopWriting() { eventer_.DisableWriteEvents(); }
+
   bool IsClosed() { return state_ == kDisconnected; }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
