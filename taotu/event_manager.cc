@@ -91,7 +91,6 @@ void EventManager::DoWithActiveTasks(TimePoint return_time) {
     }
   }
 }
-
 void EventManager::DoExpiredTimeTasks() {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();
   for (auto& expired_time_task : expired_time_tasks) {
@@ -113,7 +112,6 @@ void EventManager::DoExpiredTimeTasks() {
     }
   }
 }
-
 void EventManager::DestroyClosedConnections() {
   for (auto fd : closed_fds) {
     {
