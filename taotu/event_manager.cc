@@ -38,7 +38,10 @@ void EventManager::Loop() {
                             ") is starting.");
     while (!should_quit_) {
       active_events_.clear();
+      poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_);
+      is_doing_with_tasks_ = true;
       // TODO:
+      is_doing_with_tasks_ = false;
     }
     LOG(logger::kDebug, "The event loop in thread(" +
                             std::to_string(::pthread_self()) +

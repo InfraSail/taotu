@@ -68,6 +68,7 @@ class EventManager : NonCopyableMovable {
 
   bool is_looping_;
   bool should_quit_;
+  bool is_doing_with_tasks_;
 
   Poller::EventerList active_events_;
 };
