@@ -66,6 +66,8 @@ class Connecting : NonCopyableMovable {
   void DoClosing();
   void DoWithError();
 
+  bool IsClosed() { return state_ == kDisconnected; }
+
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
  private:
