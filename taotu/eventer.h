@@ -67,9 +67,8 @@ class Eventer : NonCopyableMovable {
 
   Poller* HostPoller();
 
-  void RemoveMyself();
-
  private:
+  void RemoveMyself();
   void UpdateEvents();
 
   // In <poll.h> or <sys/epoll.h>
