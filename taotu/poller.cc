@@ -30,7 +30,7 @@ namespace {
 const int kMaxInitPollerSize = 16;
 }
 
-Poller::Poller(int* event_amount)
+Poller::Poller(uint32_t* event_amount)
     : poll_fd_(::epoll_create1(EPOLL_CLOEXEC)),
       event_amount_(event_amount),
       poll_events_(kMaxInitPollerSize) {

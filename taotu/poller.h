@@ -12,6 +12,7 @@
 #ifndef TAOTU_TAOTU_POLLER_H_
 #define TAOTU_TAOTU_POLLER_H_
 
+#include <stdint.h>
 #include <sys/epoll.h>
 
 #include <unordered_map>
@@ -33,7 +34,7 @@ class Poller : NonCopyableMovable {
  public:
   typedef std::vector<Eventer*> EventerList;
 
-  Poller(int* event_amount);
+  Poller(uint32_t* event_amount);
   ~Poller();
 
   // Polling (calls the native "poll()" (poll, epoll or kqueue))
@@ -52,7 +53,7 @@ class Poller : NonCopyableMovable {
   int poll_fd_;
 
   // Referencing to the amount of regarding file descriptors
-  const int* event_amount_;
+  const uint32_t* event_amount_;
 
   typedef std::vector<struct epoll_event> PollEventList;
 
