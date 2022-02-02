@@ -37,7 +37,7 @@ class Poller : NonCopyableMovable {
   ~Poller();
 
   // Polling (calls the native "poll()" (poll, epoll or kqueue))
-  void Poll(int timeout, EventerList* active_eventers);
+  TimePoint Poll(int timeout, EventerList* active_eventers);
 
   void AddEventer(Eventer* eventer);
   void ModifyEventer(Eventer* eventer);

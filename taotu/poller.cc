@@ -22,6 +22,7 @@
 #include "errno.h"
 #include "eventer.h"
 #include "logger.h"
+#include "time_point.h"
 
 using namespace taotu;
 
@@ -41,7 +42,7 @@ Poller::~Poller() {
   }
 }
 
-void Poller::Poll(int timeout, EventerList* active_eventers) {
+TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   LOG(logger::kDebug,
       "In thread(" + std::to_string(::pthread_self()) +
           "), The amount of file descriptors in the native \"poll()\" is " +
@@ -49,6 +50,7 @@ void Poller::Poll(int timeout, EventerList* active_eventers) {
   int event_amount =
       ::epoll_wait(poll_fd_, &(*(poll_events_.begin())),
                    static_cast<int>(poll_events_.size()), timeout);
+  TimePoint return_time;
   int saved_errno = errno;
   if (event_amount > 0) {
     LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
@@ -69,6 +71,7 @@ void Poller::Poll(int timeout, EventerList* active_eventers) {
               "), errors occurred when the native \"poll()\" executing!!!");
     }
   }
+  return return_time;
 }
 
 void Poller::AddEventer(Eventer* eventer) {
