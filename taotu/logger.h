@@ -76,7 +76,7 @@ constexpr int64_t kLogBufferSize = 1024 * 1024 * 16;
 class Logger : NonCopyableMovable {
  public:
   typedef std::shared_ptr<Logger> LoggerPtr;
-  typedef std::shared_ptr<std::thread> ThreadPtr;
+  typedef std::unique_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, kLogBufferSize> LogBuffer;
 
   // The unique method to creat the unique actual "Logger" object ("Singleton"
