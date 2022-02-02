@@ -71,7 +71,6 @@ class EventManager : NonCopyableMovable {
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
 
-  bool is_looping_;
   bool should_quit_;
 
   Poller::EventerList active_events_;

@@ -22,7 +22,9 @@
 
 using namespace taotu;
 
-EventManager::EventManager() {}
+EventManager::EventManager() : eventer_amount_(0) {
+  poller_ = std::make_unique<Poller>(&eventer_amount_);
+}
 EventManager::~EventManager() {
   if (thread_->joinable()) {
     thread_->join();
@@ -31,13 +33,11 @@ EventManager::~EventManager() {
 
 void EventManager::Loop() {
   thread_ = std::make_unique<std::thread>([this]() {
-    is_looping_ = true;
     should_quit_ = false;
     LOG(logger::kDebug, "The event loop in thread(" +
                             std::to_string(::pthread_self()) +
                             ") is starting.");
     while (!should_quit_) {
-      active_events_.clear();
       DoWithActiveTasks(
           poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
       DoExpiredTimeTasks();
@@ -46,7 +46,6 @@ void EventManager::Loop() {
     LOG(logger::kDebug, "The event loop in thread(" +
                             std::to_string(::pthread_self()) +
                             ") is stopping.");
-    is_looping_ = false;
   });
 }
 
@@ -90,6 +89,7 @@ void EventManager::DoWithActiveTasks(TimePoint return_time) {
       }
     }
   }
+  active_events_.clear();
 }
 void EventManager::DoExpiredTimeTasks() {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();
