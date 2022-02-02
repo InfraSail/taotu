@@ -17,6 +17,7 @@
 #include <memory>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include "connecting.h"
 #include "net_address.h"
@@ -53,15 +54,18 @@ class EventManager : NonCopyableMovable {
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
 
-  void DoExpiredTimeTasks();
-
  private:
+  typedef std::unordered_map<int, std::unique_ptr<Connecting>> EventerMap;
+
+  void DoExpiredTimeTasks();
+  void DestroyClosedConnections();
+
   std::unique_ptr<Poller> poller_;
-  std::unordered_map<int, std::unique_ptr<Connecting>> eventers_map_;
+  EventerMap eventer_map_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
 
-  MutexLock eventers_map_mutex_lock_;
+  MutexLock eventer_map_mutex_lock_;
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
@@ -71,6 +75,7 @@ class EventManager : NonCopyableMovable {
   bool is_doing_with_tasks_;
 
   Poller::EventerList active_events_;
+  std::vector<int> closed_fds;
 };
 
 }  // namespace taotu

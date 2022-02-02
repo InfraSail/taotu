@@ -38,10 +38,23 @@ void EventManager::Loop() {
                             ") is starting.");
     while (!should_quit_) {
       active_events_.clear();
-      poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_);
+      TimePoint return_time =
+          poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_);
       is_doing_with_tasks_ = true;
-      // TODO:
+      for (auto active_event : active_events_) {
+        active_event->Work(return_time);
+        int fd = active_event->Fd();
+        {
+          LockGuard lock_guard(eventer_map_mutex_lock_);
+          if (eventer_map_[fd]->IsClosed()) {
+            --eventer_amount_;
+            closed_fds.push_back(fd);
+          }
+        }
+      }
       is_doing_with_tasks_ = false;
+      DoExpiredTimeTasks();
+      DestroyClosedConnections();
     }
     LOG(logger::kDebug, "The event loop in thread(" +
                             std::to_string(::pthread_self()) +
@@ -53,9 +66,10 @@ void EventManager::Loop() {
 void EventManager::InsertNewConnection(int socket_fd,
                                        const NetAddress& local_address,
                                        const NetAddress& peer_address) {
-  LockGuard lock_guard(eventers_map_mutex_lock_);
-  eventers_map_[socket_fd] = std::make_unique<Connecting>(
+  LockGuard lock_guard(eventer_map_mutex_lock_);
+  eventer_map_[socket_fd] = std::make_unique<Connecting>(
       this, socket_fd, local_address, peer_address);
+  ++eventer_amount_;
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
@@ -97,4 +111,14 @@ void EventManager::DoExpiredTimeTasks() {
       }
     }
   }
+}
+
+void EventManager::DestroyClosedConnections() {
+  for (auto fd : closed_fds) {
+    {
+      LockGuard lock_guard(eventer_map_mutex_lock_);
+      eventer_map_.erase(fd);
+    }
+  }
+  closed_fds.clear();
 }
