@@ -22,8 +22,6 @@
 
 namespace taotu {
 
-class EventManager;
-
 /**
  * @brief "Timer" can be used to manage time tasks.
  *
