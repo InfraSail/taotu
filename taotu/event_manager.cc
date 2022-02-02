@@ -40,6 +40,10 @@ void EventManager::Loop() {
       active_events_.clear();
       // TODO:
     }
+    LOG(logger::kDebug, "The event loop in thread(" +
+                            std::to_string(::pthread_self()) +
+                            ") is stopping.");
+    is_looping_ = false;
   });
 }
 
