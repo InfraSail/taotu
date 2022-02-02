@@ -10,7 +10,15 @@
 
 #include "event_manager.h"
 
+#include <pthread.h>
+
+#include <memory>
+#include <string>
 #include <utility>
+
+#include "logger.h"
+#include "spin_lock.h"
+#include "timer.h"
 
 using namespace taotu;
 
@@ -22,7 +30,25 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  // TODO:
+  thread_ = std::make_unique<std::thread>([this]() {
+    is_looping_ = true;
+    should_quit_ = false;
+    LOG(logger::kDebug, "The event loop in thread(" +
+                            std::to_string(::pthread_self()) +
+                            ") is starting.");
+    while (!should_quit_) {
+      active_events_.clear();
+      // TODO:
+    }
+  });
+}
+
+void EventManager::InsertNewConnection(int socket_fd,
+                                       const NetAddress& local_address,
+                                       const NetAddress& peer_address) {
+  LockGuard lock_guard(eventers_map_mutex_lock_);
+  eventers_map_[socket_fd] = std::make_unique<Connecting>(
+      this, socket_fd, local_address, peer_address);
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
@@ -43,9 +69,6 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
   }
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
-
-// void EventManager::UpdateEventer(Eventer *eventer) {}
-// void EventManager::RemoveEventer(Eventer *eventer) {}
 
 void EventManager::DoExpiredTimeTasks() {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();

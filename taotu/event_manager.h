@@ -16,11 +16,13 @@
 #include <functional>
 #include <memory>
 #include <thread>
-#include <vector>
+#include <unordered_map>
 
 #include "connecting.h"
+#include "net_address.h"
 #include "non_copyable_movable.h"
 #include "poller.h"
+#include "spin_lock.h"
 #include "time_point.h"
 #include "timer.h"
 
@@ -37,6 +39,9 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
+  void InsertNewConnection(int socket_fd, const NetAddress& local_address,
+                           const NetAddress& peer_address);
+
   Poller* GetPoller() { return poller_.get(); }
 
   // For the Balancer to pick a EventManager with lowest load
@@ -48,19 +53,23 @@ class EventManager : NonCopyableMovable {
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
 
-  // void UpdateEventer(Eventer *eventer);
-  // void RemoveEventer(Eventer *eventer);
-
   void DoExpiredTimeTasks();
 
  private:
   std::unique_ptr<Poller> poller_;
-  std::vector<std::unique_ptr<Connecting>> eventers_;
+  std::unordered_map<int, std::unique_ptr<Connecting>> eventers_map_;
   std::unique_ptr<std::thread> thread_;
   Timer timer_;
 
+  MutexLock eventers_map_mutex_lock_;
+
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;
+
+  bool is_looping_;
+  bool should_quit_;
+
+  Poller::EventerList active_events_;
 };
 
 }  // namespace taotu
