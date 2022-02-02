@@ -26,6 +26,7 @@ Eventer::~Eventer() {
   while (is_handling_) {
   }
   RemoveMyself();
+  poller_ = nullptr;
 }
 
 void Eventer::Work(TimePoint tp) {
