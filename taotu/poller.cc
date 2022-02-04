@@ -26,9 +26,7 @@
 
 using namespace taotu;
 
-namespace {
-const int kMaxInitPollerSize = 16;
-}
+static const int kMaxInitPollerSize = 16;
 
 Poller::Poller(uint32_t* event_amount)
     : poll_fd_(::epoll_create1(EPOLL_CLOEXEC)),
