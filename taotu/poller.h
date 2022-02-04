@@ -45,6 +45,8 @@ class Poller : NonCopyableMovable {
   void RemoveEventer(Eventer* eventer);
 
  private:
+  typedef std::vector<struct epoll_event> PollEventList;
+
   void GetActiveEventer(int event_amount, EventerList* active_eventers) const;
 
   bool IsPollFdEffective();
@@ -54,8 +56,6 @@ class Poller : NonCopyableMovable {
 
   // Referencing to the amount of regarding file descriptors
   const uint32_t* event_amount_;
-
-  typedef std::vector<struct epoll_event> PollEventList;
 
   // The buffer for active event struct of the native "poll()" (poll, epoll or
   // kqueue)
