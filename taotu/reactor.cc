@@ -39,4 +39,6 @@ Reactor::~Reactor() {
   event_managers_.clear();
 }
 
-void Reactor::Loop() {}
+void Reactor::Loop() {
+  // TODO:
+}
