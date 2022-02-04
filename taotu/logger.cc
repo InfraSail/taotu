@@ -16,6 +16,13 @@
 using namespace taotu;
 using namespace taotu::logger;
 
+// Relevant to LogLevel
+static const std::string Log_level_info_prefix[3]{
+    "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
+
+// The file name of the log
+static const std::string kLogName{"log.txt"};
+
 // The unique actual "Logger" object
 Logger::LoggerPtr Logger::logger_ptr(new Logger, Logger::DestroyLogger);
 bool Logger::is_initialized = false;

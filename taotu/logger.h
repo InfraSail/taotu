@@ -52,18 +52,14 @@ enum LogLevel {
 };
 namespace {
 
-// Relevant to LogLevel
-const std::string Log_level_info_prefix[3]{
-    "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
+enum {
 
-// The file name of the log
-const std::string kLogName{"log.txt"};
+  // 2GB
+  kLogFileMaxByte = 1024 * 1024 * 1024,
 
-// 2GB
-constexpr int64_t kLogFileMaxByte = 1024 * 1024 * 1024;
-
-// Should be the Nth power of 2 (for "Disruptor")
-constexpr int64_t kLogBufferSize = 1024 * 1024 * 16;
+  // Should be the Nth power of 2 (for "Disruptor")
+  kLogBufferSize = 1024 * 1024 * 16,
+};
 
 }  // namespace
 
