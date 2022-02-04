@@ -26,7 +26,7 @@ Reactor::Reactor(NetAddress& listen_address, int thread_amout)
     ::exit(-1);
   }
   for (int i = 0; i < thread_amout; ++i) {
-    event_managers_.emplace_back(std::make_unique<EventManager>());
+    event_managers_.emplace_back(new EventManager);
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
