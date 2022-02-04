@@ -21,6 +21,8 @@
 
 using namespace taotu;
 
+static const char kCrlf[] = "\r\n";
+
 IoBuffer::IoBuffer(size_t initial_capacity)
     : buffer_(kReservedCapacity + initial_capacity),
       reading_index_(kReservedCapacity),

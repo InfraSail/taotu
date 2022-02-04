@@ -34,12 +34,13 @@
 namespace taotu {
 
 namespace {
+
 enum {
   kReservedCapacity = 8,  // vacates 8 bytes in the front of the buffer as an
                           // optional message header
   kInitialCapacity = 1024,
 };
-static const char kCrlf[] = "\r\n";
+
 }  // namespace
 
 #if defined(__clang__) || __GNUC_MINOR__ >= 6
