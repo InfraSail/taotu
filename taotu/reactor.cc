@@ -18,7 +18,7 @@
 using namespace taotu;
 
 Reactor::Reactor(NetAddress& listen_address, int thread_amout)
-    : acceptor_(listen_address, true), balancer_(nullptr) {
+    : acceptor_(listen_address, true) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
   } else {
