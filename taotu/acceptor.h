@@ -40,7 +40,7 @@ class Acceptor : NonCopyableMovable {
 
   // Accept a connection request, create this connection, allocate a file
   // descriptor of this connecting socket and record its net address info
-  int Accept();
+  int Accept(NetAddress* peer_address);
 
  private:
   // The file descriptor of this accepting socket
