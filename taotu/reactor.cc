@@ -19,6 +19,8 @@
 
 using namespace taotu;
 
+static const uint32_t kMaxEventAmount = 600000;
+
 static NetAddress GetLocalNetAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
