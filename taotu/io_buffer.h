@@ -136,6 +136,8 @@ class IoBuffer {
   ssize_t WriteToFd(int fd);
 
  private:
+  typedef std::vector<char> BufferType;
+
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
   // Reserve space for writing
@@ -185,7 +187,7 @@ class IoBuffer {
     }
   }
 
-  std::vector<char> buffer_;
+  BufferType buffer_;
   size_t reading_index_;
   size_t writing_index_;
 };
