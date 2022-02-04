@@ -52,11 +52,19 @@ void EventManager::Loop() {
 void EventManager::InsertNewConnection(int socket_fd,
                                        const NetAddress& local_address,
                                        const NetAddress& peer_address) {
-  LockGuard lock_guard(eventer_map_mutex_lock_);
-  eventer_map_[socket_fd] = std::make_unique<Connecting>(
-      this, socket_fd, local_address, peer_address);
-  eventer_map_[socket_fd]->SetTcpNoDelay(true);
-  ++eventer_amount_;
+  {
+    LockGuard lock_guard(eventer_map_mutex_lock_);
+    eventer_map_[socket_fd] = std::make_unique<Connecting>(
+        this, socket_fd, local_address, peer_address);
+    eventer_map_[socket_fd]->SetTcpNoDelay(true);
+    ++eventer_amount_;
+  }
+  LOG(logger::kDebug,
+      "Create a new connection that fd(" + std::to_string(socket_fd) +
+          ") with local net address (IP(" + local_address.GetIp() + "), Port(" +
+          std::to_string(local_address.GetPort()) +
+          ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
+          std::to_string(peer_address.GetPort()) + ")).");
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
