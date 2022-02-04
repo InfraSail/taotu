@@ -23,7 +23,9 @@
 namespace taotu {
 
 namespace {
+
 const uint32_t kMaxEventAmount = 600000;
+
 }
 
 class Balancer;
