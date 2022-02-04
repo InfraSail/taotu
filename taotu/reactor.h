@@ -44,9 +44,11 @@ class Reactor : NonCopyableMovable {
   void Loop();
 
  private:
+  typedef std::unique_ptr<Balancer> BalancerPtr;
+
   Acceptor acceptor_;
   EventManagers event_managers_;
-  std::unique_ptr<Balancer> balancer_;
+  BalancerPtr balancer_;
 
   bool should_stop_;
 };
