@@ -11,14 +11,27 @@
 #include "reactor.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "balancer.h"
+#include "connecting.h"
 #include "logger.h"
 
 using namespace taotu;
 
+static NetAddress GetLocalNetAddress(int socket_fd) {
+  struct sockaddr_in6 local_addr;
+  ::memset(&local_addr, 0, sizeof(local_addr));
+  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
+                    &addr_len) < 0) {
+    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+  }
+  return NetAddress(local_addr);
+}
+
 Reactor::Reactor(NetAddress& listen_address, int thread_amout)
-    : acceptor_(listen_address, true) {
+    : acceptor_(listen_address, true), should_stop_(false) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
   } else {
@@ -41,4 +54,14 @@ Reactor::~Reactor() {
 
 void Reactor::Loop() {
   // TODO:
+  while (!should_stop_) {
+    NetAddress peer_address;
+    int socket_fd = acceptor_.Accept(&peer_address);
+    if (socket_fd < 0 || socket_fd > kMaxEventAmount) {
+      LOG(logger::kError, "Fail to accept a new connection request!!!");
+      continue;
+    }
+    balancer_->PickOneEventManager()->InsertNewConnection(
+        socket_fd, GetLocalNetAddress(socket_fd), peer_address);
+  }
 }

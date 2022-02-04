@@ -11,6 +11,8 @@
 #ifndef TAOTU_TAOTU_REACTOR_H_
 #define TAOTU_TAOTU_REACTOR_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -19,6 +21,10 @@
 #include "non_copyable_movable.h"
 
 namespace taotu {
+
+namespace {
+const uint32_t kMaxEventAmount = 600000;
+}
 
 class Balancer;
 
@@ -39,6 +45,8 @@ class Reactor : NonCopyableMovable {
   Acceptor acceptor_;
   EventManagers event_managers_;
   std::unique_ptr<Balancer> balancer_;
+
+  bool should_stop_;
 };
 
 }  // namespace taotu
