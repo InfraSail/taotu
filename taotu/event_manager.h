@@ -56,14 +56,17 @@ class EventManager : NonCopyableMovable {
 
  private:
   typedef std::unordered_map<int, std::unique_ptr<Connecting>> EventerMap;
+  typedef std::unique_ptr<Poller> PolerPtr;
+  typedef std::unique_ptr<std::thread> ThreadPtr;
+  typedef std::vector<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
   void DoExpiredTimeTasks();
   void DestroyClosedConnections();
 
-  std::unique_ptr<Poller> poller_;
+  PolerPtr poller_;
   EventerMap eventer_map_;
-  std::unique_ptr<std::thread> thread_;
+  ThreadPtr thread_;
   Timer timer_;
 
   MutexLock eventer_map_mutex_lock_;
@@ -74,7 +77,7 @@ class EventManager : NonCopyableMovable {
   bool should_quit_;
 
   Poller::EventerList active_events_;
-  std::vector<int> closed_fds;
+  Fds closed_fds;
 };
 
 }  // namespace taotu
