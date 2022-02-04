@@ -18,8 +18,7 @@
 
 using namespace taotu;
 
-NetAddress::NetAddress(uint16_t port = 0, bool loop_back = false,
-                       bool use_ipv6 = false) {
+NetAddress::NetAddress(uint16_t port, bool loop_back, bool use_ipv6) {
   if (use_ipv6) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
@@ -33,7 +32,7 @@ NetAddress::NetAddress(uint16_t port = 0, bool loop_back = false,
     socket_address_.sin_port = ::htons(port);
   }
 }
-NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6 = false) {
+NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
   if (use_ipv6 || ::strchr(ip.c_str(), ':')) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
