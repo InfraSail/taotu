@@ -18,7 +18,7 @@
 
 namespace taotu {
 
-class Reactor;
+class ReactorManager;
 
 /**
  * @brief  // TODO:
@@ -31,9 +31,9 @@ class Server : NonCopyableMovable {
   ~Server();
 
  private:
-  typedef std::unique_ptr<Reactor> ReactorPtr;
+  typedef std::unique_ptr<ReactorManager> ReactorManagerPtr;
 
-  ReactorPtr reactor_;
+  ReactorManagerPtr reactor_;
 };
 
 }  // namespace taotu
