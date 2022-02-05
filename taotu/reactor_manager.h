@@ -1,5 +1,5 @@
 /**
- * @file reactor.h
+ * @file reactor_manager.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief  // TODO:
  * @date 2021-12-16
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_REACTOR_H_
-#define TAOTU_TAOTU_REACTOR_H_
+#ifndef TAOTU_TAOTU_REACTOR_MANAGER_H_
+#define TAOTU_TAOTU_REACTOR_MANAGER_H_
 
 #include <stdint.h>
 
@@ -28,13 +28,13 @@ class Balancer;
  * @brief  // TODO:
  *
  */
-class Reactor : NonCopyableMovable {
+class ReactorManager : NonCopyableMovable {
  public:
   typedef std::vector<EventManager*> EventManagers;
 
-  Reactor(const NetAddress& listen_address, int io_thread_amount = 6,
-          bool should_reuse_port = false);
-  ~Reactor();
+  ReactorManager(const NetAddress& listen_address, int io_thread_amount = 6,
+                 bool should_reuse_port = false);
+  ~ReactorManager();
 
   void Loop();
 
@@ -50,4 +50,4 @@ class Reactor : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_REACTOR_H_
+#endif  // !TAOTU_TAOTU_REACTOR_MANAGER_H_

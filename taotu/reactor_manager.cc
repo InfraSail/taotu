@@ -8,7 +8,7 @@
  *
  */
 
-#include "reactor.h"
+#include "reactor_manager.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -32,8 +32,8 @@ static NetAddress GetLocalNetAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-Reactor::Reactor(const NetAddress& listen_address, int io_thread_amount,
-                 bool should_reuse_port)
+ReactorManager::ReactorManager(const NetAddress& listen_address,
+                               int io_thread_amount, bool should_reuse_port)
     : acceptor_(listen_address, should_reuse_port), should_stop_(false) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
@@ -46,7 +46,7 @@ Reactor::Reactor(const NetAddress& listen_address, int io_thread_amount,
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
-Reactor::~Reactor() {
+ReactorManager::~ReactorManager() {
   int thread_amout = event_managers_.size();
   for (int i = 0; i < thread_amout; ++i) {
     delete event_managers_[i];
@@ -55,7 +55,7 @@ Reactor::~Reactor() {
   event_managers_.clear();
 }
 
-void Reactor::Loop() {
+void ReactorManager::Loop() {
   // TODO:
   while (!should_stop_) {
     NetAddress peer_address;
