@@ -27,7 +27,7 @@ namespace taotu {
  */
 class Acceptor : NonCopyableMovable {
  public:
-  Acceptor(const NetAddress& listen_fd, bool should_reuse_port);
+  Acceptor(const NetAddress& listen_address, bool should_reuse_port);
   ~Acceptor();
 
   // Get the file descriptor of this accepting socket
