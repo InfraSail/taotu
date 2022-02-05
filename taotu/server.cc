@@ -10,4 +10,15 @@
 
 #include "server.h"
 
+#include <memory>
+
+#include "reactor.h"
+
 using namespace taotu;
+
+Server::Server(const NetAddress& listen_address, int io_thread_amount,
+               bool should_reuse_port) {
+  reactor_ = std::make_unique<Reactor>(listen_address, io_thread_amount,
+                                       should_reuse_port);
+}
+Server::~Server() {}
