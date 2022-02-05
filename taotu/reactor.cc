@@ -32,8 +32,9 @@ static NetAddress GetLocalNetAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-Reactor::Reactor(NetAddress& listen_address, int thread_amout)
-    : acceptor_(listen_address, true), should_stop_(false) {
+Reactor::Reactor(NetAddress& listen_address, int thread_amout,
+                 bool should_reuse_port)
+    : acceptor_(listen_address, should_reuse_port), should_stop_(false) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
     acceptor_.Listen();
   } else {

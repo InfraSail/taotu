@@ -32,7 +32,8 @@ class Reactor : NonCopyableMovable {
  public:
   typedef std::vector<EventManager*> EventManagers;
 
-  Reactor(NetAddress& listen_address, int thread_amout = 6);
+  Reactor(NetAddress& listen_address, int thread_amout = 6,
+          bool should_reuse_port = false);
   ~Reactor();
 
   void Loop();
