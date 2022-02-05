@@ -13,11 +13,11 @@
 
 #include "event_manager.h"
 #include "logger.h"
-#include "reactor.h"
+#include "reactor_manager.h"
 
 using namespace taotu;
 
-Balancer::Balancer(Reactor::EventManagers* event_managers, int strategy)
+Balancer::Balancer(ReactorManager::EventManagers* event_managers, int strategy)
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {

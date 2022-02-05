@@ -14,7 +14,7 @@
 
 #include <vector>
 
-#include "reactor.h"
+#include "reactor_manager.h"
 
 namespace taotu {
 
@@ -31,7 +31,7 @@ enum BalancerStrategy {
  */
 class Balancer {
  public:
-  Balancer(Reactor::EventManagers* event_managers,
+  Balancer(ReactorManager::EventManagers* event_managers,
            int strategy = BalancerStrategy::kMinEvents);
   ~Balancer() { event_managers_ = nullptr; }
 
@@ -45,7 +45,7 @@ class Balancer {
  private:
   // Weak reference from the set of "EventManager"s from "Reactor" in the main
   // thread
-  Reactor::EventManagers* event_managers_;
+  ReactorManager::EventManagers* event_managers_;
 
   // Strategy of balancing the load of file handles distributed to each I/O
   // thread("EventManager")
