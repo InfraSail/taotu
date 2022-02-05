@@ -32,7 +32,7 @@ static NetAddress GetLocalNetAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-Reactor::Reactor(NetAddress& listen_address, int thread_amout,
+Reactor::Reactor(NetAddress& listen_address, int io_thread_amount,
                  bool should_reuse_port)
     : acceptor_(listen_address, should_reuse_port), should_stop_(false) {
   if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
@@ -41,7 +41,7 @@ Reactor::Reactor(NetAddress& listen_address, int thread_amout,
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  for (int i = 0; i < thread_amout; ++i) {
+  for (int i = 0; i < io_thread_amount; ++i) {
     event_managers_.emplace_back(new EventManager);
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
