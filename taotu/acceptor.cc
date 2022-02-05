@@ -25,14 +25,14 @@
 
 using namespace taotu;
 
-Acceptor::Acceptor(const NetAddress& listen_address, bool reuse_port)
+Acceptor::Acceptor(const NetAddress& listen_address, bool should_reuse_port)
     : accept_soketer_(::socket(listen_address.GetFamily(),
                                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC,
                                IPPROTO_TCP)),
       is_listening_(false),
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
   accept_soketer_.SetReuseAddress(true);
-  accept_soketer_.SetReusePort(reuse_port);
+  accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
 }
 Acceptor::~Acceptor() {
