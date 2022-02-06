@@ -67,11 +67,31 @@ class Connecting : NonCopyableMovable {
   void DoClosing();
   void DoWithError();
 
-  void StartReading() { eventer_.EnableReadEvents(); }
-  void StopReading() { eventer_.DisableReadEvents(); }
-  void StartWriting() { eventer_.EnableWriteEvents(); }
-  void StopWriting() { eventer_.DisableWriteEvents(); }
-  void StopReadingWriting() { eventer_.DisableAllEvents(); }
+  void StartReading() {
+    if (!eventer_.HasReadEvents()) {
+      eventer_.EnableReadEvents();
+    }
+  }
+  void StopReading() {
+    if (eventer_.HasReadEvents()) {
+      eventer_.DisableReadEvents();
+    }
+  }
+  void StartWriting() {
+    if (!eventer_.HasWriteEvents()) {
+      eventer_.EnableWriteEvents();
+    }
+  }
+  void StopWriting() {
+    if (eventer_.HasWriteEvents()) {
+      eventer_.DisableWriteEvents();
+    }
+  }
+  void StopReadingWriting() {
+    if (eventer_.HasReadEvents() && eventer_.HasWriteEvents()) {
+      eventer_.DisableAllEvents();
+    }
+  }
 
   void Send(const void* message, size_t msg_len);
   void Send(const std::string& message);
