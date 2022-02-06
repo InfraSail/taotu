@@ -14,6 +14,7 @@
 #include <stddef.h>
 
 #include <functional>
+#include <string>
 #include <utility>
 
 #include "eventer.h"
@@ -34,10 +35,10 @@ class EventManager;
  */
 class Connecting : NonCopyableMovable {
  public:
-  typedef std::function<void(const Connecting&)> NormalCallback;
-  typedef std::function<void(const Connecting&, IoBuffer*, TimePoint)>
+  typedef std::function<void(Connecting&)> NormalCallback;
+  typedef std::function<void(Connecting&, IoBuffer*, TimePoint)>
       OnMessageCallback;
-  typedef std::function<void(const Connecting&, size_t)> HighWaterMarkCallback;
+  typedef std::function<void(Connecting&, size_t)> HighWaterMarkCallback;
 
   Connecting(EventManager* event_manager, int socket_fd,
              const NetAddress& local_address, const NetAddress& peer_address);
@@ -50,7 +51,7 @@ class Connecting : NonCopyableMovable {
     OnMessageCallback_ = std::move(cb);
   }
   void RegisterWriteCallback(NormalCallback cb) {
-    WriteCallback_ = std::move(cb);
+    WriteCompleteCallback_ = std::move(cb);
   }
   void RegisterHighWaterMarkCallback(HighWaterMarkCallback cb,
                                      size_t high_water_mark) {
@@ -70,6 +71,9 @@ class Connecting : NonCopyableMovable {
   void StopReading() { eventer_.DisableReadEvents(); }
   void StartWriting() { eventer_.EnableWriteEvents(); }
   void StopWriting() { eventer_.DisableWriteEvents(); }
+
+  void Send(const void* message, size_t msg_len);
+  void Send(const std::string& message);
 
   bool IsClosed() { return state_ == kDisconnected; }
 
@@ -94,7 +98,7 @@ class Connecting : NonCopyableMovable {
 
   NormalCallback OnConnectionCallback_;
   OnMessageCallback OnMessageCallback_;
-  NormalCallback WriteCallback_;
+  NormalCallback WriteCompleteCallback_;
   HighWaterMarkCallback HighWaterMarkCallback_;
   NormalCallback CloseCallback_;
 

@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstddef>
 #include <iterator>
 #include <string>
 
@@ -66,11 +67,10 @@ void Connecting::DoWriting() {
   if (eventer_.HasWriteEvents()) {
     ssize_t n = output_buffer_.WriteToFd(eventer_.Fd());
     if (n > 0) {
-      output_buffer_.Refresh(n);
       if (0 == output_buffer_.GetReadableBytes()) {
         eventer_.DisableWriteEvents();
-        if (WriteCallback_) {
-          WriteCallback_(*this);
+        if (WriteCompleteCallback_) {
+          WriteCompleteCallback_(*this);
         }
         if (kDisconnecting == state_) {
           if (!eventer_.HasWriteEvents()) {
@@ -123,4 +123,53 @@ void Connecting::DoWithError() {
   LOG(logger::kError, "Fd(" + std::to_string(socketer_.Fd()) +
                           ") gets an error -- " + std::string{errno_info} +
                           '.');
+}
+
+void Connecting::Send(const void* message, size_t msg_len) {
+  if (kDisconnected == state_) {
+    LOG(logger::kError,
+        "Fd(" + std::to_string(socketer_.Fd()) +
+            ") is disconnected, so give up sending the message!!!");
+    return;
+  }
+  ssize_t sent_bytes = 0;
+  size_t unsent_bytes = msg_len;
+  // If there is nothing in "output_buffer_", send the message directly
+  bool fault = false;
+  if (!eventer_.HasWriteEvents() && output_buffer_.GetReadableBytes() == 0) {
+    sent_bytes = ::write(socketer_.Fd(), message, msg_len);
+    if (sent_bytes >= 0) {
+      unsent_bytes = msg_len - sent_bytes;
+      if (0 == unsent_bytes && WriteCompleteCallback_) {
+        WriteCompleteCallback_(*this);
+      }
+    } else {
+      sent_bytes = 0;
+      if (EWOULDBLOCK != errno) {
+        LOG(logger::kWarn, "Cannot send the message to fd(" +
+                               std::to_string(socketer_.Fd()) +
+                               ") directly now!");
+        if (EPIPE == errno || ECONNRESET == errno) {
+          fault = true;
+        }
+      }
+    }
+  }
+  if (!fault && unsent_bytes > 0) {
+    size_t prv_len = output_buffer_.GetReadableBytes();
+    if (HighWaterMarkCallback_ && prv_len + unsent_bytes >= high_water_mark_ &&
+        prv_len < high_water_mark_) {
+      HighWaterMarkCallback_(*this, prv_len + unsent_bytes);
+    }
+    output_buffer_.Append(
+        reinterpret_cast<const void*>(
+            reinterpret_cast<char*>(const_cast<void*>(message)) + sent_bytes),
+        unsent_bytes);
+    if (!eventer_.HasWriteEvents()) {
+      eventer_.EnableWriteEvents();
+    }
+  }
+}
+void Connecting::Send(const std::string& message) {
+  Send(static_cast<const void*>(message.c_str()), message.size());
 }
