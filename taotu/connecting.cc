@@ -173,3 +173,6 @@ void Connecting::Send(const void* message, size_t msg_len) {
 void Connecting::Send(const std::string& message) {
   Send(static_cast<const void*>(message.c_str()), message.size());
 }
+void Connecting::Send(IoBuffer* io_buffer) {
+  // TODO:
+}
