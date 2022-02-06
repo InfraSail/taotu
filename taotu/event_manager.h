@@ -55,7 +55,7 @@ class EventManager : NonCopyableMovable {
       std::function<bool()> IsContinue = std::function<bool()>{});
 
  private:
-  typedef std::unordered_map<int, std::unique_ptr<Connecting>> EventerMap;
+  typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
   typedef std::unique_ptr<Poller> PolerPtr;
   typedef std::unique_ptr<std::thread> ThreadPtr;
   typedef std::vector<int> Fds;
@@ -65,11 +65,11 @@ class EventManager : NonCopyableMovable {
   void DestroyClosedConnections();
 
   PolerPtr poller_;
-  EventerMap eventer_map_;
+  ConnectionMap connection_map_;
   ThreadPtr thread_;
   Timer timer_;
 
-  MutexLock eventer_map_mutex_lock_;
+  MutexLock connection_map_mutex_lock_;
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t eventer_amount_;

@@ -53,10 +53,10 @@ void EventManager::InsertNewConnection(int socket_fd,
                                        const NetAddress& local_address,
                                        const NetAddress& peer_address) {
   {
-    LockGuard lock_guard(eventer_map_mutex_lock_);
-    eventer_map_[socket_fd] = std::make_unique<Connecting>(
+    LockGuard lock_guard(connection_map_mutex_lock_);
+    connection_map_[socket_fd] = std::make_unique<Connecting>(
         this, socket_fd, local_address, peer_address);
-    eventer_map_[socket_fd]->SetTcpNoDelay(true);
+    connection_map_[socket_fd]->SetTcpNoDelay(true);
     ++eventer_amount_;
   }
   LOG(logger::kDebug,
@@ -91,8 +91,8 @@ void EventManager::DoWithActiveTasks(TimePoint return_time) {
     active_event->Work(return_time);
     int fd = active_event->Fd();
     {
-      LockGuard lock_guard(eventer_map_mutex_lock_);
-      if (eventer_map_[fd]->IsClosed()) {
+      LockGuard lock_guard(connection_map_mutex_lock_);
+      if (connection_map_[fd]->IsClosed()) {
         --eventer_amount_;
         closed_fds.push_back(fd);
       }
@@ -123,8 +123,8 @@ void EventManager::DoExpiredTimeTasks() {
 }
 void EventManager::DestroyClosedConnections() {
   for (auto fd : closed_fds) {
-    LockGuard lock_guard(eventer_map_mutex_lock_);
-    eventer_map_.erase(fd);
+    LockGuard lock_guard(connection_map_mutex_lock_);
+    connection_map_.erase(fd);
   }
   closed_fds.clear();
 }
