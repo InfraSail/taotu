@@ -105,7 +105,7 @@ void Connecting::DoClosing() {
                           })() +
                           "\") is closiong.");
   SetState(kDisconnected);
-  eventer_.DisableAllEvents();
+  StopReadingWriting();
   OnConnectionCallback_(*this);
   CloseCallback_(*this);
 }
