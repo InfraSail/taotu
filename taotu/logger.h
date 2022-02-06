@@ -129,7 +129,7 @@ class Logger : NonCopyableMovable {
   alignas(256) volatile int64_t wrote_index_;
   alignas(256) char filler3_;  // Only for solving "False Sharing"
 
-  ::FILE* log_file_;
+  FILE* log_file_;
 
   ThreadPtr thread_;
 
