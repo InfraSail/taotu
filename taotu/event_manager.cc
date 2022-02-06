@@ -51,11 +51,18 @@ void EventManager::Loop() {
 
 void EventManager::InsertNewConnection(int socket_fd,
                                        const NetAddress& local_address,
-                                       const NetAddress& peer_address) {
+                                       const NetAddress& peer_address,
+                                       bool read_on, bool write_on) {
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_[socket_fd] = std::make_unique<Connecting>(
         this, socket_fd, local_address, peer_address);
+    if (read_on) {
+      connection_map_[socket_fd]->StartReading();
+    }
+    if (write_on) {
+      connection_map_[socket_fd]->StartWriting();
+    }
     connection_map_[socket_fd]->SetTcpNoDelay(true);
     ++eventer_amount_;
   }
