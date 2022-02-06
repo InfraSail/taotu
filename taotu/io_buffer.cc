@@ -143,9 +143,13 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
 }
 
 ssize_t IoBuffer::WriteToFd(int fd) {
-  return ::write(
+  ssize_t n = ::write(
       fd, reinterpret_cast<void*>(const_cast<char*>(GetReadablePosition())),
       static_cast<size_t>(GetReadableBytes()));
+  if (n > 0) {
+    Refresh(static_cast<size_t>(n));
+  }
+  return n;
 }
 
 void IoBuffer::ReserveWritableSpace(size_t len) {
