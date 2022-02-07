@@ -21,7 +21,9 @@ Eventer::Eventer(Poller* poller, int fd)
       fd_(fd),
       in_events_(0x0000),
       out_events_(0x0000),
-      is_handling_(false) {}
+      is_handling_(false) {
+  poller_->AddEventer(this);
+}
 Eventer::~Eventer() {
   while (is_handling_) {
   }
