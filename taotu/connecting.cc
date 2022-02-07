@@ -45,6 +45,7 @@ Connecting::~Connecting() {
   LOG(logger::kDebug, "The TCP connection to fd(" +
                           std::to_string(socketer_.Fd()) +
                           ") is being closed.");
+  OnDestroying();
 }
 
 void Connecting::DoReading(TimePoint receive_time) {
