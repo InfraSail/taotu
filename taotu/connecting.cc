@@ -16,9 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <cstddef>
-#include <iterator>
-#include <string>
+#include <functional>
 
 #include "event_manager.h"
 #include "logger.h"
@@ -53,7 +51,9 @@ void Connecting::DoReading(TimePoint receive_time) {
   int saved_errno = 0;
   ssize_t n = input_buffer_.ReadFromFd(socketer_.Fd(), &saved_errno);
   if (n > 0) {
-    OnMessageCallback_(*this, &input_buffer_, receive_time);
+    if (OnMessageCallback_) {
+      OnMessageCallback_(*this, &input_buffer_, receive_time);
+    }
   } else if (0 == n) {
     DoClosing();
   } else {
@@ -90,24 +90,16 @@ void Connecting::DoWriting() {
 }
 void Connecting::DoClosing() {
   LOG(logger::kDebug, "Fd(" + std::to_string(socketer_.Fd()) +
-                          ") with state(\"" + ([this]() -> std::string {
-                            switch (this->state_) {
-                              case kDisconnected:
-                                return "Disconnected";
-                              case kConnecting:
-                                return "Connecting";
-                              case kConnected:
-                                return "Connected";
-                              case kDisconnecting:
-                                return "Disconnecting";
-                            }
-                            return std::string{};
-                          })() +
+                          ") with state(\"" + GetConnectionStateInfo(state_) +
                           "\") is closiong.");
   SetState(kDisconnected);
   StopReadingWriting();
-  OnConnectionCallback_(*this);
-  CloseCallback_(*this);
+  if (OnConnectionCallback_) {
+    OnConnectionCallback_(*this);
+  }
+  if (CloseCallback_) {
+    CloseCallback_(*this);
+  }
 }
 void Connecting::DoWithError() {
   int saved_errno = 0, opt_val;
@@ -123,6 +115,23 @@ void Connecting::DoWithError() {
   LOG(logger::kError, "Fd(" + std::to_string(socketer_.Fd()) +
                           ") gets an error -- " + std::string{errno_info} +
                           '.');
+}
+
+void Connecting::OnEstablishing() {
+  SetState(kConnected);
+  StartReading();
+  if (OnConnectionCallback_) {
+    OnConnectionCallback_(*this);
+  }
+}
+void Connecting::OnDestroying() {
+  if (IsConnected()) {
+    SetState(kDisconnected);
+    StopReadingWriting();
+    if (OnConnectionCallback_) {
+      OnConnectionCallback_(*this);
+    }
+  }
 }
 
 void Connecting::Send(const void* message, size_t msg_len) {
@@ -175,4 +184,32 @@ void Connecting::Send(const std::string& message) {
 }
 void Connecting::Send(IoBuffer* io_buffer) {
   // TODO:
+}
+
+void Connecting::ForceClose() {
+  if (IsConnected() || kDisconnecting == state_) {
+    SetState(kDisconnecting);
+    DoClosing();
+  }
+}
+void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
+  if (IsConnected() || kDisconnecting == state_) {
+    SetState(kDisconnecting);
+    event_manager_->RunAfter(delay_microseconds,
+                             std::bind(&Connecting::ForceClose, this));
+  }
+}
+
+std::string Connecting::GetConnectionStateInfo(ConnectionState state) {
+  switch (state) {
+    case kDisconnected:
+      return "Disconnected";
+    case kConnecting:
+      return "Connecting";
+    case kConnected:
+      return "Connected";
+    case kDisconnecting:
+      return "Disconnecting";
+  }
+  return std::string{};
 }

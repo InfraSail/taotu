@@ -88,12 +88,14 @@ class Connecting : NonCopyableMovable {
     }
   }
   void StopReadingWriting() {
-    if (eventer_.HasReadEvents() && eventer_.HasWriteEvents()) {
+    if (eventer_.HasReadEvents() || eventer_.HasWriteEvents()) {
       eventer_.DisableAllEvents();
     }
   }
 
-  // TODO:
+  IoBuffer* GetInputBuffer() { return &input_buffer_; }
+  IoBuffer* GetOutputBuffer() { return &output_buffer_; }
+
   void OnEstablishing();
   void OnDestroying();
 
@@ -101,9 +103,13 @@ class Connecting : NonCopyableMovable {
   void Send(const std::string& message);
   void Send(IoBuffer* io_buffer);
 
-  bool IsClosed() { return state_ == kDisconnected; }
+  bool IsConnected() { return kConnected == state_; }
+  bool IsDisconnected() { return kDisconnected == state_; }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
+
+  void ForceClose();
+  void ForceCloseAfter(int64_t delay_microseconds);
 
  private:
   enum ConnectionState {
@@ -114,6 +120,8 @@ class Connecting : NonCopyableMovable {
   };
 
   void SetState(ConnectionState state) { state_ = state; }
+
+  static std::string GetConnectionStateInfo(ConnectionState state);
 
   EventManager* event_manager_;
 
