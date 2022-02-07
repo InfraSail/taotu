@@ -33,7 +33,7 @@ class Server : NonCopyableMovable {
  private:
   typedef std::unique_ptr<ReactorManager> ReactorManagerPtr;
 
-  ReactorManagerPtr reactor_;
+  ReactorManagerPtr reactor_manager_;
 };
 
 }  // namespace taotu
