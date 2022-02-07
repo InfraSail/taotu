@@ -179,9 +179,7 @@ void Connecting::Send(const void* message, size_t msg_len) {
           reinterpret_cast<const void*>(
               reinterpret_cast<char*>(const_cast<void*>(message)) + sent_bytes),
           unsent_bytes);
-      if (!eventer_.HasWriteEvents()) {
-        eventer_.EnableWriteEvents();
-      }
+      StartWriting();
     }
   }
 }
