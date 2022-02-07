@@ -119,10 +119,12 @@ void Connecting::DoWithError() {
 }
 
 void Connecting::OnEstablishing() {
-  SetState(kConnected);
-  StartReading();
-  if (OnConnectionCallback_) {
-    OnConnectionCallback_(*this);
+  if (kConnecting == state_) {
+    SetState(kConnected);
+    StartReading();
+    if (OnConnectionCallback_) {
+      OnConnectionCallback_(*this);
+    }
   }
 }
 void Connecting::OnDestroying() {
