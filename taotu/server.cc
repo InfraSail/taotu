@@ -17,5 +17,18 @@ using namespace taotu;
 Server::Server(const NetAddress& listen_address, int io_thread_amount,
                bool should_reuse_port)
     : reactor_manager_(std::make_unique<ReactorManager>(
-          listen_address, io_thread_amount, should_reuse_port)) {}
+          listen_address, io_thread_amount, should_reuse_port)),
+      is_started_(false) {}
 Server::~Server() {}
+
+void Server::Start() {
+  if (!is_started_.load()) {
+    // TODO: the thread pool
+    reactor_manager_->Loop();
+  }
+}
+
+void Server::DefaultOnConnectionCallback(Connecting& connection) {}
+void Server::DefaultOnMessageCallback(Connecting& connection,
+                                      IoBuffer* io_buffer,
+                                      TimePoint time_point) {}
