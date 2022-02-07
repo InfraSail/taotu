@@ -96,7 +96,9 @@ class Connecting : NonCopyableMovable {
   IoBuffer* GetInputBuffer() { return &input_buffer_; }
   IoBuffer* GetOutputBuffer() { return &output_buffer_; }
 
+  // Be called when this connection establishing
   void OnEstablishing();
+  // Be called when this connection destroying
   void OnDestroying();
 
   void Send(const void* message, size_t msg_len);
