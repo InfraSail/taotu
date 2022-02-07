@@ -101,7 +101,7 @@ void EventManager::DoWithActiveTasks(TimePoint return_time) {
     int fd = active_event->Fd();
     {
       LockGuard lock_guard(connection_map_mutex_lock_);
-      if (connection_map_[fd]->IsClosed()) {
+      if (connection_map_[fd]->IsDisconnected()) {
         --eventer_amount_;
         closed_fds.push_back(fd);
       }
