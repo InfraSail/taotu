@@ -10,8 +10,6 @@
 
 #include "server.h"
 
-#include <memory>
-
 #include "reactor_manager.h"
 
 using namespace taotu;
