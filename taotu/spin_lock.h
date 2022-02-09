@@ -24,19 +24,19 @@ namespace taotu {
  */
 class MutexLock : NonCopyableMovable {
  public:
-  MutexLock() : val_(true) {}
+  MutexLock() : value_(true) {}
   ~MutexLock() { Unlock(); }
 
   void Lock() {
     bool exp = true;
-    while (!val_.compare_exchange_weak(exp, false)) {
+    while (!value_.compare_exchange_weak(exp, false)) {
       exp = true;
     }
   }
-  void Unlock() { val_.store(true); }
+  void Unlock() { value_.store(true); }
 
  private:
-  std::atomic_bool val_;
+  std::atomic_bool value_;
 };
 
 /**
