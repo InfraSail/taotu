@@ -10,6 +10,9 @@
 
 #include "server.h"
 
+#include <string>
+
+#include "logger.h"
 #include "reactor_manager.h"
 
 using namespace taotu;
@@ -28,7 +31,18 @@ void Server::Start() {
   }
 }
 
-void Server::DefaultOnConnectionCallback(Connecting& connection) {}
+void Server::DefaultOnConnectionCallback(Connecting& connection) {
+  LOG(logger::kDebug,
+      "A new connection with fd(" + std::to_string(connection.Fd()) +
+          ") on local IP(" + connection.GetLocalNetAddress().GetIp() +
+          ") Port(" +
+          std::to_string(connection.GetLocalNetAddress().GetPort()) +
+          ") and peer IP(" + connection.GetPeerNetAddress().GetIp() +
+          ") Port(" + std::to_string(connection.GetPeerNetAddress().GetPort()) +
+          ").");
+}
 void Server::DefaultOnMessageCallback(Connecting& connection,
                                       IoBuffer* io_buffer,
-                                      TimePoint time_point) {}
+                                      TimePoint time_point) {
+  io_buffer->RefreshRW();
+}
