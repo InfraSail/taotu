@@ -66,8 +66,8 @@ void EventManager::InsertNewConnection(int socket_fd,
     if (write_on) {
       connection_map_[socket_fd]->StartWriting();
     }
-    ++eventer_amount_;
   }
+  ++eventer_amount_;
   LOG(logger::kDebug,
       "Create a new connection that fd(" + std::to_string(socket_fd) +
           ") with local net address (IP(" + local_address.GetIp() + "), Port(" +
