@@ -58,14 +58,15 @@ void EventManager::InsertNewConnection(int socket_fd,
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_[socket_fd] = std::make_unique<Connecting>(
         this, socket_fd, local_address, peer_address);
-    if (read_on) {
-      connection_map_[socket_fd]->StartReading();
+    // It will make it start reading
+    connection_map_[socket_fd]->OnEstablishing();
+    if (!read_on) {
+      connection_map_[socket_fd]->StopReading();
     }
     if (write_on) {
       connection_map_[socket_fd]->StartWriting();
     }
     // TODO: connection_established
-    connection_map_[socket_fd]->OnEstablishing();
     // connection_map_[socket_fd]->SetTcpNoDelay(true);
     ++eventer_amount_;
   }
