@@ -44,6 +44,11 @@ class Connecting : NonCopyableMovable {
              const NetAddress& local_address, const NetAddress& peer_address);
   ~Connecting();
 
+  int Fd() const { return eventer_.Fd(); }
+
+  const NetAddress& GetLocalNetAddress() const { return local_address_; }
+  const NetAddress& GetPeerNetAddress() const { return peer_address_; }
+
   void RegisterOnConnectionCallback(NormalCallback cb) {
     OnConnectionCallback_ = std::move(cb);
   }
