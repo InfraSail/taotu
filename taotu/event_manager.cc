@@ -66,8 +66,6 @@ void EventManager::InsertNewConnection(int socket_fd,
     if (write_on) {
       connection_map_[socket_fd]->StartWriting();
     }
-    // TODO: connection_established
-    // connection_map_[socket_fd]->SetTcpNoDelay(true);
     ++eventer_amount_;
   }
   LOG(logger::kDebug,
