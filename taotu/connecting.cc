@@ -42,15 +42,14 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
   socketer_.SetKeepAlive(true);
 }
 Connecting::~Connecting() {
-  LOG(logger::kDebug, "The TCP connection to fd(" +
-                          std::to_string(socketer_.Fd()) +
+  LOG(logger::kDebug, "The TCP connection to fd(" + std::to_string(Fd()) +
                           ") is being closed.");
   OnDestroying();
 }
 
 void Connecting::DoReading(TimePoint receive_time) {
   int saved_errno = 0;
-  ssize_t n = input_buffer_.ReadFromFd(socketer_.Fd(), &saved_errno);
+  ssize_t n = input_buffer_.ReadFromFd(Fd(), &saved_errno);
   if (n > 0) {
     if (OnMessageCallback_) {
       OnMessageCallback_(*this, &input_buffer_, receive_time);
@@ -59,14 +58,13 @@ void Connecting::DoReading(TimePoint receive_time) {
     DoClosing();
   } else {
     errno = saved_errno;
-    LOG(logger::kError,
-        "Fd(" + std::to_string(socketer_.Fd()) + ") reading failed!!!");
+    LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") reading failed!!!");
     DoWithError();
   }
 }
 void Connecting::DoWriting() {
   if (eventer_.HasWriteEvents()) {
-    ssize_t n = output_buffer_.WriteToFd(eventer_.Fd());
+    ssize_t n = output_buffer_.WriteToFd(Fd());
     if (n > 0) {
       if (0 == output_buffer_.GetReadableBytes()) {
         eventer_.DisableWriteEvents();
@@ -80,19 +78,17 @@ void Connecting::DoWriting() {
         }
       }
     } else {
-      LOG(logger::kError,
-          "Fd(" + std::to_string(socketer_.Fd()) + ") writing failed!!!");
+      LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") writing failed!!!");
     }
   } else {
     LOG(logger::kWarn,
-        "Fd(" + std::to_string(socketer_.Fd()) +
+        "Fd(" + std::to_string(Fd()) +
             ") should not be retried anymore because it is down!");
   }
 }
 void Connecting::DoClosing() {
-  LOG(logger::kDebug, "Fd(" + std::to_string(socketer_.Fd()) +
-                          ") with state(\"" + GetConnectionStateInfo(state_) +
-                          "\") is closiong.");
+  LOG(logger::kDebug, "Fd(" + std::to_string(Fd()) + ") with state(\"" +
+                          GetConnectionStateInfo(state_) + "\") is closiong.");
   SetState(kDisconnected);
   StopReadingWriting();
   if (OnConnectionCallback_) {
@@ -105,7 +101,7 @@ void Connecting::DoClosing() {
 void Connecting::DoWithError() {
   int saved_errno = 0, opt_val;
   socklen_t opt_len = static_cast<socklen_t>(sizeof(opt_val));
-  if (::getsockopt(socketer_.Fd(), SOL_SOCKET, SO_ERROR,
+  if (::getsockopt(Fd(), SOL_SOCKET, SO_ERROR,
                    reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
     saved_errno = errno;
   } else {
@@ -113,9 +109,8 @@ void Connecting::DoWithError() {
   }
   char errno_info[512];
   ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
-  LOG(logger::kError, "Fd(" + std::to_string(socketer_.Fd()) +
-                          ") gets an error -- " + std::string{errno_info} +
-                          '.');
+  LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") gets an error -- " +
+                          std::string{errno_info} + '.');
 }
 
 void Connecting::OnEstablishing() {
@@ -140,7 +135,7 @@ void Connecting::OnDestroying() {
 void Connecting::Send(const void* message, size_t msg_len) {
   if (kDisconnected == state_) {
     LOG(logger::kError,
-        "Fd(" + std::to_string(socketer_.Fd()) +
+        "Fd(" + std::to_string(Fd()) +
             ") is disconnected, so give up sending the message!!!");
     return;
   }
@@ -150,7 +145,7 @@ void Connecting::Send(const void* message, size_t msg_len) {
     // If there is nothing in "output_buffer_", send the message directly
     bool fault = false;
     if (!eventer_.HasWriteEvents() && output_buffer_.GetReadableBytes() == 0) {
-      sent_bytes = ::write(socketer_.Fd(), message, msg_len);
+      sent_bytes = ::write(Fd(), message, msg_len);
       if (sent_bytes >= 0) {
         unsent_bytes = msg_len - sent_bytes;
         if (0 == unsent_bytes && WriteCompleteCallback_) {
@@ -160,8 +155,7 @@ void Connecting::Send(const void* message, size_t msg_len) {
         sent_bytes = 0;
         if (EWOULDBLOCK != errno) {
           LOG(logger::kWarn, "Cannot send the message to fd(" +
-                                 std::to_string(socketer_.Fd()) +
-                                 ") directly now!");
+                                 std::to_string(Fd()) + ") directly now!");
           if (EPIPE == errno || ECONNRESET == errno) {
             fault = true;
           }
