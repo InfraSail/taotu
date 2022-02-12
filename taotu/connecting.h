@@ -49,23 +49,21 @@ class Connecting : NonCopyableMovable {
   const NetAddress& GetLocalNetAddress() const { return local_address_; }
   const NetAddress& GetPeerNetAddress() const { return peer_address_; }
 
-  void RegisterOnConnectionCallback(NormalCallback cb) {
-    OnConnectionCallback_ = std::move(cb);
+  void RegisterOnConnectionCallback(const NormalCallback& cb) {
+    OnConnectionCallback_ = cb;
   }
-  void RegisterOnMessageCallback(OnMessageCallback cb) {
-    OnMessageCallback_ = std::move(cb);
+  void RegisterOnMessageCallback(const OnMessageCallback& cb) {
+    OnMessageCallback_ = cb;
   }
-  void RegisterWriteCallback(NormalCallback cb) {
-    WriteCompleteCallback_ = std::move(cb);
+  void RegisterWriteCallback(const NormalCallback& cb) {
+    WriteCompleteCallback_ = cb;
   }
-  void RegisterHighWaterMarkCallback(HighWaterMarkCallback cb,
+  void RegisterHighWaterMarkCallback(const HighWaterMarkCallback& cb,
                                      size_t high_water_mark) {
-    HighWaterMarkCallback_ = std::move(cb);
+    HighWaterMarkCallback_ = cb;
     high_water_mark_ = high_water_mark;
   }
-  void RegisterCloseCallback(NormalCallback cb) {
-    CloseCallback_ = std::move(cb);
-  }
+  void RegisterCloseCallback(const NormalCallback& cb) { CloseCallback_ = cb; }
 
   void DoReading(TimePoint receive_time);
   void DoWriting();
