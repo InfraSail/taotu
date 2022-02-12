@@ -11,7 +11,6 @@
 #include "connecting.h"
 
 #include <errno.h>
-#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
