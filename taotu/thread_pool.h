@@ -7,3 +7,18 @@
  * @copyright Copyright (c) 2022 Sigma711
  *
  */
+
+#ifndef TAOTU_TAOTU_THREAD_POOL_H_
+#define TAOTU_TAOTU_THREAD_POOL_H_
+
+namespace taotu {
+
+/**
+ * @brief  // TODO:
+ *
+ */
+class thread_pool {};
+
+}  // namespace taotu
+
+#endif  // !TAOTU_TAOTU_THREAD_POOL_H_
