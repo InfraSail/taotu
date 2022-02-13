@@ -31,10 +31,10 @@ class Balancer;
  */
 class ReactorManager : NonCopyableMovable {
  public:
-  typedef std::vector<EventManager*> EventManagers;
-
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
+
+  typedef std::vector<EventManager*> EventManagers;
 
   ReactorManager(const NetAddress& listen_address, int io_thread_amount = 6,
                  bool should_reuse_port = false);
