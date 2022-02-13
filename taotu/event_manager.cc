@@ -49,7 +49,6 @@ void EventManager::Loop() {
   });
 }
 
-// FIXME:
 void EventManager::InsertNewConnection(
     int socket_fd, const NetAddress& local_address,
     const NetAddress& peer_address,

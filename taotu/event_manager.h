@@ -43,6 +43,7 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
+  // Insert a new connection into current I/O thread
   void InsertNewConnection(int socket_fd, const NetAddress& local_address,
                            const NetAddress& peer_address,
                            const NormalCallback& ConnectionCallback_,
