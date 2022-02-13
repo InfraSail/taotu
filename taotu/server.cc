@@ -47,7 +47,6 @@ void Server::SetWriteCompleteCallback(
 
 void Server::Start() {
   if (!is_started_.load()) {
-    // TODO: the thread pool
     reactor_manager_->Loop();
   }
 }
