@@ -31,6 +31,18 @@ Server::Server(const NetAddress& listen_address, int io_thread_amount,
 }
 Server::~Server() {}
 
+void Server::SetConnectionCallback(const std::function<void(Connecting&)>& cb) {
+  reactor_manager_->SetConnectionCallback(cb);
+}
+void Server::SetMessageCallback(
+    const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb) {
+  reactor_manager_->SetMessageCallback(cb);
+}
+void Server::SetWriteCompleteCallback(
+    const std::function<void(Connecting&)>& cb) {
+  reactor_manager_->SetWriteCompleteCallback(cb);
+}
+
 void Server::Start() {
   if (!is_started_.load()) {
     // TODO: the thread pool

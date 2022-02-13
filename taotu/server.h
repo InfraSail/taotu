@@ -34,10 +34,10 @@ class Server : NonCopyableMovable {
          bool should_reuse_port = false);
   ~Server();
 
-  void SetConnectionCallback(const std::function<void(Connecting&)>& cb) {}
+  void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
   void SetMessageCallback(
-      const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb) {}
-  void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb) {}
+      const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb);
+  void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
 
   void Start();
 
