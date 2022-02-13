@@ -50,24 +50,31 @@ void EventManager::Loop() {
 }
 
 // FIXME:
-Connecting* EventManager::InsertNewConnection(int socket_fd,
-                                              const NetAddress& local_address,
-                                              const NetAddress& peer_address,
-                                              bool read_on, bool write_on) {
+void EventManager::InsertNewConnection(
+    int socket_fd, const NetAddress& local_address,
+    const NetAddress& peer_address,
+    const Connecting::NormalCallback& ConnectionCallback_,
+    const Connecting::OnMessageCallback& MessageCallback_,
+    const Connecting::NormalCallback& WriteCompleteCallback_, bool read_on,
+    bool write_on) {
   Connecting* new_connection = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_[socket_fd] = std::make_unique<Connecting>(
         this, socket_fd, local_address, peer_address);
-    // It will make it start reading
-    connection_map_[socket_fd]->OnEstablishing();
-    if (!read_on) {
-      connection_map_[socket_fd]->StopReading();
-    }
-    if (write_on) {
-      connection_map_[socket_fd]->StartWriting();
-    }
+
     new_connection = connection_map_[socket_fd].release();
+  }
+  new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+  new_connection->RegisterOnMessageCallback(MessageCallback_);
+  new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+  // It will make it start reading
+  new_connection->OnEstablishing();
+  if (!read_on) {
+    new_connection->StopReading();
+  }
+  if (write_on) {
+    new_connection->StartWriting();
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
@@ -76,7 +83,6 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
           std::to_string(local_address.GetPort()) +
           ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
           std::to_string(peer_address.GetPort()) + ")).");
-  return new_connection;
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
