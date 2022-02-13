@@ -10,6 +10,7 @@
 
 #include "server.h"
 
+#include <functional>
 #include <string>
 
 #include "logger.h"
@@ -21,7 +22,13 @@ Server::Server(const NetAddress& listen_address, int io_thread_amount,
                bool should_reuse_port)
     : reactor_manager_(std::make_unique<ReactorManager>(
           listen_address, io_thread_amount, should_reuse_port)),
-      is_started_(false) {}
+      is_started_(false) {
+  reactor_manager_->SetConnectionCallback(std::bind(
+      &Server::DefaultOnConnectionCallback, this, std::placeholders::_1));
+  reactor_manager_->SetMessageCallback(
+      std::bind(&Server::DefaultOnMessageCallback, this, std::placeholders::_1,
+                std::placeholders::_2, std::placeholders::_3));
+}
 Server::~Server() {}
 
 void Server::Start() {

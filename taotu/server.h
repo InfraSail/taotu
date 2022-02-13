@@ -15,8 +15,10 @@
 #include <memory>
 
 #include "connecting.h"
+#include "io_buffer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
+#include "time_point.h"
 
 namespace taotu {
 
@@ -31,6 +33,11 @@ class Server : NonCopyableMovable {
   Server(const NetAddress& listen_address, int io_thread_amount = 6,
          bool should_reuse_port = false);
   ~Server();
+
+  void SetConnectionCallback(const std::function<void(Connecting&)>& cb) {}
+  void SetMessageCallback(
+      const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb) {}
+  void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb) {}
 
   void Start();
 
