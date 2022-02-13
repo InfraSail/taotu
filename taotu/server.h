@@ -18,6 +18,7 @@
 #include "io_buffer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
+#include "thread_pool.h"
 #include "time_point.h"
 
 namespace taotu {
@@ -30,8 +31,8 @@ class ReactorManager;
  */
 class Server : NonCopyableMovable {
  public:
-  Server(const NetAddress& listen_address, int io_thread_amount = 6,
-         bool should_reuse_port = false);
+  Server(const NetAddress& listen_address, bool should_reuse_port = false,
+         int io_thread_amount = 6, int calculate_thread_amount = 4);
   ~Server();
 
   void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
@@ -50,7 +51,7 @@ class Server : NonCopyableMovable {
 
   ReactorManagerPtr reactor_manager_;
 
-  // TODO: the thread pool
+  ThreadPool thread_pool_;
 
   std::atomic_bool is_started_;
 };
