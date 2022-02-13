@@ -40,9 +40,10 @@ class EventManager : NonCopyableMovable {
 
   void Loop();
 
-  void InsertNewConnection(int socket_fd, const NetAddress& local_address,
-                           const NetAddress& peer_address, bool read_on = true,
-                           bool write_on = true);
+  Connecting* InsertNewConnection(int socket_fd,
+                                  const NetAddress& local_address,
+                                  const NetAddress& peer_address,
+                                  bool read_on = true, bool write_on = true);
 
   Poller* GetPoller() { return poller_.get(); }
 

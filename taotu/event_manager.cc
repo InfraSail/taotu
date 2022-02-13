@@ -50,10 +50,11 @@ void EventManager::Loop() {
 }
 
 // FIXME:
-void EventManager::InsertNewConnection(int socket_fd,
-                                       const NetAddress& local_address,
-                                       const NetAddress& peer_address,
-                                       bool read_on, bool write_on) {
+Connecting* EventManager::InsertNewConnection(int socket_fd,
+                                              const NetAddress& local_address,
+                                              const NetAddress& peer_address,
+                                              bool read_on, bool write_on) {
+  Connecting* new_connection = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_[socket_fd] = std::make_unique<Connecting>(
@@ -66,6 +67,7 @@ void EventManager::InsertNewConnection(int socket_fd,
     if (write_on) {
       connection_map_[socket_fd]->StartWriting();
     }
+    new_connection = connection_map_[socket_fd].release();
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
@@ -74,6 +76,7 @@ void EventManager::InsertNewConnection(int socket_fd,
           std::to_string(local_address.GetPort()) +
           ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
           std::to_string(peer_address.GetPort()) + ")).");
+  return new_connection;
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
