@@ -41,7 +41,7 @@ ThreadPool::ThreadPool(int thread_amount)
             std::lock_guard<std::mutex> exc_lock(this->que_exc_mutex_);
             this->cur_que_idx_ = tmp_que_idx;
           }
-          tmp_que_idx = !this->cur_que_idx_;
+          tmp_que_idx = !(this->cur_que_idx_);
           CurTask = std::move(this->task_queues_[tmp_que_idx].front());
           this->task_queues_[tmp_que_idx].pop();
         }
