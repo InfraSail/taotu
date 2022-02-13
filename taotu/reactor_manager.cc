@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include "balancer.h"
-#include "connecting.h"
 #include "logger.h"
 
 using namespace taotu;

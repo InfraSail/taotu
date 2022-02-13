@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "acceptor.h"
+#include "connecting.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
 
@@ -32,9 +33,20 @@ class ReactorManager : NonCopyableMovable {
  public:
   typedef std::vector<EventManager*> EventManagers;
 
+  typedef Connecting::NormalCallback NormalCallback;
+  typedef Connecting::OnMessageCallback MessageCallback;
+
   ReactorManager(const NetAddress& listen_address, int io_thread_amount = 6,
                  bool should_reuse_port = false);
   ~ReactorManager();
+
+  void SetConnectionCallback(const NormalCallback& cb) {
+    ConnectionCallback_ = cb;
+  }
+  void SetMessageCallback(const MessageCallback& cb) { MessageCallback_ = cb; }
+  void SetWriteCompleteCallback(const NormalCallback& cb) {
+    WriteCompleteCallback_ = cb;
+  }
 
   void Loop();
 
@@ -44,6 +56,10 @@ class ReactorManager : NonCopyableMovable {
   Acceptor acceptor_;
   EventManagers event_managers_;
   BalancerPtr balancer_;
+
+  NormalCallback ConnectionCallback_;
+  MessageCallback MessageCallback_;
+  NormalCallback WriteCompleteCallback_;
 
   bool should_stop_;
 };
