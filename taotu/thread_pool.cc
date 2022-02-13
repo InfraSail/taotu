@@ -11,6 +11,7 @@
 #include "thread_pool.h"
 
 #include <mutex>
+#include <thread>
 #include <utility>
 
 #include "logger.h"
@@ -20,7 +21,7 @@ using namespace taotu;
 ThreadPool::ThreadPool(int thread_amount)
     : cur_que_idx_(0), should_stop_(false) {
   for (int i = 0; i < thread_amount; ++i) {
-    threads_.emplace_back([this]() {
+    threads_.emplace_back(std::make_unique<std::thread>([this]() {
       while (true) {
         std::function<void()> CurTask;
         {
@@ -48,7 +49,7 @@ ThreadPool::ThreadPool(int thread_amount)
           CurTask();
         }
       }
-    });
+    }));
   }
 }
 ThreadPool::~ThreadPool() {
