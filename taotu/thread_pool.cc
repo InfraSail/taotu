@@ -11,3 +11,12 @@
 #include "thread_pool.h"
 
 using namespace taotu;
+
+ThreadPool::ThreadPool() {}
+ThreadPool::~ThreadPool() {
+  for (auto& one_thread : threads_) {
+    if (one_thread->joinable()) {
+      one_thread->join();
+    }
+  }
+}
