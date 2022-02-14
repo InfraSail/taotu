@@ -44,11 +44,21 @@ void Server::SetWriteCompleteCallback(
     const std::function<void(Connecting&)>& cb) {
   reactor_manager_->SetWriteCompleteCallback(cb);
 }
+void Server::SetCloseCallback(const std::function<void(Connecting&)>& cb) {
+  reactor_manager_->SetCloseCallback(cb);
+}
 
 void Server::Start() {
   if (!is_started_.load()) {
     reactor_manager_->Loop();
   }
+}
+
+void Server::RemoveConnection(Connecting& connection) {
+  LOG(logger::kDebug, "The connection with fd(" +
+                          std::to_string(connection.Fd()) +
+                          ") is being removed.");
+  connection.ForceClose();
 }
 
 void Server::DefaultOnConnectionCallback(Connecting& connection) {

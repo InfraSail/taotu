@@ -39,10 +39,13 @@ class Server : NonCopyableMovable {
   void SetMessageCallback(
       const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb);
   void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
+  void SetCloseCallback(const std::function<void(Connecting&)>& cb);
 
   ThreadPool& GetThreadPool() { return *thread_pool_; }
 
   void Start();
+
+  void RemoveConnection(Connecting& connection);
 
  private:
   typedef std::unique_ptr<ReactorManager> ReactorManagerPtr;
