@@ -67,8 +67,7 @@ ThreadPool::~ThreadPool() {
 
 void ThreadPool::AddTask(std::function<void()> task) {
   if (should_stop_) {
-    LOG(logger::kDebug,
-        "Fail to add a task into the calculation thread pool!!!");
+    LOG(logger::kWarn, "Fail to add a task into the calculation thread pool!");
   } else {
     std::lock_guard<std::mutex> lock(que_exc_mutex_);
     task_queues_[que_pdt_idx_].emplace(std::move(task));
