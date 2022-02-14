@@ -19,7 +19,7 @@
 using namespace taotu;
 
 ThreadPool::ThreadPool(int thread_amount)
-    : cur_que_idx_(0), should_stop_(false) {
+    : que_pdt_idx_(0), should_stop_(false) {
   for (int i = 0; i < thread_amount; ++i) {
     threads_.emplace_back(std::make_unique<std::thread>([this]() {
       while (true) {
@@ -28,22 +28,22 @@ ThreadPool::ThreadPool(int thread_amount)
           std::unique_lock<std::mutex> lock(this->pdt_csm_mutex_);
           this->pdt_csm_cond_var_.wait(lock, [this]() {
             return this->should_stop_ ||
-                   !(this->task_queues_[this->cur_que_idx_].empty()) ||
-                   !(this->task_queues_[!(this->cur_que_idx_)].empty());
+                   !(this->task_queues_[this->que_pdt_idx_].empty()) ||
+                   !(this->task_queues_[!(this->que_pdt_idx_)].empty());
           });
           if (this->should_stop_ &&
-              this->task_queues_[this->cur_que_idx_].empty() &&
-              this->task_queues_[!(this->cur_que_idx_)].empty()) {
+              this->task_queues_[this->que_pdt_idx_].empty() &&
+              this->task_queues_[!(this->que_pdt_idx_)].empty()) {
             return;
           }
-          size_t tmp_que_idx = !(this->cur_que_idx_);
-          if (this->task_queues_[tmp_que_idx].empty()) {
+          size_t que_csm_idx = !(this->que_pdt_idx_);
+          if (this->task_queues_[que_csm_idx].empty()) {
             std::lock_guard<std::mutex> exc_lock(this->que_exc_mutex_);
-            this->cur_que_idx_ = tmp_que_idx;
+            this->que_pdt_idx_ = que_csm_idx;
           }
-          tmp_que_idx = !(this->cur_que_idx_);
-          CurTask = std::move(this->task_queues_[tmp_que_idx].front());
-          this->task_queues_[tmp_que_idx].pop();
+          que_csm_idx = !(this->que_pdt_idx_);
+          CurTask = std::move(this->task_queues_[que_csm_idx].front());
+          this->task_queues_[que_csm_idx].pop();
         }
         if (CurTask) {
           CurTask();
@@ -71,7 +71,7 @@ void ThreadPool::AddTask(std::function<void()> task) {
         "Fail to add a task into the calculation thread pool!!!");
   } else {
     std::lock_guard<std::mutex> lock(que_exc_mutex_);
-    task_queues_[cur_que_idx_].emplace(std::move(task));
+    task_queues_[que_pdt_idx_].emplace(std::move(task));
     pdt_csm_cond_var_.notify_one();
   }
 }

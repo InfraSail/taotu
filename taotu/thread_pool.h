@@ -41,7 +41,7 @@ class ThreadPool : NonCopyableMovable {
   std::vector<std::unique_ptr<std::thread>> threads_;
   std::array<std::queue<std::function<void()>>, 2> task_queues_;
 
-  size_t cur_que_idx_;
+  size_t que_pdt_idx_;
 
   std::mutex pdt_csm_mutex_;
   std::condition_variable pdt_csm_cond_var_;
