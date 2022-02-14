@@ -47,6 +47,9 @@ class ReactorManager : NonCopyableMovable {
   void SetWriteCompleteCallback(const NormalCallback& cb) {
     WriteCompleteCallback_ = cb;
   }
+  void SetCloseCallback(const std::function<void(Connecting&)>& cb) {
+    CloseCallback_ = cb;
+  }
 
   void Loop();
 
@@ -61,6 +64,7 @@ class ReactorManager : NonCopyableMovable {
   NormalCallback ConnectionCallback_;
   MessageCallback MessageCallback_;
   NormalCallback WriteCompleteCallback_;
+  NormalCallback CloseCallback_;
 
   bool should_stop_;
 };

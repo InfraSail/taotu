@@ -58,6 +58,7 @@ void ReactorManager::Loop() {
     }
     balancer_->PickOneEventManager()->InsertNewConnection(
         socket_fd, GetLocalNetAddress(socket_fd), peer_address,
-        ConnectionCallback_, MessageCallback_, WriteCompleteCallback_);
+        ConnectionCallback_, MessageCallback_, WriteCompleteCallback_,
+        CloseCallback_);
   }
 }
