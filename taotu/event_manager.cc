@@ -54,8 +54,8 @@ void EventManager::InsertNewConnection(
     const NetAddress& peer_address,
     const Connecting::NormalCallback& ConnectionCallback_,
     const Connecting::OnMessageCallback& MessageCallback_,
-    const Connecting::NormalCallback& WriteCompleteCallback_, bool read_on,
-    bool write_on) {
+    const Connecting::NormalCallback& WriteCompleteCallback_,
+    const NormalCallback& CloseCallback_, bool read_on, bool write_on) {
   Connecting* new_connection = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
@@ -67,6 +67,7 @@ void EventManager::InsertNewConnection(
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+  new_connection->RegisterCloseCallback(CloseCallback_);
   // It will make it start reading
   new_connection->OnEstablishing();
   if (!read_on) {

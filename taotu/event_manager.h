@@ -49,6 +49,7 @@ class EventManager : NonCopyableMovable {
                            const NormalCallback& ConnectionCallback_,
                            const OnMessageCallback& MessageCallback_,
                            const NormalCallback& WriteCompleteCallback_,
+                           const NormalCallback& CloseCallback_,
                            bool read_on = true, bool write_on = true);
 
   Poller* GetPoller() { return poller_.get(); }
