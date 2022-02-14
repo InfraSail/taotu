@@ -10,7 +10,6 @@
 
 #include "server.h"
 
-#include <functional>
 #include <memory>
 #include <string>
 
@@ -30,6 +29,8 @@ Server::Server(const NetAddress& listen_address, bool should_reuse_port,
   reactor_manager_->SetMessageCallback(
       std::bind(&Server::DefaultOnMessageCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
+  reactor_manager_->SetCloseCallback(
+      std::bind(&Server::RemoveConnection, this, std::placeholders::_1));
 }
 Server::~Server() {}
 

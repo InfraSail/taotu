@@ -12,6 +12,7 @@
 #define TAOTU_TAOTU_SERVER_H_
 
 #include <atomic>
+#include <functional>
 #include <memory>
 
 #include "connecting.h"
