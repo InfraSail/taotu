@@ -34,7 +34,7 @@ class ReactorManager : NonCopyableMovable {
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
 
-  typedef std::vector<EventManager*> EventManagers;
+  typedef std::vector<std::unique_ptr<EventManager>> EventManagers;
 
   ReactorManager(const NetAddress& listen_address, int io_thread_amount = 6,
                  bool should_reuse_port = false);
@@ -51,9 +51,10 @@ class ReactorManager : NonCopyableMovable {
   void Loop();
 
  private:
+  typedef std::unique_ptr<Acceptor> AcceptorPtr;
   typedef std::unique_ptr<Balancer> BalancerPtr;
 
-  Acceptor acceptor_;
+  AcceptorPtr acceptor_;
   EventManagers event_managers_;
   BalancerPtr balancer_;
 

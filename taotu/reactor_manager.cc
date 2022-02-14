@@ -33,32 +33,25 @@ static NetAddress GetLocalNetAddress(int socket_fd) {
 
 ReactorManager::ReactorManager(const NetAddress& listen_address,
                                int io_thread_amount, bool should_reuse_port)
-    : acceptor_(listen_address, should_reuse_port), should_stop_(false) {
-  if (acceptor_.Fd() >= 0 && !acceptor_.IsListening()) {
-    acceptor_.Listen();
+    : acceptor_(std::make_unique<Acceptor>(listen_address, should_reuse_port)),
+      should_stop_(false) {
+  if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
+    acceptor_->Listen();
   } else {
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
   for (int i = 0; i < io_thread_amount; ++i) {
-    event_managers_.emplace_back(new EventManager);
+    event_managers_.emplace_back(std::make_unique<EventManager>());
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
-ReactorManager::~ReactorManager() {
-  int thread_amout = event_managers_.size();
-  for (int i = 0; i < thread_amout; ++i) {
-    delete event_managers_[i];
-    event_managers_[i] = nullptr;
-  }
-  event_managers_.clear();
-}
+ReactorManager::~ReactorManager() { int thread_amout = event_managers_.size(); }
 
 void ReactorManager::Loop() {
-  // TODO:
   while (!should_stop_) {
     NetAddress peer_address;
-    int socket_fd = acceptor_.Accept(&peer_address);
+    int socket_fd = acceptor_->Accept(&peer_address);
     if (socket_fd < 0 || socket_fd > kMaxEventAmount) {
       LOG(logger::kError, "Fail to accept a new connection request!!!");
       continue;
