@@ -62,17 +62,17 @@ void EventManager::InsertNewConnection(
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(CloseCallback_);
-  // It will make it start reading
-  new_connection->OnEstablishing();
+  {
+    LockGuard lock_guard(connection_map_mutex_lock_);
+    connection_map_[socket_fd].swap(new_connection);
+    // It will make it start reading
+    connection_map_[socket_fd]->OnEstablishing();
+  }
   if (!read_on) {
     new_connection->StopReading();
   }
   if (write_on) {
     new_connection->StartWriting();
-  }
-  {
-    LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_[socket_fd].swap(new_connection);
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
