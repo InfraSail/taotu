@@ -56,14 +56,8 @@ void EventManager::InsertNewConnection(
     const Connecting::OnMessageCallback& MessageCallback_,
     const Connecting::NormalCallback& WriteCompleteCallback_,
     const NormalCallback& CloseCallback_, bool read_on, bool write_on) {
-  Connecting* new_connection = nullptr;
-  {
-    LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_[socket_fd] = std::make_unique<Connecting>(
-        this, socket_fd, local_address, peer_address);
-
-    new_connection = connection_map_[socket_fd].release();
-  }
+  std::unique_ptr<Connecting> new_connection = std::make_unique<Connecting>(
+      this, socket_fd, local_address, peer_address);
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
@@ -75,6 +69,10 @@ void EventManager::InsertNewConnection(
   }
   if (write_on) {
     new_connection->StartWriting();
+  }
+  {
+    LockGuard lock_guard(connection_map_mutex_lock_);
+    connection_map_[socket_fd].swap(new_connection);
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
