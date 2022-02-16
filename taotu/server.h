@@ -24,7 +24,7 @@
 
 namespace taotu {
 
-class ReactorManager;
+class ServerReactorManager;
 
 /**
  * @brief  // TODO:
@@ -49,14 +49,14 @@ class Server : NonCopyableMovable {
   void RemoveConnection(Connecting& connection);
 
  private:
-  typedef std::unique_ptr<ReactorManager> ReactorManagerPtr;
+  typedef std::unique_ptr<ServerReactorManager> ServerReactorManagerPtr;
   typedef std::unique_ptr<ThreadPool> ThreadPoolPtr;
 
   void DefaultOnConnectionCallback(Connecting& connection);
   void DefaultOnMessageCallback(Connecting& connection, IoBuffer* io_buffer,
                                 TimePoint time_point);
 
-  ReactorManagerPtr reactor_manager_;
+  ServerReactorManagerPtr reactor_manager_;
 
   ThreadPoolPtr thread_pool_;
 
