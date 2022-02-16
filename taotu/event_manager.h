@@ -35,9 +35,6 @@ namespace taotu {
  */
 class EventManager : NonCopyableMovable {
  public:
-  typedef Connecting::NormalCallback NormalCallback;
-  typedef Connecting::OnMessageCallback OnMessageCallback;
-
   EventManager();
   ~EventManager();
 
