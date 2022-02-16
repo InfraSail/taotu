@@ -31,8 +31,9 @@ static NetAddress GetLocalNetAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-ReactorManager::ReactorManager(const NetAddress& listen_address,
-                               int io_thread_amount, bool should_reuse_port)
+ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
+                                           int io_thread_amount,
+                                           bool should_reuse_port)
     : acceptor_(std::make_unique<Acceptor>(listen_address, should_reuse_port)),
       should_stop_(false) {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
@@ -46,9 +47,11 @@ ReactorManager::ReactorManager(const NetAddress& listen_address,
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
-ReactorManager::~ReactorManager() { int thread_amout = event_managers_.size(); }
+ServerReactorManager::~ServerReactorManager() {
+  int thread_amout = event_managers_.size();
+}
 
-void ReactorManager::Loop() {
+void ServerReactorManager::Loop() {
   while (!should_stop_) {
     NetAddress peer_address;
     int socket_fd = acceptor_->Accept(&peer_address);

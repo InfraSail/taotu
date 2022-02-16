@@ -29,16 +29,17 @@ class Balancer;
  * @brief  // TODO:
  *
  */
-class ReactorManager : NonCopyableMovable {
+class ServerReactorManager : NonCopyableMovable {
  public:
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
 
   typedef std::vector<std::unique_ptr<EventManager>> EventManagers;
 
-  ReactorManager(const NetAddress& listen_address, int io_thread_amount = 6,
-                 bool should_reuse_port = false);
-  ~ReactorManager();
+  ServerReactorManager(const NetAddress& listen_address,
+                       int io_thread_amount = 6,
+                       bool should_reuse_port = false);
+  ~ServerReactorManager();
 
   void SetConnectionCallback(const NormalCallback& cb) {
     ConnectionCallback_ = cb;
