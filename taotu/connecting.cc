@@ -189,7 +189,7 @@ void Connecting::Send(IoBuffer* io_buffer) {
 void Connecting::ForceClose() {
   if (IsConnected() || kDisconnecting == state_) {
     SetState(kDisconnecting);
-    event_manager_->DeleteConnection(Fd());
+    DoClosing();
   }
 }
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
