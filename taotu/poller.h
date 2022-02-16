@@ -49,7 +49,7 @@ class Poller : NonCopyableMovable {
 
   void GetActiveEventer(int event_amount, EventerList* active_eventers) const;
 
-  bool IsPollFdEffective();
+  bool IsPollFdEffective() const;
 
   // File descriptor of the native "poll()" (poll, epoll or kqueue)
   int poll_fd_;

@@ -142,7 +142,7 @@ void Poller::GetActiveEventer(int event_amount,
   }
 }
 
-bool Poller::IsPollFdEffective() {
+bool Poller::IsPollFdEffective() const {
   if (poll_fd_ < 0) {
     LOG(logger::kError,
         "In thread(" + std::to_string(::pthread_self()) +
