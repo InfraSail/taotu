@@ -98,8 +98,6 @@ void Eventer::DisableAllEvents() {
   UpdateEvents();
 }
 
-Poller* Eventer::HostPoller() { return poller_; }
-
 void Eventer::RemoveMyself() { poller_->RemoveEventer(this); }
 
 void Eventer::UpdateEvents() { poller_->ModifyEventer(this); }

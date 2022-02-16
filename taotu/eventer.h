@@ -65,8 +65,6 @@ class Eventer : NonCopyableMovable {
   void DisableWriteEvents();
   void DisableAllEvents();
 
-  Poller* HostPoller();
-
  private:
   void RemoveMyself();
   void UpdateEvents();
