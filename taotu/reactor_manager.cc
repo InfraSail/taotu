@@ -56,9 +56,13 @@ void ReactorManager::Loop() {
       LOG(logger::kError, "Fail to accept a new connection request!!!");
       continue;
     }
-    balancer_->PickOneEventManager()->InsertNewConnection(
-        socket_fd, GetLocalNetAddress(socket_fd), peer_address,
-        ConnectionCallback_, MessageCallback_, WriteCompleteCallback_,
-        CloseCallback_);
+    auto event_manager = balancer_->PickOneEventManager();
+    auto new_connection = event_manager->InsertNewConnection(
+        socket_fd, GetLocalNetAddress(socket_fd), peer_address);
+    new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+    new_connection->RegisterOnMessageCallback(MessageCallback_);
+    new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+    new_connection->RegisterCloseCallback(CloseCallback_);
+    new_connection->OnEstablishing();
   }
 }
