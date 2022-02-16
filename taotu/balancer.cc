@@ -17,7 +17,8 @@
 
 using namespace taotu;
 
-Balancer::Balancer(ReactorManager::EventManagers* event_managers, int strategy)
+Balancer::Balancer(ServerReactorManager::EventManagers* event_managers,
+                   int strategy)
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {
