@@ -42,7 +42,7 @@ class Server : NonCopyableMovable {
   void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
   void SetCloseCallback(const std::function<void(Connecting&)>& cb);
 
-  ThreadPool& GetThreadPool() const { return *thread_pool_; }
+  ThreadPool& GetThreadPool() { return *thread_pool_; }
 
   void Start();
 
