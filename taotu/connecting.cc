@@ -43,7 +43,6 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
 Connecting::~Connecting() {
   LOG(logger::kDebug, "The TCP connection to fd(" + std::to_string(Fd()) +
                           ") is being closed.");
-  OnDestroying();
 }
 
 void Connecting::DoReading(TimePoint receive_time) {
@@ -59,6 +58,9 @@ void Connecting::DoReading(TimePoint receive_time) {
     errno = saved_errno;
     LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") reading failed!!!");
     DoWithError();
+  }
+  if (!(IsConnected())) {
+    StopReadingWriting();
   }
 }
 void Connecting::DoWriting() {
@@ -187,12 +189,11 @@ void Connecting::Send(IoBuffer* io_buffer) {
 void Connecting::ForceClose() {
   if (IsConnected() || kDisconnecting == state_) {
     SetState(kDisconnecting);
-    DoClosing();
+    event_manager_->DeleteConnection(Fd());
   }
 }
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
   if (IsConnected() || kDisconnecting == state_) {
-    SetState(kDisconnecting);
     event_manager_->RunAfter(delay_microseconds,
                              std::bind(&Connecting::ForceClose, this));
   }
