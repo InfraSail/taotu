@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -31,6 +32,10 @@ Acceptor::Acceptor(const NetAddress& listen_address, bool should_reuse_port)
                                IPPROTO_TCP)),
       is_listening_(false),
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
+  if (accept_soketer_.Fd() < 0) {
+    LOG(logger::kError, "Fail to initialize for acceptor!!!");
+    ::exit(-1);
+  }
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
