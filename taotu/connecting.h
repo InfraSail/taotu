@@ -108,8 +108,8 @@ class Connecting : NonCopyableMovable {
   void Send(const std::string& message);
   void Send(IoBuffer* io_buffer);
 
-  bool IsConnected() { return kConnected == state_; }
-  bool IsDisconnected() { return kDisconnected == state_; }
+  bool IsConnected() const { return kConnected == state_; }
+  bool IsDisconnected() const { return kDisconnected == state_; }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
