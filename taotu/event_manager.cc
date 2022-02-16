@@ -46,33 +46,22 @@ void EventManager::Loop() {
     LOG(logger::kDebug, "The event loop in thread(" +
                             std::to_string(::pthread_self()) +
                             ") is stopping.");
+    for (auto& it : connection_map_) {
+      it.second->OnDestroying();
+    }
+    connection_map_.clear();
   });
 }
 
-void EventManager::InsertNewConnection(
-    int socket_fd, const NetAddress& local_address,
-    const NetAddress& peer_address,
-    const Connecting::NormalCallback& ConnectionCallback_,
-    const Connecting::OnMessageCallback& MessageCallback_,
-    const Connecting::NormalCallback& WriteCompleteCallback_,
-    const NormalCallback& CloseCallback_, bool read_on, bool write_on) {
-  std::unique_ptr<Connecting> new_connection = std::make_unique<Connecting>(
-      this, socket_fd, local_address, peer_address);
-  new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
-  new_connection->RegisterOnMessageCallback(MessageCallback_);
-  new_connection->RegisterWriteCallback(WriteCompleteCallback_);
-  new_connection->RegisterCloseCallback(CloseCallback_);
+Connecting* EventManager::InsertNewConnection(int socket_fd,
+                                              const NetAddress& local_address,
+                                              const NetAddress& peer_address) {
+  Connecting* ref_conn = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_[socket_fd].swap(new_connection);
-    // It will make it start reading
-    connection_map_[socket_fd]->OnEstablishing();
-  }
-  if (!read_on) {
-    new_connection->StopReading();
-  }
-  if (write_on) {
-    new_connection->StartWriting();
+    connection_map_[socket_fd] = std::make_unique<Connecting>(
+        this, socket_fd, local_address, peer_address);
+    ref_conn = connection_map_[socket_fd].release();
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
@@ -81,6 +70,7 @@ void EventManager::InsertNewConnection(
           std::to_string(local_address.GetPort()) +
           ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
           std::to_string(peer_address.GetPort()) + ")).");
+  return ref_conn;
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
@@ -102,17 +92,19 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
 
+void EventManager::DeleteConnection(int fd) {
+  LockGuard lock_guard(connection_map_mutex_lock_);
+  if (connection_map_[fd]->IsDisconnected()) {
+    --eventer_amount_;
+    closed_fds.push_back(fd);
+  }
+}
+
 void EventManager::DoWithActiveTasks(TimePoint return_time) {
   for (auto active_event : active_events_) {
     active_event->Work(return_time);
     int fd = active_event->Fd();
-    {
-      LockGuard lock_guard(connection_map_mutex_lock_);
-      if (connection_map_[fd]->IsDisconnected()) {
-        --eventer_amount_;
-        closed_fds.push_back(fd);
-      }
-    }
+    DeleteConnection(fd);
   }
   active_events_.clear();
 }
@@ -140,6 +132,9 @@ void EventManager::DoExpiredTimeTasks() {
 void EventManager::DestroyClosedConnections() {
   for (auto fd : closed_fds) {
     LockGuard lock_guard(connection_map_mutex_lock_);
+    if (!(connection_map_[fd]->IsDisconnected())) {
+      connection_map_[fd]->DoClosing();
+    }
     connection_map_.erase(fd);
   }
   closed_fds.clear();

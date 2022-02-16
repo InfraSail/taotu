@@ -44,13 +44,9 @@ class EventManager : NonCopyableMovable {
   void Loop();
 
   // Insert a new connection into current I/O thread
-  void InsertNewConnection(int socket_fd, const NetAddress& local_address,
-                           const NetAddress& peer_address,
-                           const NormalCallback& ConnectionCallback_,
-                           const OnMessageCallback& MessageCallback_,
-                           const NormalCallback& WriteCompleteCallback_,
-                           const NormalCallback& CloseCallback_,
-                           bool read_on = true, bool write_on = true);
+  Connecting* InsertNewConnection(int socket_fd,
+                                  const NetAddress& local_address,
+                                  const NetAddress& peer_address);
 
   Poller* GetPoller() { return poller_.get(); }
 
@@ -62,6 +58,8 @@ class EventManager : NonCopyableMovable {
   void RunEveryUntil(
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
       std::function<bool()> IsContinue = std::function<bool()>{});
+
+  void DeleteConnection(int fd);
 
  private:
   typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
