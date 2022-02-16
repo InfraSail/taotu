@@ -11,13 +11,41 @@
 #ifndef TAOTU_TAOTU_CONNECTOR_H_
 #define TAOTU_TAOTU_CONNECTOR_H_
 
+#include <functional>
+
+#include "connecting.h"
+#include "eventer.h"
+#include "net_address.h"
+#include "non_copyable_movable.h"
+#include "poller.h"
+
 namespace taotu {
 
 /**
  * @brief  // TODO:
  *
  */
-class Connector {};
+class Connector : NonCopyableMovable {
+ public:
+  typedef std::function<void(int)> NewConnectionCallback;
+
+  Connector(Poller* poller, const NetAddress& server_address);
+  ~Connector();
+
+  void Connect();
+
+ private:
+  typedef std::unique_ptr<Eventer> EventerPtr;
+  enum State { kDisconnected, kConnecting, kConnected };
+
+  void SetState(State state) { state_ = state; }
+
+  NetAddress server_address_;
+  State state_;
+  NewConnectionCallback NewConnectionCallback_;
+
+  EventerPtr eventer_;
+};
 
 }  // namespace taotu
 
