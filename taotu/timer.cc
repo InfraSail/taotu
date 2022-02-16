@@ -40,5 +40,5 @@ Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {
     }
     time_points_.erase(time_points_.begin(), itr);
   }
-  return expired_time_tasks;
+  return std::move(expired_time_tasks);
 }
