@@ -70,6 +70,12 @@ class ServerReactorManager : NonCopyableMovable {
   bool should_stop_;
 };
 
+/**
+ * @brief  // TODO:
+ *
+ */
+class ClientReactorManager : NonCopyableMovable {};
+
 }  // namespace taotu
 
 #endif  // !TAOTU_TAOTU_REACTOR_MANAGER_H_
