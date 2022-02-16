@@ -28,7 +28,7 @@ class Socketer : NonCopyableMovable {
   ~Socketer();
 
   // Get the file descriptor of this socket
-  int Fd() const;
+  int Fd() const { return socket_fd_; }
 
   // Bind local net address info(IP address, port and so on) (For "Acceptor")
   void BindAddress(const NetAddress& local_address);

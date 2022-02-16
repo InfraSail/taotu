@@ -29,8 +29,6 @@ Socketer::~Socketer() {
   ::close(socket_fd_);
 }
 
-int Socketer::Fd() const { return socket_fd_; }
-
 void Socketer::BindAddress(const NetAddress& local_address) {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
