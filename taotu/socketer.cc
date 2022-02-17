@@ -26,6 +26,8 @@ using namespace taotu;
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
 Socketer::~Socketer() {
   // Close the file and give its descriptor back
+  LOG(logger::kDebug,
+      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
   ::close(socket_fd_);
 }
 
