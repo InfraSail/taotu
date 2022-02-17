@@ -16,6 +16,7 @@
 #include <string>
 #include <utility>
 
+#include "connecting.h"
 #include "logger.h"
 #include "spin_lock.h"
 #include "timer.h"
@@ -32,25 +33,24 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  thread_ = std::make_unique<std::thread>([this]() {
-    should_quit_ = false;
-    LOG(logger::kDebug, "The event loop in thread(" +
-                            std::to_string(::pthread_self()) +
-                            ") is starting.");
-    while (!should_quit_) {
-      DoWithActiveTasks(
-          poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
-      DoExpiredTimeTasks();
-      DestroyClosedConnections();
-    }
-    LOG(logger::kDebug, "The event loop in thread(" +
-                            std::to_string(::pthread_self()) +
-                            ") is stopping.");
-    for (auto& it : connection_map_) {
-      it.second->OnDestroying();
-    }
-    connection_map_.clear();
-  });
+  thread_ = std::make_unique<std::thread>(std::bind(&EventManager::Work, this));
+}
+void EventManager::Work() {
+  should_quit_ = false;
+  LOG(logger::kDebug, "The event loop in thread(" +
+                          std::to_string(::pthread_self()) + ") is starting.");
+  while (!should_quit_) {
+    DoWithActiveTasks(
+        poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
+    DoExpiredTimeTasks();
+    DestroyClosedConnections();
+  }
+  LOG(logger::kDebug, "The event loop in thread(" +
+                          std::to_string(::pthread_self()) + ") is stopping.");
+  for (auto& it : connection_map_) {
+    it.second->OnDestroying();
+  }
+  connection_map_.clear();
 }
 
 Connecting* EventManager::InsertNewConnection(int socket_fd,

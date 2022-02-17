@@ -39,6 +39,7 @@ class EventManager : NonCopyableMovable {
   ~EventManager();
 
   void Loop();
+  void Work();
 
   // Insert a new connection into current I/O thread
   Connecting* InsertNewConnection(int socket_fd,
