@@ -52,6 +52,9 @@ ServerReactorManager::~ServerReactorManager() {
 }
 
 void ServerReactorManager::Loop() {
+  for (auto& event_manager : event_managers_) {
+    event_manager->Loop();
+  }
   while (!should_stop_) {
     NetAddress peer_address;
     int socket_fd = acceptor_->Accept(&peer_address);
