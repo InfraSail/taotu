@@ -30,9 +30,14 @@ class Connector : NonCopyableMovable {
   typedef std::function<void(int)> NewConnectionCallback;
 
   Connector(Poller* poller, const NetAddress& server_address);
-  ~Connector();
+  ~Connector() {}
 
   void Connect();
+  void DoConnecting(int socket_fd);
+  void DoRetrying(int socket_fd);
+
+  void DoWriting();
+  void DoWithError();
 
  private:
   typedef std::unique_ptr<Eventer> EventerPtr;
@@ -40,6 +45,7 @@ class Connector : NonCopyableMovable {
 
   void SetState(State state) { state_ = state; }
 
+  Poller* poller_;
   NetAddress server_address_;
   State state_;
   NewConnectionCallback NewConnectionCallback_;
