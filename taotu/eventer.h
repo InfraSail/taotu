@@ -65,8 +65,9 @@ class Eventer : NonCopyableMovable {
   void DisableWriteEvents();
   void DisableAllEvents();
 
- private:
   void RemoveMyself();
+
+ private:
   void UpdateEvents();
 
   // In <poll.h> or <sys/epoll.h>
