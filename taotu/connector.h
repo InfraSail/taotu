@@ -14,10 +14,10 @@
 #include <functional>
 
 #include "connecting.h"
+#include "event_manager.h"
 #include "eventer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
-#include "poller.h"
 
 namespace taotu {
 
@@ -29,12 +29,18 @@ class Connector : NonCopyableMovable {
  public:
   typedef std::function<void(int)> NewConnectionCallback;
 
-  Connector(Poller* poller, const NetAddress& server_address);
+  Connector(EventManager* event_manager, const NetAddress& server_address);
   ~Connector() {}
+
+  void Start();
 
   void Connect();
   void DoConnecting(int socket_fd);
   void DoRetrying(int socket_fd);
+
+  void RegisterNewConnectionCallback(const NewConnectionCallback& cb) {
+    NewConnectionCallback_ = cb;
+  }
 
   void DoWriting();
   void DoWithError();
@@ -43,11 +49,18 @@ class Connector : NonCopyableMovable {
   typedef std::unique_ptr<Eventer> EventerPtr;
   enum State { kDisconnected, kConnecting, kConnected };
 
+  static const int kMaxRetryDelayMicroseconds = 30 * 1000 * 1000;
+  static const int kInitRetryDelayMicroseconds = 500 * 1000;
+
+  int RemoveAndReset();
+
   void SetState(State state) { state_ = state; }
 
-  Poller* poller_;
+  EventManager* event_manager_;
   NetAddress server_address_;
   State state_;
+  bool can_connect_;
+  int retry_dalay_microseconds_;
   NewConnectionCallback NewConnectionCallback_;
 
   EventerPtr eventer_;
