@@ -48,9 +48,7 @@ class ServerReactorManager : NonCopyableMovable {
   void SetWriteCompleteCallback(const NormalCallback& cb) {
     WriteCompleteCallback_ = cb;
   }
-  void SetCloseCallback(const std::function<void(Connecting&)>& cb) {
-    CloseCallback_ = cb;
-  }
+  void SetCloseCallback(const NormalCallback& cb) { CloseCallback_ = cb; }
 
   void Loop();
 
