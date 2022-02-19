@@ -42,13 +42,13 @@ class TimePoint {
   int GetMillisecond() const;
 
   bool operator<(const TimePoint& tp) const {
-    return time_point_micro_seconds_ < tp.time_point_micro_seconds_;
+    return time_point_microseconds_ < tp.time_point_microseconds_;
   }
   bool operator<=(const TimePoint& tp) const {
-    return time_point_micro_seconds_ <= tp.time_point_micro_seconds_;
+    return time_point_microseconds_ <= tp.time_point_microseconds_;
   }
   bool operator==(const TimePoint& tp) const {
-    return time_point_micro_seconds_ == tp.time_point_micro_seconds_;
+    return time_point_microseconds_ == tp.time_point_microseconds_;
   }
 
   // Set the function which decides whether to continue the cycle (for
@@ -61,7 +61,7 @@ class TimePoint {
   static int64_t FNow();
 
   // The time point in microsecond saved
-  int64_t time_point_micro_seconds_;
+  int64_t time_point_microseconds_;
 
   // The time point of next setting (for repeatable condition)
   int64_t context_;

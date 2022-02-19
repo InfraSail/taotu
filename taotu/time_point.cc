@@ -15,15 +15,15 @@
 
 using namespace taotu;
 
-TimePoint::TimePoint() : time_point_micro_seconds_(FNow()), context_(0) {}
+TimePoint::TimePoint() : time_point_microseconds_(FNow()), context_(0) {}
 TimePoint::TimePoint(int64_t duration_microseconds, bool repeated)
-    : time_point_micro_seconds_(FNow() + duration_microseconds),
+    : time_point_microseconds_(FNow() + duration_microseconds),
       context_(repeated ? duration_microseconds : 0) {}
 
-int64_t TimePoint::GetMicroseconds() const { return time_point_micro_seconds_; }
+int64_t TimePoint::GetMicroseconds() const { return time_point_microseconds_; }
 
 int TimePoint::GetMillisecond() const {
-  return static_cast<int>(time_point_micro_seconds_ / 1000);
+  return static_cast<int>(time_point_microseconds_ / 1000);
 }
 
 void TimePoint::SetTaskContinueCallback(std::function<bool()> IsContinue) {
