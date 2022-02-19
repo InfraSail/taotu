@@ -20,7 +20,7 @@ using namespace taotu;
 
 static const uint32_t kMaxEventAmount = 600000;
 
-static NetAddress GetLocalNetAddress(int socket_fd) {
+static NetAddress GetNetAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
@@ -63,7 +63,7 @@ void ServerReactorManager::Loop() {
       continue;
     }
     auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
-        socket_fd, GetLocalNetAddress(socket_fd), peer_address);
+        socket_fd, GetNetAddress(socket_fd), peer_address);
     new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
     new_connection->RegisterOnMessageCallback(MessageCallback_);
     new_connection->RegisterWriteCallback(WriteCompleteCallback_);
