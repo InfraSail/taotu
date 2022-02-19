@@ -33,6 +33,7 @@ class Connector : NonCopyableMovable {
   ~Connector() {}
 
   void Start();
+  void Restart();
 
   void Connect();
   void DoConnecting(int socket_fd);

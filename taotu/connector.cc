@@ -66,6 +66,11 @@ void Connector::Start() {
   can_connect_ = true;
   Connect();
 }
+void Connector::Restart() {
+  SetState(kDisconnected);
+  retry_dalay_microseconds_ = kInitRetryDelayMicroseconds;
+  Start();
+}
 
 void Connector::Connect() {
   int socket_fd = eventer_->Fd();
