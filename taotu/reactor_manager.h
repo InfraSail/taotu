@@ -56,16 +56,17 @@ class ServerReactorManager : NonCopyableMovable {
   typedef std::unique_ptr<Acceptor> AcceptorPtr;
   typedef std::unique_ptr<Balancer> BalancerPtr;
 
-  AcceptorPtr acceptor_;
+  void AcceptNewConnectionCallback(int socket_fd,
+                                   const NetAddress& peer_address);
+
   EventManagers event_managers_;
+  AcceptorPtr acceptor_;
   BalancerPtr balancer_;
 
   NormalCallback ConnectionCallback_;
   MessageCallback MessageCallback_;
   NormalCallback WriteCompleteCallback_;
   NormalCallback CloseCallback_;
-
-  bool should_stop_;
 };
 
 /**

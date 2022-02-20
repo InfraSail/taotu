@@ -13,12 +13,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <functional>
+
 #include "balancer.h"
+#include "connecting.h"
 #include "logger.h"
+#include "net_address.h"
 
 using namespace taotu;
-
-static const uint32_t kMaxEventAmount = 600000;
 
 static NetAddress GetNetAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
@@ -34,40 +36,42 @@ static NetAddress GetNetAddress(int socket_fd) {
 ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
                                            int io_thread_amount,
                                            bool should_reuse_port)
-    : acceptor_(std::make_unique<Acceptor>(listen_address, should_reuse_port)),
-      should_stop_(false) {
+    : event_managers_(1, std::make_unique<EventManager>()),
+      acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
+                                           listen_address, should_reuse_port)) {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
+    acceptor_->RegisterNewConnectionCallback(
+        std::bind(&ServerReactorManager::AcceptNewConnectionCallback, this,
+                  std::placeholders::_1, std::placeholders::_2));
   } else {
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  for (int i = 0; i < io_thread_amount; ++i) {
+  for (int i = 1; i < io_thread_amount; ++i) {
     event_managers_.emplace_back(std::make_unique<EventManager>());
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
 ServerReactorManager::~ServerReactorManager() {
-  int thread_amout = event_managers_.size();
+  int thread_amout = event_managers_.size() - 1;
 }
 
 void ServerReactorManager::Loop() {
-  for (auto& event_manager : event_managers_) {
-    event_manager->Loop();
+  int io_thread_amount = event_managers_.size();
+  for (int i = 1; i < io_thread_amount; ++i) {
+    event_managers_[i]->Loop();
   }
-  while (!should_stop_) {
-    NetAddress peer_address;
-    int socket_fd = acceptor_->Accept(&peer_address);
-    if (socket_fd < 0 || socket_fd > kMaxEventAmount) {
-      LOG(logger::kError, "Fail to accept a new connection request!!!");
-      continue;
-    }
-    auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
-        socket_fd, GetNetAddress(socket_fd), peer_address);
-    new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
-    new_connection->RegisterOnMessageCallback(MessageCallback_);
-    new_connection->RegisterWriteCallback(WriteCompleteCallback_);
-    new_connection->RegisterCloseCallback(CloseCallback_);
-    new_connection->OnEstablishing();
-  }
+  event_managers_[0]->Work();
+}
+
+void ServerReactorManager::AcceptNewConnectionCallback(
+    int socket_fd, const NetAddress& peer_address) {
+  auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
+      socket_fd, GetNetAddress(socket_fd), peer_address);
+  new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+  new_connection->RegisterOnMessageCallback(MessageCallback_);
+  new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+  new_connection->RegisterCloseCallback(CloseCallback_);
+  new_connection->OnEstablishing();
 }
