@@ -53,6 +53,8 @@ class Acceptor : NonCopyableMovable {
     NewConnectionCallback_ = cb;
   }
 
+  // Accept a connection request, create this connection, allocate a file
+  // descriptor of this connecting socket and record its net address info
   void DoReading();
 
  private:

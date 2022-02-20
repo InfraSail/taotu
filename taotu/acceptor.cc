@@ -29,6 +29,8 @@
 
 using namespace taotu;
 
+static const uint32_t kMaxEventAmount = 600000;
+
 Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
                    bool should_reuse_port)
     : accept_soketer_(::socket(listen_address.GetFamily(),
@@ -57,29 +59,10 @@ void Acceptor::Listen() {
   accept_eventer_.EnableReadEvents();
 }
 
-// TODO: Discard
-int Acceptor::Accept(NetAddress* peer_address) {
-  int conn_fd = accept_soketer_.Accept(peer_address);
-  if (conn_fd >= 0) {
-    return conn_fd;
-  } else {
-    LOG(logger::kError, "Fd(" + std::to_string(accept_soketer_.Fd()) +
-                            ") could not accept a new TCP connection");
-    if (errno == EMFILE) {  // If it fails to connect, clear the waiting list of
-                            // listening
-      ::close(idle_fd_);
-      idle_fd_ = ::accept(accept_soketer_.Fd(), NULL, NULL);
-      ::close(idle_fd_);
-      idle_fd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
-    }
-  }
-  return -1;
-}
-
 void Acceptor::DoReading() {
   NetAddress peer_address;
   int conn_fd = accept_soketer_.Accept(&peer_address);
-  if (conn_fd >= 0) {
+  if (conn_fd >= 0 && conn_fd <= kMaxEventAmount) {
     if (NewConnectionCallback_) {
       NewConnectionCallback_(conn_fd, peer_address);
     } else {
@@ -91,7 +74,7 @@ void Acceptor::DoReading() {
   } else {
     LOG(logger::kError, "Acceptor with Fd(" +
                             std::to_string(accept_soketer_.Fd()) +
-                            ") could not accept a new TCP connection!!!");
+                            ") failed to accept a new TCP connection!!!");
     if (errno == EMFILE) {  // If it fails to connect, clear the waiting list of
                             // listening
       ::close(idle_fd_);
