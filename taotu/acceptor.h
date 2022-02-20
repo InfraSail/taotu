@@ -45,10 +45,6 @@ class Acceptor : NonCopyableMovable {
 
   bool IsListening() const { return is_listening_; }
 
-  // Accept a connection request, create this connection, allocate a file
-  // descriptor of this connecting socket and record its net address info
-  int Accept(NetAddress* peer_address);
-
   void RegisterNewConnectionCallback(const NewConnectionCallback& cb) {
     NewConnectionCallback_ = cb;
   }
