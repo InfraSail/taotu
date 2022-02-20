@@ -15,10 +15,14 @@
 #include <functional>
 
 #include "event_manager.h"
+#include "eventer.h"
+#include "net_address.h"
 #include "non_copyable_movable.h"
 #include "socketer.h"
 
 namespace taotu {
+
+class Poller;
 
 /**
  * @brief "Acceptor" is dedicated to handle new connection requests and build
@@ -27,7 +31,10 @@ namespace taotu {
  */
 class Acceptor : NonCopyableMovable {
  public:
-  Acceptor(const NetAddress& listen_address, bool should_reuse_port);
+  typedef std::function<void(int, const NetAddress&)> NewConnectionCallback;
+
+  Acceptor(Poller* poller, const NetAddress& listen_address,
+           bool should_reuse_port);
   ~Acceptor();
 
   // Get the file descriptor of this accepting socket
@@ -42,12 +49,21 @@ class Acceptor : NonCopyableMovable {
   // descriptor of this connecting socket and record its net address info
   int Accept(NetAddress* peer_address);
 
+  void RegisterNewConnectionCallback(const NewConnectionCallback& cb) {
+    NewConnectionCallback_ = cb;
+  }
+
+  void DoReading();
+
  private:
   // The file descriptor of this accepting socket
   Socketer accept_soketer_;
+  Eventer accept_eventer_;
 
   bool is_listening_;
   int idle_fd_;  // For discarding failed connections
+
+  NewConnectionCallback NewConnectionCallback_;
 };
 
 }  // namespace taotu
