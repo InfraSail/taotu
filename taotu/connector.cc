@@ -81,6 +81,13 @@ void Connector::Restart() {
   retry_dalay_microseconds_ = kInitRetryDelayMicroseconds;
   Start();
 }
+void Connector::Stop() {
+  can_connect_ = false;
+  if (kConnecting == state_) {
+    SetState(kDisconnected);
+    DoRetrying(RemoveAndReset());
+  }
+}
 
 void Connector::Connect() {
   int socket_fd = eventer_->Fd();
@@ -181,7 +188,7 @@ void Connector::DoWriting() {
       DoRetrying(socket_fd);
     } else {
       SetState(kConnected);
-      if (can_connect_) {
+      if (can_connect_ && NewConnectionCallback_) {
         NewConnectionCallback_(socket_fd);
       } else {
         ::close(socket_fd);

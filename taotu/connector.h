@@ -34,6 +34,7 @@ class Connector : NonCopyableMovable {
 
   void Start();
   void Restart();
+  void Stop();
 
   void Connect();
   void DoConnecting(int socket_fd);
