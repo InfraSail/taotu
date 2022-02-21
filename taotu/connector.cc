@@ -24,11 +24,21 @@
 
 using namespace taotu;
 
-static struct sockaddr_in6 GetSocketAddress6(int socket_fd) {
+static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
+                    &addr_len) < 0) {
+    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+  }
+  return local_addr;
+}
+static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
+  struct sockaddr_in6 local_addr;
+  ::memset(&local_addr, 0, sizeof(local_addr));
+  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
   }
@@ -142,8 +152,8 @@ void Connector::DoWriting() {
     int socket_fd = RemoveAndReset();
     int error = GetSocketError(socket_fd);
     auto IsSelfConnected = [](int socket_fd) -> bool {
-      struct sockaddr_in6 local_address = GetSocketAddress6(socket_fd);
-      struct sockaddr_in6 peer_address = GetSocketAddress6(socket_fd);
+      struct sockaddr_in6 local_address = GetLocalSocketAddress6(socket_fd);
+      struct sockaddr_in6 peer_address = GetPeerSocketAddress6(socket_fd);
       if (local_address.sin6_family == AF_INET) {
         const struct sockaddr_in* laddr4 =
             reinterpret_cast<struct sockaddr_in*>(&local_address);
