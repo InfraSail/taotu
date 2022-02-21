@@ -76,8 +76,25 @@ class ServerReactorManager : NonCopyableMovable {
  */
 class ClientReactorManager : NonCopyableMovable {
  public:
+  typedef Connecting::NormalCallback NormalCallback;
+  typedef Connecting::OnMessageCallback MessageCallback;
+
   ClientReactorManager(const NetAddress& server_address);
   ~ClientReactorManager();
+
+  void Connect();
+  void Disconnect();
+  void Stop();
+
+  void SetConnectionCallback(const NormalCallback& cb) {
+    ConnectionCallback_ = cb;
+  }
+  void SetMessageCallback(const MessageCallback& cb) { MessageCallback_ = cb; }
+  void SetWriteCompleteCallback(const NormalCallback& cb) {
+    WriteCompleteCallback_ = cb;
+  }
+
+  void SetRetryOn(bool on) { should_retry_ = on; }
 
  private:
   typedef std::unique_ptr<Connector> ConnectorPtr;
@@ -86,6 +103,13 @@ class ClientReactorManager : NonCopyableMovable {
 
   EventManager event_manager_;
   ConnectorPtr connector_;
+
+  bool should_retry_;
+  bool can_connect_;
+
+  NormalCallback ConnectionCallback_;
+  MessageCallback MessageCallback_;
+  NormalCallback WriteCompleteCallback_;
 };
 
 }  // namespace taotu

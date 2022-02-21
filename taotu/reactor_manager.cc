@@ -87,11 +87,41 @@ void ServerReactorManager::AcceptNewConnectionCallback(
 
 ClientReactorManager::ClientReactorManager(const NetAddress& server_address)
     : event_manager_(),
-      connector_(std::make_unique<Connector>(&event_manager_, server_address)) {
+      connector_(std::make_unique<Connector>(&event_manager_, server_address)),
+      should_retry_(false),
+      can_connect_(true) {
+  connector_->RegisterNewConnectionCallback(
+      std::bind(&ClientReactorManager::LaunchNewConnectionCallback, this,
+                std::placeholders::_1));
 }
 ClientReactorManager::~ClientReactorManager() {}
+
+// TODO:
+void ClientReactorManager::Connect() {
+  can_connect_ = true;
+  connector_->Start();
+}
+void ClientReactorManager::Disconnect() {}
+void ClientReactorManager::Stop() {
+  can_connect_ = false;
+  connector_->Stop();
+}
 
 void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   NetAddress peer_address(GetPeerAddress(socket_fd));
   NetAddress local_address(GetLocalAddress(socket_fd));
+  auto new_connection = event_manager_.InsertNewConnection(
+      socket_fd, local_address, peer_address);
+  new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+  new_connection->RegisterOnMessageCallback(MessageCallback_);
+  new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+  new_connection->RegisterCloseCallback(std::bind(
+      [this](Connecting& connection) {
+        connection.OnDestroying();
+        if (this->should_retry_ && this->can_connect_) {
+          this->connector_->Restart();
+        }
+      },
+      std::placeholders::_1));
+  new_connection->OnEstablishing();
 }
