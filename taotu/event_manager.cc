@@ -102,8 +102,7 @@ void EventManager::DeleteConnection(int fd) {
 void EventManager::DoWithActiveTasks(TimePoint return_time) {
   for (auto active_event : active_events_) {
     active_event->Work(return_time);
-    int fd = active_event->Fd();
-    DeleteConnection(fd);
+    DeleteConnection(active_event->Fd());
   }
   active_events_.clear();
 }
