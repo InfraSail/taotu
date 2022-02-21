@@ -103,6 +103,7 @@ void ClientReactorManager::Connect() {
           std::to_string(connector_->GetNetAddress().GetPort()) + ")");
   can_connect_ = true;
   connector_->Start();
+  event_manager_.Work();
 }
 void ClientReactorManager::Stop() {
   can_connect_ = false;
