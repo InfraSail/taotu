@@ -18,6 +18,7 @@
 
 #include "acceptor.h"
 #include "connecting.h"
+#include "connector.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
 
@@ -73,7 +74,19 @@ class ServerReactorManager : NonCopyableMovable {
  * @brief  // TODO:
  *
  */
-class ClientReactorManager : NonCopyableMovable {};
+class ClientReactorManager : NonCopyableMovable {
+ public:
+  ClientReactorManager(const NetAddress& server_address);
+  ~ClientReactorManager();
+
+ private:
+  typedef std::unique_ptr<Connector> ConnectorPtr;
+
+  void LaunchNewConnectionCallback(int socket_fd);
+
+  EventManager event_manager_;
+  ConnectorPtr connector_;
+};
 
 }  // namespace taotu
 

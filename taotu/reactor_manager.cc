@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include <functional>
+#include <memory>
 
 #include "balancer.h"
 #include "connecting.h"
@@ -22,11 +23,21 @@
 
 using namespace taotu;
 
-static NetAddress GetNetAddress(int socket_fd) {
+static NetAddress GetLocalAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
   socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
+                    &addr_len) < 0) {
+    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+  }
+  return NetAddress(local_addr);
+}
+static NetAddress GetPeerAddress(int socket_fd) {
+  struct sockaddr_in6 local_addr;
+  ::memset(&local_addr, 0, sizeof(local_addr));
+  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
   }
@@ -53,9 +64,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
-ServerReactorManager::~ServerReactorManager() {
-  int thread_amout = event_managers_.size() - 1;
-}
+ServerReactorManager::~ServerReactorManager() {}
 
 void ServerReactorManager::Loop() {
   int io_thread_amount = event_managers_.size();
@@ -68,10 +77,21 @@ void ServerReactorManager::Loop() {
 void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
-      socket_fd, GetNetAddress(socket_fd), peer_address);
+      socket_fd, GetLocalAddress(socket_fd), peer_address);
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(CloseCallback_);
   new_connection->OnEstablishing();
+}
+
+ClientReactorManager::ClientReactorManager(const NetAddress& server_address)
+    : event_manager_(),
+      connector_(std::make_unique<Connector>(&event_manager_, server_address)) {
+}
+ClientReactorManager::~ClientReactorManager() {}
+
+void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
+  NetAddress peer_address(GetPeerAddress(socket_fd));
+  NetAddress local_address(GetLocalAddress(socket_fd));
 }
