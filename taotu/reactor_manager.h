@@ -83,7 +83,6 @@ class ClientReactorManager : NonCopyableMovable {
   ~ClientReactorManager();
 
   void Connect();
-  void Disconnect();
   void Stop();
 
   void SetConnectionCallback(const NormalCallback& cb) {

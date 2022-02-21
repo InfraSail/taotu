@@ -15,6 +15,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 
 #include "balancer.h"
 #include "connecting.h"
@@ -96,12 +97,13 @@ ClientReactorManager::ClientReactorManager(const NetAddress& server_address)
 }
 ClientReactorManager::~ClientReactorManager() {}
 
-// TODO:
 void ClientReactorManager::Connect() {
+  LOG(logger::kDebug,
+      "Connect to Ip(" + connector_->GetNetAddress().GetIp() + ") Port(" +
+          std::to_string(connector_->GetNetAddress().GetPort()) + ")");
   can_connect_ = true;
   connector_->Start();
 }
-void ClientReactorManager::Disconnect() {}
 void ClientReactorManager::Stop() {
   can_connect_ = false;
   connector_->Stop();
