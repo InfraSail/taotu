@@ -99,7 +99,7 @@ ClientReactorManager::~ClientReactorManager() {}
 
 void ClientReactorManager::Connect() {
   LOG(logger::kDebug,
-      "Connect to Ip(" + connector_->GetNetAddress().GetIp() + ") Port(" +
+      "Connect to IP(" + connector_->GetNetAddress().GetIp() + ") Port(" +
           std::to_string(connector_->GetNetAddress().GetPort()) + ")");
   can_connect_ = true;
   connector_->Start();
