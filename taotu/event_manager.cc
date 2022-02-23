@@ -27,9 +27,9 @@ EventManager::EventManager() : eventer_amount_(0) {
   poller_ = std::make_unique<Poller>(&eventer_amount_);
 }
 EventManager::~EventManager() {
-  if (thread_->joinable()) {
-    thread_->join();
+  while (!(thread_->joinable())) {
   }
+  thread_->join();
 }
 
 void EventManager::Loop() {
