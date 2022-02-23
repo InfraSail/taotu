@@ -44,7 +44,7 @@ class Connector : NonCopyableMovable {
     NewConnectionCallback_ = cb;
   }
 
-  const NetAddress& GetNetAddress() { return server_address_; }
+  const NetAddress& GetServerAddress() { return server_address_; }
 
   void DoWriting();
   void DoWithError();
