@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "acceptor.h"
@@ -21,6 +22,7 @@
 #include "connector.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
+#include "spin_lock.h"
 
 namespace taotu {
 
@@ -79,10 +81,12 @@ class ClientReactorManager : NonCopyableMovable {
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
 
-  ClientReactorManager(const NetAddress& server_address);
+  ClientReactorManager(const NetAddress& server_address,
+                       bool in_current_thread = true);
   ~ClientReactorManager();
 
   void Connect();
+  void Disconnect();
   void Stop();
 
   void SetConnectionCallback(const NormalCallback& cb) {
@@ -103,8 +107,14 @@ class ClientReactorManager : NonCopyableMovable {
   EventManager event_manager_;
   ConnectorPtr connector_;
 
+  Connecting* connection_;
+
   bool should_retry_;
   bool can_connect_;
+
+  bool in_current_thread_;
+
+  MutexLock connection_mutex_;
 
   NormalCallback ConnectionCallback_;
   MessageCallback MessageCallback_;

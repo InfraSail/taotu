@@ -21,6 +21,7 @@
 #include "connecting.h"
 #include "logger.h"
 #include "net_address.h"
+#include "spin_lock.h"
 
 using namespace taotu;
 
@@ -86,24 +87,54 @@ void ServerReactorManager::AcceptNewConnectionCallback(
   new_connection->OnEstablishing();
 }
 
-ClientReactorManager::ClientReactorManager(const NetAddress& server_address)
+ClientReactorManager::ClientReactorManager(const NetAddress& server_address,
+                                           bool in_current_thread)
     : event_manager_(),
       connector_(std::make_unique<Connector>(&event_manager_, server_address)),
+      connection_(nullptr),
       should_retry_(false),
-      can_connect_(true) {
+      can_connect_(true),
+      in_current_thread_(in_current_thread) {
   connector_->RegisterNewConnectionCallback(
       std::bind(&ClientReactorManager::LaunchNewConnectionCallback, this,
                 std::placeholders::_1));
 }
-ClientReactorManager::~ClientReactorManager() {}
+ClientReactorManager::~ClientReactorManager() {
+  LOG(logger::kDebug, "Client is destroying.");
+  Connecting* connection;
+  {
+    LockGuard lock_guard(connection_mutex_);
+    connection = connection_;
+  }
+  if (connection != nullptr) {
+    connection->RegisterCloseCallback(
+        std::bind(&Connecting::OnDestroying, connection));
+    connection->ForceClose();
+  } else {
+    connector_->Stop();
+  }
+}
 
 void ClientReactorManager::Connect() {
   LOG(logger::kDebug,
-      "Connect to IP(" + connector_->GetNetAddress().GetIp() + ") Port(" +
-          std::to_string(connector_->GetNetAddress().GetPort()) + ")");
+      "Connect to IP(" + connector_->GetServerAddress().GetIp() + ") Port(" +
+          std::to_string(connector_->GetServerAddress().GetPort()) + ")");
   can_connect_ = true;
   connector_->Start();
-  event_manager_.Work();
+  if (in_current_thread_) {
+    event_manager_.Work();
+  } else {
+    event_manager_.Loop();
+  }
+}
+void ClientReactorManager::Disconnect() {
+  can_connect_ = false;
+  {
+    LockGuard lock_guard(connection_mutex_);
+    if (connection_ != nullptr) {
+      connection_->ShutDown();
+    }
+  }
 }
 void ClientReactorManager::Stop() {
   can_connect_ = false;
@@ -120,11 +151,25 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(std::bind(
       [this](Connecting& connection) {
+        {
+          LockGuard lock_guard(connection_mutex_);
+          connection_ = nullptr;
+        }
         connection.OnDestroying();
         if (this->should_retry_ && this->can_connect_) {
+          LOG(logger::kDebug,
+              "Reconnect to [ Ip(" +
+                  this->connector_->GetServerAddress().GetIp() + "), Port(" +
+                  std::to_string(
+                      this->connector_->GetServerAddress().GetPort()) +
+                  ") ].");
           this->connector_->Restart();
         }
       },
       std::placeholders::_1));
   new_connection->OnEstablishing();
+  {
+    LockGuard lock_guard(connection_mutex_);
+    connection_ = new_connection;
+  }
 }
