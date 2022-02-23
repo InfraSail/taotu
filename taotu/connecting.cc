@@ -186,6 +186,15 @@ void Connecting::Send(IoBuffer* io_buffer) {
   io_buffer->RefreshRW();
 }
 
+void Connecting::ShutDown() {
+  if (kConnected == state_) {
+    SetState(kDisconnecting);
+    if (!(eventer_.HasWriteEvents())) {
+      socketer_.ShutdownWrite();
+    }
+  }
+}
+
 void Connecting::ForceClose() {
   if (IsConnected() || kDisconnecting == state_) {
     SetState(kDisconnecting);

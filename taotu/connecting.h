@@ -108,6 +108,8 @@ class Connecting : NonCopyableMovable {
   void Send(const std::string& message);
   void Send(IoBuffer* io_buffer);
 
+  void ShutDown();
+
   bool IsConnected() const { return kConnected == state_; }
   bool IsDisconnected() const { return kDisconnected == state_; }
 
