@@ -40,6 +40,7 @@ class Client : NonCopyableMovable {
   }
 
   void Connect();
+  void Disconnect();
   void Stop();
 
  private:

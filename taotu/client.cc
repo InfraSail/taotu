@@ -21,4 +21,5 @@ Client::Client(const NetAddress& server_address, bool should_retry_)
 Client::~Client() {}
 
 void Client::Connect() { reactor_manager_->Connect(); }
+void Client::Disconnect() { reactor_manager_->Disconnect(); }
 void Client::Stop() { reactor_manager_->Stop(); }
