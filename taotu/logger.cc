@@ -24,11 +24,13 @@ static const std::string Log_level_info_prefix[3]{
 // The file name of the log
 static const std::string kLogName{"log.txt"};
 
-// The unique actual "Logger" object
-Logger::LoggerPtr Logger::logger_ptr(new Logger, Logger::DestroyLogger);
 bool Logger::is_initialized = false;
 
-Logger::LoggerPtr Logger::GetLogger() { return logger_ptr; }
+Logger* Logger::GetLogger() {
+  // The unique actual "Logger" object
+  static Logger logger;
+  return &logger;
+}
 void Logger::DestroyLogger(Logger* logger_raw_ptr) { delete logger_raw_ptr; }
 
 void Logger::EndLogger() {
@@ -64,14 +66,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
       is_initialized = true;
-      thread_ = std::thread(std::bind(&Logger::WriteDownLogs, this),
-                            [](std::thread* trd) {
-                              if (trd != nullptr && trd->joinable()) {
-                                trd->join();
-                                delete trd;
-                                trd = nullptr;
-                              }
-                            });
+      thread_ = std::thread(std::bind(&Logger::WriteDownLogs, this));
     }
   }
   UpdateLoggerTime();
@@ -203,3 +198,10 @@ Logger::Logger()
       wrote_index_(-1L),
       write_index_(0L),
       time_now_sec_(0) {}
+
+Logger::~Logger() {
+  if (thread_.joinable()) {
+    thread_.join();
+  }
+  is_initialized = false;
+}

@@ -71,12 +71,11 @@ enum {
  */
 class Logger : NonCopyableMovable {
  public:
-  typedef std::shared_ptr<Logger> LoggerPtr;
   typedef std::array<std::string, kLogBufferSize> LogBuffer;
 
   // The unique method to creat the unique actual "Logger" object ("Singleton"
   // pattern)
-  static LoggerPtr GetLogger();
+  static Logger* GetLogger();
   static void DestroyLogger(Logger* logger);
 
   void EndLogger();
@@ -91,7 +90,7 @@ class Logger : NonCopyableMovable {
 
  protected:
   Logger();
-  ~Logger() {}
+  ~Logger();
 
  private:
   void UpdateLoggerTime();
@@ -105,7 +104,6 @@ class Logger : NonCopyableMovable {
   // The Actual log-record method (uses "move" semantics)
   void RecordLogs(std::string&& log_info);
 
-  static LoggerPtr logger_ptr;
   static bool is_initialized;
 
   static constexpr int64_t kStandardLogFileByte = kLogFileMaxByte / 2;
