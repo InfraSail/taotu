@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(taotu CXX)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0)
+PROJECT(taotu CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_STANDARD 17)
 
-find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(Boost REQUIRED)
+
+ADD_SUBDIRECTORY(taotu output/lib)
