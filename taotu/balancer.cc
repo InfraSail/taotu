@@ -44,5 +44,5 @@ EventManager* Balancer::PickOneEventManager() {
       }
       break;
   }
-  return (*event_managers_)[cursor_].release();
+  return (*event_managers_)[cursor_];
 }
