@@ -48,8 +48,7 @@ static NetAddress GetPeerAddress(int socket_fd) {
 ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
                                            int io_thread_amount,
                                            bool should_reuse_port)
-    : event_managers_(1, std::make_unique<EventManager>()),
-      acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
+    : acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
                                            listen_address, should_reuse_port)) {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
@@ -61,7 +60,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
     ::exit(-1);
   }
   for (int i = 1; i < io_thread_amount; ++i) {
-    event_managers_.emplace_back(std::make_unique<EventManager>());
+    event_managers_.emplace_back();
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
@@ -71,8 +70,10 @@ void ServerReactorManager::Loop() {
   int io_thread_amount = event_managers_.size();
   for (int i = 1; i < io_thread_amount; ++i) {
     event_managers_[i]->Loop();
+    delete event_managers_[i];
   }
   event_managers_[0]->Work();
+  event_managers_[0];
 }
 
 void ServerReactorManager::AcceptNewConnectionCallback(

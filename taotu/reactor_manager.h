@@ -37,7 +37,7 @@ class ServerReactorManager : NonCopyableMovable {
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
 
-  typedef std::vector<std::unique_ptr<EventManager>> EventManagers;
+  typedef std::vector<EventManager*> EventManagers;
 
   ServerReactorManager(const NetAddress& listen_address,
                        int io_thread_amount = 6,
