@@ -198,7 +198,6 @@ Logger::Logger()
     : cur_log_file_byte_(0),
       cur_log_file_seq_(0),
       log_file_(NULL),
-      thread_(nullptr),
       is_stopping_(0L),
       read_index_(-1L),
       wrote_index_(-1L),
