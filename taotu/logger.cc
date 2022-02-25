@@ -11,6 +11,7 @@
 
 #include "logger.h"
 
+#include <functional>
 #include <utility>
 
 using namespace taotu;
@@ -33,8 +34,8 @@ void Logger::DestroyLogger(Logger* logger_raw_ptr) { delete logger_raw_ptr; }
 void Logger::EndLogger() {
   is_stopping_ = 1L;
   log_cond_var_.notify_one();
-  if (thread_->joinable()) {
-    thread_->join();
+  if (thread_.joinable()) {
+    thread_.join();
   }
   ::fclose(log_file_);
   is_initialized = false;
@@ -63,14 +64,14 @@ void Logger::StartLogger(std::string&& log_file_name) {
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
       is_initialized = true;
-      thread_ = std::make_unique<std::thread>(
-          new std::thread{&Logger::WriteDownLogs, this}, [](std::thread* trd) {
-            if (trd != nullptr && trd->joinable()) {
-              trd->join();
-              delete trd;
-              trd = nullptr;
-            }
-          });
+      thread_ = std::thread(std::bind(&Logger::WriteDownLogs, this),
+                            [](std::thread* trd) {
+                              if (trd != nullptr && trd->joinable()) {
+                                trd->join();
+                                delete trd;
+                                trd = nullptr;
+                              }
+                            });
     }
   }
   UpdateLoggerTime();

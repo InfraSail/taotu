@@ -72,7 +72,6 @@ enum {
 class Logger : NonCopyableMovable {
  public:
   typedef std::shared_ptr<Logger> LoggerPtr;
-  typedef std::unique_ptr<std::thread> ThreadPtr;
   typedef std::array<std::string, kLogBufferSize> LogBuffer;
 
   // The unique method to creat the unique actual "Logger" object ("Singleton"
@@ -131,7 +130,7 @@ class Logger : NonCopyableMovable {
 
   FILE* log_file_;
 
-  ThreadPtr thread_;
+  std::thread thread_;
 
   std::mutex time_mutex_;
   std::string time_now_str_;
