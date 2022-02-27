@@ -31,6 +31,7 @@ bool Logger::is_initialized = false;
 Logger* Logger::GetLogger() {
   // The unique actual "Logger" object
   static Logger logger;
+  logger.StartLogger("");
   return &logger;
 }
 void Logger::DestroyLogger(Logger* logger_raw_ptr) { delete logger_raw_ptr; }
