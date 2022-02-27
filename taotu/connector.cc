@@ -24,6 +24,11 @@
 
 using namespace taotu;
 
+enum {
+  kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
+  kInitRetryDelayMicroseconds = 500 * 1000
+};
+
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
@@ -61,7 +66,7 @@ Connector::Connector(EventManager* event_manager,
       server_address_(server_address),
       state_(kDisconnected),
       can_connect_(false),
-      retry_dalay_microseconds_(kInitRetryDelayMicroseconds) {
+      retry_dalay_microseconds_(static_cast<int>(kInitRetryDelayMicroseconds)) {
   int socket_fd =
       ::socket(server_address_.GetFamily(),
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
@@ -78,7 +83,7 @@ void Connector::Start() {
 }
 void Connector::Restart() {
   SetState(kDisconnected);
-  retry_dalay_microseconds_ = kInitRetryDelayMicroseconds;
+  retry_dalay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
   Start();
 }
 void Connector::Stop() {
@@ -145,7 +150,8 @@ void Connector::DoRetrying(int socket_fd) {
     event_manager_->RunAfter(retry_dalay_microseconds_,
                              std::bind(&Connector::Start, this));
     retry_dalay_microseconds_ =
-        std::min(retry_dalay_microseconds_ * 2, kMaxRetryDelayMicroseconds);
+        std::min(retry_dalay_microseconds_ * 2,
+                 static_cast<int>(kMaxRetryDelayMicroseconds));
   } else {
     LOG(logger::kDebug, "Connector fd(" + std::to_string(socket_fd) +
                             ") is not retrying to connect.");

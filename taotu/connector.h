@@ -53,9 +53,6 @@ class Connector : NonCopyableMovable {
   typedef std::unique_ptr<Eventer> EventerPtr;
   enum State { kDisconnected, kConnecting, kConnected };
 
-  static const int kMaxRetryDelayMicroseconds = 30 * 1000 * 1000;
-  static const int kInitRetryDelayMicroseconds = 500 * 1000;
-
   int RemoveAndReset();
 
   void SetState(State state) { state_ = state; }
