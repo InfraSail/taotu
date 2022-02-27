@@ -91,7 +91,7 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
 void EventManager::DeleteConnection(int fd) {
   LockGuard lock_guard(connection_map_mutex_lock_);
   if (connection_map_[fd]->IsDisconnected()) {
-    closed_fds.push_back(fd);
+    closed_fds_.push_back(fd);
   }
 }
 
@@ -124,10 +124,10 @@ void EventManager::DoExpiredTimeTasks() {
   }
 }
 void EventManager::DestroyClosedConnections() {
-  for (auto fd : closed_fds) {
+  for (auto fd : closed_fds_) {
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_.erase(fd);
     --eventer_amount_;
   }
-  closed_fds.clear();
+  closed_fds_.clear();
 }

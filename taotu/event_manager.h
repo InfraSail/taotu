@@ -80,7 +80,7 @@ class EventManager : NonCopyableMovable {
   bool should_quit_;
 
   Poller::EventerList active_events_;
-  Fds closed_fds;
+  Fds closed_fds_;
 };
 
 }  // namespace taotu
