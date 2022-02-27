@@ -49,6 +49,9 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   accept_eventer_.RegisterReadCallback(std::bind(&Acceptor::DoReading, this));
 }
 Acceptor::~Acceptor() {
+  LOG(logger::kDebug, "Acceptor with fd(" +
+                          std::to_string(accept_soketer_.Fd()) +
+                          ") is closing.");
   is_listening_ = false;
   ::close(idle_fd_);
 }
