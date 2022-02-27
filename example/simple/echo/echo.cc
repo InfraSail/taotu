@@ -28,13 +28,13 @@ void EchoServer::Start() { server_->Start(); }
 
 void EchoServer::OnConnectionCallback(taotu::Connecting& connection) {
   taotu::LOG(taotu::logger::kDebug,
-             "EchoServer - [ Ip(" + connection.GetLocalNetAddress().GetIp() +
+             "EchoServer - (Ip(" + connection.GetLocalNetAddress().GetIp() +
                  "), Port(" +
                  std::to_string(connection.GetLocalNetAddress().GetPort()) +
-                 ") ] -> [ Ip(" + connection.GetPeerNetAddress().GetIp() +
+                 ")) -> (Ip(" + connection.GetPeerNetAddress().GetIp() +
                  "), Port(" +
                  std::to_string(connection.GetPeerNetAddress().GetPort()) +
-                 ") ] - " + (connection.IsConnected() ? "UP." : "Down."));
+                 ")) - " + (connection.IsConnected() ? "UP." : "Down."));
 }
 void EchoServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
