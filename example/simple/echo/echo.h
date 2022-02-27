@@ -19,8 +19,8 @@ class EchoServer : taotu::NonCopyableMovable {
   void Start();
 
  private:
-  void OnConnectionCallback(const taotu::Connecting& connection);
-  void OnMessageCallback(const taotu::Connecting& connection,
+  void OnConnectionCallback(taotu::Connecting& connection);
+  void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);
 

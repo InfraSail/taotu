@@ -26,7 +26,7 @@ EchoServer::EchoServer(const taotu::NetAddress& listen_address,
 
 void EchoServer::Start() { server_->Start(); }
 
-void OnConnectionCallback(taotu::Connecting& connection) {
+void EchoServer::OnConnectionCallback(taotu::Connecting& connection) {
   taotu::LOG(taotu::logger::kDebug,
              "EchoServer - [ Ip(" + connection.GetLocalNetAddress().GetIp() +
                  "), Port(" +
@@ -36,9 +36,9 @@ void OnConnectionCallback(taotu::Connecting& connection) {
                  std::to_string(connection.GetPeerNetAddress().GetPort()) +
                  ") ] - " + (connection.IsConnected() ? "UP." : "Down."));
 }
-void OnMessageCallback(taotu::Connecting& connection,
-                       taotu::IoBuffer* io_buffer,
-                       taotu::TimePoint time_point) {
+void EchoServer::OnMessageCallback(taotu::Connecting& connection,
+                                   taotu::IoBuffer* io_buffer,
+                                   taotu::TimePoint time_point) {
   std::string message{io_buffer->RetrieveAllAsString()};
   taotu::LOG(taotu::logger::kDebug,
              "Fd(" + std::to_string(connection.Fd()) + ") is echoing " +
