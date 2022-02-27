@@ -15,3 +15,5 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 log.txt
+n0_log.txt
+n1_log.txt
