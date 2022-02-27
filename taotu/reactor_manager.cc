@@ -62,7 +62,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
     ::exit(-1);
   }
   for (int i = 1; i < io_thread_amount; ++i) {
-    event_managers_.emplace_back();
+    event_managers_.emplace_back(new EventManager);
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
