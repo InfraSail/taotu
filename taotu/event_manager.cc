@@ -93,7 +93,7 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
 
 void EventManager::DeleteConnection(int fd) {
   LockGuard lock_guard(connection_map_mutex_lock_);
-  if (connection_map_[fd]->IsDisconnected()) {
+  if (connection_map_.count(fd) && connection_map_[fd]->IsDisconnected()) {
     closed_fds_.push_back(fd);
   }
 }
