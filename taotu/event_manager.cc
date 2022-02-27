@@ -63,9 +63,9 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
-      "Create a new connection that fd(" + std::to_string(socket_fd) +
-          ") with local net address (IP(" + local_address.GetIp() + "), Port(" +
-          std::to_string(local_address.GetPort()) +
+      "Create a new connection with fd(" + std::to_string(socket_fd) +
+          ") between local net address (IP(" + local_address.GetIp() +
+          "), Port(" + std::to_string(local_address.GetPort()) +
           ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
           std::to_string(peer_address.GetPort()) + ")).");
   return ref_conn;
