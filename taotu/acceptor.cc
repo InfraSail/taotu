@@ -57,6 +57,9 @@ void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
   accept_eventer_.EnableReadEvents();
+  LOG(logger::kDebug, "Acceptor with fd(" +
+                          std::to_string(accept_soketer_.Fd()) +
+                          ") is listening.");
 }
 
 void Acceptor::DoReading() {
