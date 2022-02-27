@@ -61,17 +61,16 @@ class EventManager : NonCopyableMovable {
 
  private:
   typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
-  typedef std::unique_ptr<Poller> PolerPtr;
-  typedef std::unique_ptr<std::thread> ThreadPtr;
+  typedef std::unique_ptr<Poller> PollerPtr;
   typedef std::vector<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
   void DoExpiredTimeTasks();
   void DestroyClosedConnections();
 
-  PolerPtr poller_;
+  PollerPtr poller_;
   ConnectionMap connection_map_;
-  ThreadPtr thread_;
+  std::thread thread_;
   Timer timer_;
 
   MutexLock connection_map_mutex_lock_;

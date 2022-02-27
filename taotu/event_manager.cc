@@ -27,13 +27,13 @@ EventManager::EventManager() : eventer_amount_(0) {
   poller_ = std::make_unique<Poller>(&eventer_amount_);
 }
 EventManager::~EventManager() {
-  while (!(thread_->joinable())) {
+  while (!(thread_.joinable())) {
   }
-  thread_->join();
+  thread_.join();
 }
 
 void EventManager::Loop() {
-  thread_ = std::make_unique<std::thread>(std::bind(&EventManager::Work, this));
+  thread_ = std::thread(std::bind(&EventManager::Work, this));
 }
 void EventManager::Work() {
   should_quit_ = false;
