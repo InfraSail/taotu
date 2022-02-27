@@ -23,9 +23,7 @@
 
 using namespace taotu;
 
-EventManager::EventManager() : eventer_amount_(0) {
-  poller_ = std::make_unique<Poller>(&eventer_amount_);
-}
+EventManager::EventManager() : eventer_amount_(0), poller_(&eventer_amount_) {}
 EventManager::~EventManager() {
   while (!(thread_.joinable())) {
   }
@@ -40,7 +38,7 @@ void EventManager::Work() {
   LOG(logger::kDebug, "The event loop in a new thread is starting.");
   while (!should_quit_) {
     DoWithActiveTasks(
-        poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
+        poller_.Poll(timer_.GetMinTimeDurationSet(), &active_events_));
     DoExpiredTimeTasks();
     DestroyClosedConnections();
   }

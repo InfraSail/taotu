@@ -46,7 +46,7 @@ class EventManager : NonCopyableMovable {
                                   const NetAddress& local_address,
                                   const NetAddress& peer_address);
 
-  Poller* GetPoller() { return poller_.get(); }
+  Poller* GetPoller() { return &poller_; }
 
   // For the Balancer to pick a EventManager with lowest load
   uint32_t GetEventerAmount() { return eventer_amount_; }
@@ -61,14 +61,13 @@ class EventManager : NonCopyableMovable {
 
  private:
   typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
-  typedef std::unique_ptr<Poller> PollerPtr;
   typedef std::vector<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
   void DoExpiredTimeTasks();
   void DestroyClosedConnections();
 
-  PollerPtr poller_;
+  Poller poller_;
   ConnectionMap connection_map_;
   std::thread thread_;
   Timer timer_;
