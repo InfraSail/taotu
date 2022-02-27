@@ -25,9 +25,9 @@ using namespace taotu;
 
 EventManager::EventManager() : eventer_amount_(0), poller_(&eventer_amount_) {}
 EventManager::~EventManager() {
-  while (!(thread_.joinable())) {
+  if (thread_.joinable()) {
+    thread_.join();
   }
-  thread_.join();
 }
 
 void EventManager::Loop() {
