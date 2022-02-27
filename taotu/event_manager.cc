@@ -47,6 +47,7 @@ void EventManager::Work() {
                           std::to_string(::pthread_self()) + ") is stopping.");
   for (auto& it : connection_map_) {
     it.second->OnDestroying();
+    delete it.second;
   }
   connection_map_.clear();
 }
@@ -57,9 +58,9 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   Connecting* ref_conn = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_[socket_fd] = std::make_unique<Connecting>(
-        this, socket_fd, local_address, peer_address);
-    ref_conn = connection_map_[socket_fd].get();
+    connection_map_[socket_fd] =
+        new Connecting(this, socket_fd, local_address, peer_address);
+    ref_conn = connection_map_[socket_fd];
   }
   ++eventer_amount_;
   LOG(logger::kDebug,

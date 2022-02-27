@@ -60,7 +60,7 @@ class EventManager : NonCopyableMovable {
   void DeleteConnection(int fd);
 
  private:
-  typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
+  typedef std::unordered_map<int, Connecting*> ConnectionMap;
   typedef std::vector<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
