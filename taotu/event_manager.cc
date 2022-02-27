@@ -37,16 +37,14 @@ void EventManager::Loop() {
 }
 void EventManager::Work() {
   should_quit_ = false;
-  LOG(logger::kDebug, "The event loop in thread(" +
-                          std::to_string(::pthread_self()) + ") is starting.");
+  LOG(logger::kDebug, "The event loop in a new thread is starting.");
   while (!should_quit_) {
     DoWithActiveTasks(
         poller_->Poll(timer_.GetMinTimeDurationSet(), &active_events_));
     DoExpiredTimeTasks();
     DestroyClosedConnections();
   }
-  LOG(logger::kDebug, "The event loop in thread(" +
-                          std::to_string(::pthread_self()) + ") is stopping.");
+  LOG(logger::kDebug, "The event loop in a new thread is stopping.");
   for (auto& it : connection_map_) {
     it.second->OnDestroying();
   }
