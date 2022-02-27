@@ -66,16 +66,20 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_);
 }
-ServerReactorManager::~ServerReactorManager() {}
+ServerReactorManager::~ServerReactorManager() {
+  int io_thread_amount = event_managers_.size();
+  for (int i = 1; i < io_thread_amount; ++i) {
+    delete event_managers_[i];
+  }
+  delete event_managers_[0];
+}
 
 void ServerReactorManager::Loop() {
   int io_thread_amount = event_managers_.size();
   for (int i = 1; i < io_thread_amount; ++i) {
     event_managers_[i]->Loop();
-    delete event_managers_[i];
   }
   event_managers_[0]->Work();
-  event_managers_[0];
 }
 
 void ServerReactorManager::AcceptNewConnectionCallback(
