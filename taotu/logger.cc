@@ -66,7 +66,6 @@ void Logger::StartLogger(std::string&& log_file_name) {
       }
       std::string file_header{"Current file sequence: 0\n"};
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
-      ::printf("%s", file_header.c_str());
       ::fflush(log_file_);
       is_initialized = true;
       thread_ = std::thread(std::bind(&Logger::WriteDownLogs, this));
@@ -129,14 +128,12 @@ void Logger::WriteDownLogs() {
           std::string file_header{"Current file sequence: " +
                                   std::to_string(cur_log_file_seq_) + "\n"};
           ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
-          ::printf("%s", file_header.c_str());
         }
         // Copy the content of one bucket of ring buffer to io buffer
         std::string& tmp_buf =
             log_buffer_[cur_read_index & (kLogBufferSize - 1)];
         int tmp_buf_len = tmp_buf.size();
         ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
-        ::printf("%s", tmp_buf.c_str());  // TODO:
         cur_log_file_byte_ += tmp_buf_len;
         tmp_buf.clear();
         // Update the index which was read last time
