@@ -59,7 +59,7 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
     LockGuard lock_guard(connection_map_mutex_lock_);
     connection_map_[socket_fd] = std::make_unique<Connecting>(
         this, socket_fd, local_address, peer_address);
-    ref_conn = connection_map_[socket_fd].release();
+    ref_conn = connection_map_[socket_fd].get();
   }
   ++eventer_amount_;
   LOG(logger::kDebug,
