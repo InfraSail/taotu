@@ -36,41 +36,37 @@ void Eventer::Work(TimePoint tp) {
   // Hung up and no data to read
   if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
     if (CloseCallback_) {
-      LOG(logger::kDebug,
-          "An I/O multiplexing event is triggered now: The fd(" +
-              std::to_string(fd_) + ") is closed.");
+      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+                              std::to_string(fd_) + ") is closed.");
       CloseCallback_();
     }
   }
   // Invalid request
   if (in_events_ & 0x020) {
-    LOG(logger::kWarn, "An I/O multiplexing event is triggered now: The fd(" +
+    LOG(logger::kWarn, "An I/O multiplexing event is triggered now: fd(" +
                            std::to_string(fd_) + ") is not open!");
   }
   // Invalid request and error condition
   if (in_events_ & (0x020 | 0x008)) {
     if (ErrorCallback_) {
-      LOG(logger::kError,
-          "An I/O multiplexing event is triggered now: The fd(" +
-              std::to_string(fd_) + ") occurs an error!!!");
+      LOG(logger::kError, "An I/O multiplexing event is triggered now: fd(" +
+                              std::to_string(fd_) + ") occurs an error!!!");
       ErrorCallback_();
     }
   }
   // Readable, urgent (read) and half-closed
   if (in_events_ & (0x001 | 0x002 | 0x2000)) {
     if (ReadCallback_) {
-      LOG(logger::kDebug,
-          "An I/O multiplexing event is triggered now: The fd(" +
-              std::to_string(fd_) + ") is readable.");
+      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+                              std::to_string(fd_) + ") is readable.");
       ReadCallback_(tp);
     }
   }
   // Writable
   if (in_events_ & 0x004) {
     if (WriteCallback_) {
-      LOG(logger::kDebug,
-          "An I/O multiplexing event is triggered now: The fd(" +
-              std::to_string(fd_) + ") is writable.");
+      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+                              std::to_string(fd_) + ") is writable.");
       WriteCallback_();
     }
   }
