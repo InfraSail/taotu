@@ -37,7 +37,7 @@ class Poller : NonCopyableMovable {
   Poller(uint32_t* event_amount);
   ~Poller();
 
-  // Polling (calls the native "poll()" (poll, epoll or kqueue))
+  // Polling (calls the native poll() (poll, epoll or kqueue))
   TimePoint Poll(int timeout, EventerList* active_eventers);
 
   void AddEventer(Eventer* eventer);
@@ -51,13 +51,13 @@ class Poller : NonCopyableMovable {
 
   bool IsPollFdEffective() const;
 
-  // File descriptor of the native "poll()" (poll, epoll or kqueue)
+  // File descriptor of the native poll() (poll, epoll or kqueue)
   int poll_fd_;
 
   // Referencing to the amount of regarding file descriptors
   const uint32_t* event_amount_;
 
-  // The buffer for active event struct of the native "poll()" (poll, epoll or
+  // The buffer for active event struct of the native poll() (poll, epoll or
   // kqueue)
   PollEventList poll_events_;
 };

@@ -43,7 +43,7 @@ Poller::~Poller() {
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   // LOG(logger::kDebug,
   //     "In thread(" + std::to_string(::pthread_self()) +
-  //         "), The amount of file descriptors in the native \"poll()\" is " +
+  //         "), The amount of file descriptors in the native poll() is " +
   //         std::to_string(*event_amount_) + '.');
   int event_amount =
       ::epoll_wait(poll_fd_, &(*(poll_events_.begin())),
@@ -66,7 +66,7 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
       errno = saved_errno;
       // LOG(logger::kError,
       //     "In thread(" + std::to_string(::pthread_self()) +
-      //         "), errors occurred when the native \"poll()\" executing!!!");
+      //         "), errors occurred when the native poll() executing!!!");
     }
   }
   return return_time;
@@ -79,7 +79,7 @@ void Poller::AddEventer(Eventer* eventer) {
   LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
                           "), add fd(" + std::to_string(eventer->Fd()) +
                           ") with events(" + std::to_string(eventer->Events()) +
-                          ") into the native \"poll()\".");
+                          ") into the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
@@ -90,7 +90,7 @@ void Poller::AddEventer(Eventer* eventer) {
                             "), adding fd(" + std::to_string(eventer->Fd()) +
                             ") with events(" +
                             std::to_string(eventer->Events()) +
-                            ") into the native \"poll()\" failed!!!");
+                            ") into the native poll() failed!!!");
   }
 }
 void Poller::ModifyEventer(Eventer* eventer) {
@@ -100,7 +100,7 @@ void Poller::ModifyEventer(Eventer* eventer) {
   LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
                           "), modify fd(" + std::to_string(eventer->Fd()) +
                           ") with events(" + std::to_string(eventer->Events()) +
-                          ") from the native \"poll()\".");
+                          ") from the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
@@ -111,7 +111,7 @@ void Poller::ModifyEventer(Eventer* eventer) {
                             "), modifying fd(" + std::to_string(eventer->Fd()) +
                             ") with events(" +
                             std::to_string(eventer->Events()) +
-                            ") from the native \"poll()\" failed!!!");
+                            ") from the native poll() failed!!!");
   }
 }
 void Poller::RemoveEventer(Eventer* eventer) {
@@ -120,7 +120,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
   }
   LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
                           "), remove fd(" + std::to_string(eventer->Fd()) +
-                          ") from the native \"poll()\".");
+                          ") from the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
@@ -129,7 +129,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
   if (::epoll_ctl(poll_fd_, EPOLL_CTL_DEL, event_fd, &poll_event) < 0) {
     LOG(logger::kError, "In thread(" + std::to_string(::pthread_self()) +
                             "), removing fd(" + std::to_string(eventer->Fd()) +
-                            ") from the native \"poll()\" failed!!!");
+                            ") from the native poll() failed!!!");
   }
 }
 
@@ -146,7 +146,7 @@ bool Poller::IsPollFdEffective() const {
   if (poll_fd_ < 0) {
     LOG(logger::kError,
         "In thread(" + std::to_string(::pthread_self()) +
-            "), file descriptor the native \"poll()\" is not effective!!!");
+            "), file descriptor the native poll() is not effective!!!");
     return false;
   }
   return true;
