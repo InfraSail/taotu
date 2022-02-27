@@ -1,6 +1,6 @@
 SET(SIMPLE_ECHO_SOURCE
-  echo.cc
   main.cc
+  echo.cc
 )
 
 ADD_EXECUTABLE(simple_echo ${SIMPLE_ECHO_SOURCE})
