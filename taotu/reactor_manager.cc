@@ -68,10 +68,9 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
 }
 ServerReactorManager::~ServerReactorManager() {
   int io_thread_amount = event_managers_.size();
-  for (int i = 1; i < io_thread_amount; ++i) {
+  for (int i = 0; i < io_thread_amount; ++i) {
     delete event_managers_[i];
   }
-  delete event_managers_[0];
 }
 
 void ServerReactorManager::Loop() {
