@@ -68,15 +68,15 @@ class EventManager : NonCopyableMovable {
   void DoExpiredTimeTasks(TimePoint return_time);
   void DestroyClosedConnections();
 
+  // For the Balancer to pick a EventManager with lowest load
+  uint32_t eventer_amount_;
+
   Poller poller_;
   ConnectionMap connection_map_;
   std::thread thread_;
   Timer timer_;
 
   MutexLock connection_map_mutex_lock_;
-
-  // For the Balancer to pick a EventManager with lowest load
-  uint32_t eventer_amount_;
 
   bool should_quit_;
 
