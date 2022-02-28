@@ -59,10 +59,10 @@ class TimePoint {
   void SetTaskContinueCallback(std::function<bool()> IsContinue);
   std::function<bool()> GetTaskContinueCallback() const;
 
- private:
   // Get current time point
   static int64_t FNow();
 
+ private:
   // The time point in microsecond saved
   int64_t time_point_microseconds_;
 
