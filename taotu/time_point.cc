@@ -19,6 +19,11 @@ TimePoint::TimePoint() : time_point_microseconds_(FNow()), context_(0) {}
 TimePoint::TimePoint(int64_t duration_microseconds, bool repeated)
     : time_point_microseconds_(FNow() + duration_microseconds),
       context_(repeated ? duration_microseconds : 0) {}
+TimePoint::TimePoint(int64_t duration_microseconds, TimePoint start_time_point,
+                     bool repeated)
+    : time_point_microseconds_(start_time_point.GetMicroseconds() +
+                               duration_microseconds),
+      context_(repeated ? duration_microseconds : 0) {}
 
 int64_t TimePoint::GetMicroseconds() const { return time_point_microseconds_; }
 

@@ -32,6 +32,9 @@ class TimePoint {
 
   TimePoint(int64_t duration_microseconds, bool repeated = false);
 
+  TimePoint(int64_t duration_microseconds, TimePoint start_time_point,
+            bool repeated = false);
+
   // Get the time point of next setting (for repeatable condition)
   int64_t GetContext() const { return context_; }
 
