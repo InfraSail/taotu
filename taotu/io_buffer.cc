@@ -132,7 +132,7 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
     *tmp_errno = errno;
     LOG(logger::kError,
         "Discrete reading in Fd(" + std::to_string(fd) + ") failed!!!");
-  } else if (static_cast<size_t>(n) <= writable_bytes) {
+  } else if (static_cast<size_t>(n) <= static_cast<size_t>(writable_bytes)) {
     writing_index_ += n;
   } else {
     writing_index_ = buffer_.size();
