@@ -42,7 +42,7 @@ class Server : NonCopyableMovable {
   void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
   void SetCloseCallback(const std::function<void(Connecting&)>& cb);
 
-  ThreadPool& GetThreadPool() { return *thread_pool_; }
+  ThreadPool* GetThreadPool() { return thread_pool_; }
 
   void Start();
 
@@ -50,7 +50,6 @@ class Server : NonCopyableMovable {
 
  private:
   typedef std::unique_ptr<ServerReactorManager> ServerReactorManagerPtr;
-  typedef std::unique_ptr<ThreadPool> ThreadPoolPtr;
 
   void DefaultOnConnectionCallback(Connecting& connection);
   void DefaultOnMessageCallback(Connecting& connection, IoBuffer* io_buffer,
@@ -58,7 +57,7 @@ class Server : NonCopyableMovable {
 
   ServerReactorManagerPtr reactor_manager_;
 
-  ThreadPoolPtr thread_pool_;
+  ThreadPool* thread_pool_;
 
   std::atomic_bool is_started_;
 };

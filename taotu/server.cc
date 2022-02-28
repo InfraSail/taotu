@@ -22,7 +22,7 @@ Server::Server(const NetAddress& listen_address, bool should_reuse_port,
                int io_thread_amount, int calculation_thread_amount)
     : reactor_manager_(std::make_unique<ServerReactorManager>(
           listen_address, io_thread_amount, should_reuse_port)),
-      thread_pool_(std::make_unique<ThreadPool>(calculation_thread_amount)),
+      thread_pool_(new ThreadPool(calculation_thread_amount)),
       is_started_(false) {
   reactor_manager_->SetConnectionCallback(std::bind(
       &Server::DefaultOnConnectionCallback, this, std::placeholders::_1));
@@ -32,7 +32,7 @@ Server::Server(const NetAddress& listen_address, bool should_reuse_port,
   reactor_manager_->SetCloseCallback(
       std::bind(&Server::RemoveConnection, this, std::placeholders::_1));
 }
-Server::~Server() {}
+Server::~Server() { delete thread_pool_; }
 
 void Server::SetConnectionCallback(const std::function<void(Connecting&)>& cb) {
   reactor_manager_->SetConnectionCallback(cb);
