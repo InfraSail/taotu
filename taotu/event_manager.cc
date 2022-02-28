@@ -38,9 +38,10 @@ void EventManager::Work() {
   LOG(logger::kDebug, "The event loop in thread(" +
                           std::to_string(::pthread_self()) + ") is starting.");
   while (!should_quit_) {
-    DoWithActiveTasks(
-        poller_.Poll(timer_.GetMinTimeDurationSet(), &active_events_));
-    DoExpiredTimeTasks();
+    auto return_time =
+        poller_.Poll(timer_.GetMinTimeDurationSet(), &active_events_);
+    DoWithActiveTasks(return_time);
+    DoExpiredTimeTasks(return_time);
     DestroyClosedConnections();
   }
   LOG(logger::kDebug, "The event loop in thread(" +
@@ -81,8 +82,9 @@ void EventManager::RunAfter(int64_t delay_microseconds,
 }
 void EventManager::RunEveryUntil(int64_t interval_microseconds,
                                  Timer::TimeCallback TimeTask,
+                                 TimePoint start_time_point,
                                  std::function<bool()> IsContinue) {
-  TimePoint time_point{interval_microseconds, true};
+  TimePoint time_point{interval_microseconds, start_time_point, true};
   // Check if the function which decides whether to continue the cycle should be
   // set (for repeatable condition)
   if (IsContinue) {
@@ -105,7 +107,7 @@ void EventManager::DoWithActiveTasks(TimePoint return_time) {
   }
   active_events_.clear();
 }
-void EventManager::DoExpiredTimeTasks() {
+void EventManager::DoExpiredTimeTasks(TimePoint return_time) {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();
   for (auto& expired_time_task : expired_time_tasks) {
     auto ExpiredTimeCallback = expired_time_task.second;
@@ -117,11 +119,11 @@ void EventManager::DoExpiredTimeTasks() {
       auto IsContinue = expired_time_task.first.GetTaskContinueCallback();
       if (IsContinue) {
         if (IsContinue()) {
-          RunEveryUntil(context, std::move(ExpiredTimeCallback),
+          RunEveryUntil(context, std::move(ExpiredTimeCallback), return_time,
                         std::move(IsContinue));
         }
       } else {
-        RunEveryUntil(context, std::move(ExpiredTimeCallback));
+        RunEveryUntil(context, std::move(ExpiredTimeCallback), return_time);
       }
     }
   }

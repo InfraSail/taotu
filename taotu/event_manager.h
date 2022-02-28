@@ -55,6 +55,7 @@ class EventManager : NonCopyableMovable {
   void RunAfter(int64_t delay_microseconds, Timer::TimeCallback TimeTask);
   void RunEveryUntil(
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
+      TimePoint start_time_point = TimePoint::FNow(),
       std::function<bool()> IsContinue = std::function<bool()>{});
 
   void DeleteConnection(int fd);
@@ -64,7 +65,7 @@ class EventManager : NonCopyableMovable {
   typedef std::vector<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
-  void DoExpiredTimeTasks();
+  void DoExpiredTimeTasks(TimePoint return_time);
   void DestroyClosedConnections();
 
   Poller poller_;
