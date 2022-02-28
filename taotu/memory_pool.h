@@ -11,4 +11,16 @@
 #ifndef TAOTU_TAOTU_MEMORY_POOL_H_
 #define TAOTU_TAOTU_MEMORY_POOL_H_
 
+namespace taotu {
+
+/**
+ * @brief  // TODO:
+ *
+ * @tparam T
+ */
+template <class T>
+class MemoryPool {};
+
+}  // namespace taotu
+
 #endif  // !TAOTU_TAOTU_MEMORY_POOL_H_
