@@ -192,14 +192,14 @@ void Logger::RecordLogs(std::string&& log_info) {
 }
 
 Logger::Logger()
-    : cur_log_file_byte_(0),
-      cur_log_file_seq_(0),
-      log_file_(NULL),
-      is_stopping_(0L),
+    : is_stopping_(0L),
       read_index_(-1L),
+      cur_log_file_byte_(0),
+      cur_log_file_seq_(0),
       wrote_index_(-1L),
-      write_index_(0L),
-      time_now_sec_(0) {}
+      log_file_(NULL),
+      time_now_sec_(0),
+      write_index_(0L) {}
 
 Logger::~Logger() {
   if (thread_.joinable()) {
