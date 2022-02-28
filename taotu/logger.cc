@@ -97,7 +97,7 @@ void Logger::UpdateLoggerTime() {
       struct tm* tmp_tm = ::localtime(&tmp_time);
       std::string tmp_time_now_str(::asctime(tmp_tm));
       tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
-      time_now_str_ = std::move("[ " + tmp_time_now_str + " ]");
+      time_now_str_ = "[ " + tmp_time_now_str + " ]";
     }
   }
 }
@@ -154,7 +154,7 @@ void Logger::WriteDownLogs() {
 }
 
 void Logger::RecordLogs(const char* log_info) {
-  RecordLogs(std::move(std::string(log_info)));
+  RecordLogs(std::string(log_info));
 }
 void Logger::RecordLogs(const std::string& log_info) {
   RecordLogs(std::move(const_cast<std::string&>(log_info)));
