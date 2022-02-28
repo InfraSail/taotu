@@ -109,9 +109,9 @@ void Connecting::DoWithError() {
     saved_errno = opt_val;
   }
   char errno_info[512];
-  ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+  auto tmp_ptr = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
   LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") gets an error -- " +
-                          std::string{errno_info} + '.');
+                          std::string{tmp_ptr} + '.');
 }
 
 void Connecting::OnEstablishing() {
