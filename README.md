@@ -1,5 +1,5 @@
 # taotu
 
-!["taotu" logo](./img/taotu.jpg)
+!["taotu" logo](./image/taotu.jpg)
 
 A lightweight C++ network library based on concurrent Reactor.
