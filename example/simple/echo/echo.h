@@ -8,6 +8,9 @@
  *
  */
 
+#ifndef TAOTU_EXAMPLE_SIMPLE_ECHO_H_
+#define TAOTU_EXAMPLE_SIMPLE_ECHO_H_
+
 #include <memory>
 
 #include "../../../taotu/server.h"
@@ -26,3 +29,5 @@ class EchoServer : taotu::NonCopyableMovable {
 
   std::unique_ptr<taotu::Server> server_;
 };
+
+#endif  // !TAOTU_EXAMPLE_SIMPLE_ECHO_H_
