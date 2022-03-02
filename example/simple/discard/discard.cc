@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 
+#include <string>
+
 DiscardServer::DiscardServer(const taotu::NetAddress& listen_address,
                              bool should_reuse_port)
     : server_(
@@ -41,8 +43,8 @@ void DiscardServer::OnMessageCallback(taotu::Connecting& connection,
   std::string message{io_buffer->RetrieveAllAsString()};
   taotu::LOG(taotu::logger::kDebug,
              "Fd(" + std::to_string(connection.Fd()) + ") is echoing " +
-                 std::to_string(message.size()) + " bytes(" + message +
-                 ") received at " +
+                 std::to_string(message.size()) + " bytes(" +
+                 message.substr(0, message.size() - 1) + ") received at " +
                  std::to_string(time_point.GetMicroseconds()) + ".");
   ::printf("%s", message.c_str());
 }
