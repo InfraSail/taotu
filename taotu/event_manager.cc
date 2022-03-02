@@ -130,8 +130,12 @@ void EventManager::DoExpiredTimeTasks(TimePoint return_time) {
 }
 void EventManager::DestroyClosedConnections() {
   for (auto fd : closed_fds_) {
-    LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_.erase(fd);
+    {
+      LockGuard lock_guard(connection_map_mutex_lock_);
+      auto eventer = const_cast<Eventer*>(connection_map_[fd]->GetEventer());
+      eventer->RemoveMyself();
+      connection_map_.erase(fd);
+    }
     --eventer_amount_;
   }
   closed_fds_.clear();
