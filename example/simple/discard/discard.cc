@@ -44,5 +44,5 @@ void DiscardServer::OnMessageCallback(taotu::Connecting& connection,
                  std::to_string(message.size()) + " bytes(" + message +
                  ") received at " +
                  std::to_string(time_point.GetMicroseconds()) + ".");
-  ::printf("%s\n", message.c_str());
+  ::printf("%s", message.c_str());
 }
