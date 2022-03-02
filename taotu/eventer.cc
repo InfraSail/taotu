@@ -27,7 +27,7 @@ Eventer::Eventer(Poller* poller, int fd)
 Eventer::~Eventer() {
   while (is_handling_) {
   }
-  RemoveMyself();
+  ::printf("1234567890987654321234567890987654321234567890987654321\n");
   poller_ = nullptr;
 }
 
@@ -93,7 +93,5 @@ void Eventer::DisableAllEvents() {
   out_events_ = kNoEvent;
   UpdateEvents();
 }
-
-void Eventer::RemoveMyself() { poller_->RemoveEventer(this); }
 
 void Eventer::UpdateEvents() { poller_->ModifyEventer(this); }
