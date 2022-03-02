@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "logger.h"
+#include "poller.h"
 
 using namespace taotu;
 
@@ -93,5 +94,7 @@ void Eventer::DisableAllEvents() {
   out_events_ = kNoEvent;
   UpdateEvents();
 }
+
+void Eventer::RemoveMyself() { poller_->RemoveEventer(this); }
 
 void Eventer::UpdateEvents() { poller_->ModifyEventer(this); }
