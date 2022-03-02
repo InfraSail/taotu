@@ -28,7 +28,6 @@ Eventer::Eventer(Poller* poller, int fd)
 Eventer::~Eventer() {
   while (is_handling_) {
   }
-  ::printf("1234567890987654321234567890987654321234567890987654321\n");
   poller_ = nullptr;
 }
 
