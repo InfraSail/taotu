@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
-#define TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
+#ifndef TAOTU_SRC_NON_COPYABLE_MOVABLE_H_
+#define TAOTU_SRC_NON_COPYABLE_MOVABLE_H_
 
 namespace taotu {
 
@@ -32,4 +32,4 @@ class NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_NON_COPYABLE_MOVABLE_H_
+#endif  // !TAOTU_SRC_NON_COPYABLE_MOVABLE_H_
