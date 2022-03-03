@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_MEMORY_POOL_H_
-#define TAOTU_TAOTU_MEMORY_POOL_H_
+#ifndef TAOTU_SRC_MEMORY_POOL_H_
+#define TAOTU_SRC_MEMORY_POOL_H_
 
 namespace taotu {
 
@@ -23,4 +23,4 @@ class MemoryPool {};
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_MEMORY_POOL_H_
+#endif  // !TAOTU_SRC_MEMORY_POOL_H_
