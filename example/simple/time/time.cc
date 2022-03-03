@@ -10,6 +10,7 @@
 
 #include "time.h"
 
+#include <stdio.h>
 #include <sys/time.h>
 
 TimeServer::TimeServer(const taotu::NetAddress& listen_address,
@@ -44,7 +45,9 @@ void TimeServer::OnConnectionCallback(taotu::Connecting& connection) {
            tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,
            static_cast<int>(now_time % (1000 * 1000)));
   std::string data(buf);
-  connection.Send(data + '\n');
+  data += '\n';
+  connection.Send(data);
+  ::printf("%s", data.c_str());
 }
 void TimeServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
@@ -65,5 +68,7 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
            tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,
            static_cast<int>(now_time % (1000 * 1000)));
   std::string data(buf);
-  connection.Send(data + '\n');
+  data += '\n';
+  connection.Send(data);
+  ::printf("%s", data.c_str());
 }
