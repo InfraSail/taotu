@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_THREAD_POOL_H_
-#define TAOTU_TAOTU_THREAD_POOL_H_
+#ifndef TAOTU_SRC_THREAD_POOL_H_
+#define TAOTU_SRC_THREAD_POOL_H_
 
 #include <stdlib.h>
 
@@ -53,4 +53,4 @@ class ThreadPool : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_THREAD_POOL_H_
+#endif  // !TAOTU_SRC_THREAD_POOL_H_
