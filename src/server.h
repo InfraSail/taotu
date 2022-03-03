@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_SERVER_H_
-#define TAOTU_TAOTU_SERVER_H_
+#ifndef TAOTU_SRC_SERVER_H_
+#define TAOTU_SRC_SERVER_H_
 
 #include <atomic>
 #include <functional>
@@ -64,4 +64,4 @@ class Server : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_SERVER_H_
+#endif  // !TAOTU_SRC_SERVER_H_
