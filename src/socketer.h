@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_SOCKETER_H_
-#define TAOTU_TAOTU_SOCKETER_H_
+#ifndef TAOTU_SRC_SOCKETER_H_
+#define TAOTU_SRC_SOCKETER_H_
 
 #include "net_address.h"
 #include "non_copyable_movable.h"
@@ -56,4 +56,4 @@ class Socketer : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_SOCKETER_H_
+#endif  // !TAOTU_SRC_SOCKETER_H_
