@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_POLLER_H_
-#define TAOTU_TAOTU_POLLER_H_
+#ifndef TAOTU_SRC_POLLER_H_
+#define TAOTU_SRC_POLLER_H_
 
 #include <stdint.h>
 #include <sys/epoll.h>
@@ -64,4 +64,4 @@ class Poller : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_POLLER_H_
+#endif  // !TAOTU_SRC_POLLER_H_
