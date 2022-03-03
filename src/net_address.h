@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_NET_ADDRESS_H_
-#define TAOTU_TAOTU_NET_ADDRESS_H_
+#ifndef TAOTU_SRC_NET_ADDRESS_H_
+#define TAOTU_SRC_NET_ADDRESS_H_
 
 #include <netinet/in.h>
 #include <stdint.h>
@@ -55,4 +55,4 @@ class NetAddress {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_NET_ADDRESS_H_
+#endif  // !TAOTU_SRC_NET_ADDRESS_H_
