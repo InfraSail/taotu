@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_LOGGER_H_
-#define TAOTU_TAOTU_LOGGER_H_
+#ifndef TAOTU_SRC_LOGGER_H_
+#define TAOTU_SRC_LOGGER_H_
 
 #include <stdint.h>
 #include <stdio.h>
@@ -144,4 +144,4 @@ class Logger : NonCopyableMovable {
 }  // namespace logger
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_LOGGER_H_
+#endif  // !TAOTU_SRC_LOGGER_H_
