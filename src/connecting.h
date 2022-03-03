@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_CONNECTING_H_
-#define TAOTU_TAOTU_CONNECTING_H_
+#ifndef TAOTU_SRC_CONNECTING_H_
+#define TAOTU_SRC_CONNECTING_H_
 
 #include <stddef.h>
 
@@ -155,4 +155,4 @@ class Connecting : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_CONNECTING_H_
+#endif  // !TAOTU_SRC_CONNECTING_H_
