@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_TIMER_H_
-#define TAOTU_TAOTU_TIMER_H_
+#ifndef TAOTU_SRC_TIMER_H_
+#define TAOTU_SRC_TIMER_H_
 
 #include <functional>
 #include <map>
@@ -51,4 +51,4 @@ class Timer : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_TIMER_H_
+#endif  // !TAOTU_SRC_TIMER_H_
