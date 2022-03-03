@@ -4,7 +4,7 @@
  * @brief  // TODO:
  * @date 2022-03-01
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2022 Sigma711
  *
  */
 
