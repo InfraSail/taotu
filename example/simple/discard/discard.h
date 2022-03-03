@@ -11,7 +11,7 @@
 #ifndef TAOTU_EXAMPLE_SIMPLE_DISCARD_H_
 #define TAOTU_EXAMPLE_SIMPLE_DISCARD_H_
 
-#include "../../../taotu/server.h"
+#include "../../../src/server.h"
 
 class DiscardServer : taotu::NonCopyableMovable {
  public:
