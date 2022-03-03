@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_SPIN_LOCK_H_
-#define TAOTU_TAOTU_SPIN_LOCK_H_
+#ifndef TAOTU_SRC_SPIN_LOCK_H_
+#define TAOTU_SRC_SPIN_LOCK_H_
 
 #include <atomic>
 
@@ -57,4 +57,4 @@ class LockGuard : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_SPIN_LOCK_H_
+#endif  // !TAOTU_SRC_SPIN_LOCK_H_
