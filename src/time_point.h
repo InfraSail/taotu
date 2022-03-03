@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_TIME_POINT_H_
-#define TAOTU_TAOTU_TIME_POINT_H_
+#ifndef TAOTU_SRC_TIME_POINT_H_
+#define TAOTU_SRC_TIME_POINT_H_
 
 #include <stdint.h>
 #include <stdio.h>
@@ -76,4 +76,4 @@ class TimePoint {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_TIME_POINT_H_
+#endif  // !TAOTU_SRC_TIME_POINT_H_
