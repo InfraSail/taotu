@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_CONNECTOR_H_
-#define TAOTU_TAOTU_CONNECTOR_H_
+#ifndef TAOTU_SRC_CONNECTOR_H_
+#define TAOTU_SRC_CONNECTOR_H_
 
 #include <functional>
 
@@ -69,4 +69,4 @@ class Connector : NonCopyableMovable {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_CONNECTOR_H_
+#endif  // !TAOTU_SRC_CONNECTOR_H_
