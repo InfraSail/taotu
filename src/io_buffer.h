@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef TAOTU_TAOTU_IO_BUFFER_H_
-#define TAOTU_TAOTU_IO_BUFFER_H_
+#ifndef TAOTU_SRC_IO_BUFFER_H_
+#define TAOTU_SRC_IO_BUFFER_H_
 
 #include <sys/types.h>
 #ifdef __MACH__
@@ -195,4 +195,4 @@ class IoBuffer {
 
 }  // namespace taotu
 
-#endif  // !TAOTU_TAOTU_IO_BUFFER_H_
+#endif  // !TAOTU_SRC_IO_BUFFER_H_
