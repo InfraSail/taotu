@@ -25,12 +25,7 @@
 using namespace taotu;
 
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
-Socketer::~Socketer() {
-  // Close the file and give its descriptor back
-  LOG(logger::kDebug,
-      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
-  ::close(socket_fd_);
-}
+Socketer::~Socketer() {}
 
 void Socketer::BindAddress(const NetAddress& local_address) {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
@@ -103,6 +98,13 @@ void Socketer::ShutdownReadWrite() {
         "SocketFd(" + std::to_string(socket_fd_) +
             ") failed to shutdown reading end and writing end!!!");
   }
+}
+
+void Socketer::Close() {
+  // Close the file and give its descriptor back
+  LOG(logger::kDebug,
+      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
+  ::close(socket_fd_);
 }
 
 void Socketer::SetTcpNoDelay(bool on) {

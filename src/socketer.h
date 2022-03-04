@@ -47,6 +47,8 @@ class Socketer : NonCopyableMovable {
   // Shut down reading-end and writing-end(self)
   void ShutdownReadWrite();
 
+  void Close();
+
   void SetTcpNoDelay(bool on);
   void SetReuseAddress(bool on);
   void SetReusePort(bool on);
