@@ -47,8 +47,9 @@ void TimeServer::OnConnectionCallback(taotu::Connecting& connection) {
            static_cast<int>(now_time % (1000 * 1000)));
   std::string data(buf);
   data += '\n';
-  connection.Send(data);
   ::printf("%s", data.c_str());
+  connection.Send(data);
+  connection.RegisterOnConnectionCallback({});
 }
 void TimeServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
@@ -72,8 +73,11 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
            static_cast<int>(now_time % (1000 * 1000)));
   std::string data(buf);
   data += '\n';
+  ::printf("%s", data.c_str());
   if (message != "quit") {
     connection.Send(data);
+  } else {
+    connection.ForceClose();
+    connection.ShutDown();
   }
-  ::printf("%s", data.c_str());
 }
