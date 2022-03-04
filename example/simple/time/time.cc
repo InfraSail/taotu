@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 TimeServer::TimeServer(const taotu::NetAddress& listen_address,
                        bool should_reuse_port)
@@ -53,10 +54,12 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
                                    taotu::TimePoint time_point) {
   std::string message{io_buffer->RetrieveAllAsString()};
+  ssize_t msg_len = message.size();
+  message = message.substr(0, msg_len - 1);
   taotu::LOG(taotu::logger::kDebug,
              "Fd(" + std::to_string(connection.Fd()) + ") is echoing " +
-                 std::to_string(message.size()) + " bytes(" +
-                 message.substr(0, message.size() - 1) + ") received at " +
+                 std::to_string(msg_len) + " bytes(" + message +
+                 ") received at " +
                  std::to_string(time_point.GetMicroseconds()) + ".");
   int64_t now_time = time_point.GetMicroseconds();
   time_t seconds = static_cast<time_t>(now_time / (1000 * 1000));
@@ -69,6 +72,8 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
            static_cast<int>(now_time % (1000 * 1000)));
   std::string data(buf);
   data += '\n';
-  connection.Send(data);
+  if (message != "quit") {
+    connection.Send(data);
+  }
   ::printf("%s", data.c_str());
 }

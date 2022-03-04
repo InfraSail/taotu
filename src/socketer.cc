@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <netinet/tcp.h>
 #include <strings.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -93,6 +94,14 @@ void Socketer::ShutdownWrite() {
   if (::shutdown(socket_fd_, SHUT_WR) < 0) {
     LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to shutdown writing end!!!");
+  }
+}
+
+void Socketer::ShutdownReadWrite() {
+  if (::shutdown(socket_fd_, SHUT_RDWR) < 0) {
+    LOG(logger::kError,
+        "SocketFd(" + std::to_string(socket_fd_) +
+            ") failed to shutdown reading end and writing end!!!");
   }
 }
 
