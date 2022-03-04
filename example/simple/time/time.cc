@@ -78,6 +78,5 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
     connection.Send(data);
   } else {
     connection.ForceClose();
-    connection.ShutDown();
   }
 }
