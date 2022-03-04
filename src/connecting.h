@@ -119,7 +119,10 @@ class Connecting : NonCopyableMovable {
   void ForceClose();
   void ForceCloseAfter(int64_t delay_microseconds);
 
-  void RemoveEventerFromPoller() { eventer_.RemoveMyself(); }
+  void RemoveEventerFromPoller() {
+    eventer_.RemoveMyself();
+    socketer_.Close();
+  }
 
  private:
   enum ConnectionState {

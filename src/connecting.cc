@@ -40,10 +40,7 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
                           std::to_string(socket_fd) + ") is being created.");
   socketer_.SetKeepAlive(true);
 }
-Connecting::~Connecting() {
-  LOG(logger::kDebug, "The TCP connection to fd(" + std::to_string(Fd()) +
-                          ") is being closed.");
-}
+Connecting::~Connecting() {}
 
 void Connecting::DoReading(TimePoint receive_time) {
   int saved_errno = 0;
