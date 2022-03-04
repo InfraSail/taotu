@@ -190,6 +190,14 @@ void Connecting::ShutDown() {
   if (kConnected == state_) {
     SetState(kDisconnecting);
     if (!(eventer_.HasWriteEvents())) {
+      socketer_.ShutdownReadWrite();
+    }
+  }
+}
+void Connecting::ShutDownWrite() {
+  if (kConnected == state_) {
+    SetState(kDisconnecting);
+    if (!(eventer_.HasWriteEvents())) {
       socketer_.ShutdownWrite();
     }
   }
