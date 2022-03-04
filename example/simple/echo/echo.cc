@@ -45,4 +45,5 @@ void EchoServer::OnMessageCallback(taotu::Connecting& connection,
                  std::to_string(message.size()) + " bytes received at " +
                  std::to_string(time_point.GetMicroseconds()) + ".");
   connection.Send(message);
+  ::printf("%s", message.c_str());
 }
