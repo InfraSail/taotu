@@ -137,7 +137,7 @@ void ClientReactorManager::Disconnect() {
   {
     LockGuard lock_guard(connection_mutex_);
     if (connection_ != nullptr) {
-      connection_->ShutDown();
+      connection_->ShutDownWrite();
     }
   }
 }
