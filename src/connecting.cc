@@ -43,21 +43,23 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
 Connecting::~Connecting() {}
 
 void Connecting::DoReading(TimePoint receive_time) {
-  int saved_errno = 0;
-  ssize_t n = input_buffer_.ReadFromFd(Fd(), &saved_errno);
-  if (n > 0) {
-    if (OnMessageCallback_) {
-      OnMessageCallback_(*this, &input_buffer_, receive_time);
+  if (eventer_.HasReadEvents()) {
+    int saved_errno = 0;
+    ssize_t n = input_buffer_.ReadFromFd(Fd(), &saved_errno);
+    if (n > 0) {
+      if (OnMessageCallback_) {
+        OnMessageCallback_(*this, &input_buffer_, receive_time);
+      }
+    } else if (0 == n) {
+      DoClosing();
+    } else {
+      errno = saved_errno;
+      LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") reading failed!!!");
+      DoWithError();
     }
-  } else if (0 == n) {
-    DoClosing();
-  } else {
-    errno = saved_errno;
-    LOG(logger::kError, "Fd(" + std::to_string(Fd()) + ") reading failed!!!");
-    DoWithError();
-  }
-  if (!(IsConnected())) {
-    StopReadingWriting();
+    if (!(IsConnected())) {
+      StopReadingWriting();
+    }
   }
 }
 void Connecting::DoWriting() {
