@@ -137,7 +137,7 @@ void EventManager::DestroyClosedConnections() {
   for (auto fd : closed_fds_) {
     {
       LockGuard lock_guard(connection_map_mutex_lock_);
-      connection_map_[fd]->RemoveEventerFromPoller();
+      connection_map_[fd]->RemoveMyself();
       connection_map_.erase(fd);
     }
     --eventer_amount_;
