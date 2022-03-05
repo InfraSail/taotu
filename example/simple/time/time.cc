@@ -36,20 +36,21 @@ void TimeServer::OnConnectionCallback(taotu::Connecting& connection) {
                  "), Port(" +
                  std::to_string(connection.GetPeerNetAddress().GetPort()) +
                  ")) - " + (connection.IsConnected() ? "UP." : "Down."));
-  int64_t now_time = taotu::TimePoint{}.GetMicroseconds();
-  time_t seconds = static_cast<time_t>(now_time / (1000 * 1000));
-  struct tm tm_time;
-  ::gmtime_r(&seconds, &tm_time);
-  char buf[64] = {0};
-  snprintf(buf, sizeof(buf), "%4d%02d%02d %02d:%02d:%02d.%06d",
-           tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
-           tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,
-           static_cast<int>(now_time % (1000 * 1000)));
-  std::string data(buf);
-  data += '\n';
-  ::printf("%s", data.c_str());
-  connection.Send(data);
-  connection.RegisterOnConnectionCallback({});
+  if (connection.IsConnected()) {
+    int64_t now_time = taotu::TimePoint{}.GetMicroseconds();
+    time_t seconds = static_cast<time_t>(now_time / (1000 * 1000));
+    struct tm tm_time;
+    ::gmtime_r(&seconds, &tm_time);
+    char buf[64] = {0};
+    snprintf(buf, sizeof(buf), "%4d%02d%02d %02d:%02d:%02d.%06d",
+             tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+             tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec,
+             static_cast<int>(now_time % (1000 * 1000)));
+    std::string data(buf);
+    data += '\n';
+    ::printf("%s", data.c_str());
+    connection.Send(data);
+  }
 }
 void TimeServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
