@@ -49,7 +49,10 @@ class EventManager : NonCopyableMovable {
   Poller* GetPoller() { return &poller_; }
 
   // For the Balancer to pick a EventManager with lowest load
-  uint32_t GetEventerAmount() { return eventer_amount_; }
+  uint32_t GetEventerAmount() const {
+    LockGuard lock_guard(connection_map_mutex_lock_);
+    return connection_map_.size();
+  }
 
   void RunAt(TimePoint time_point, Timer::TimeCallback TimeTask);
   void RunAfter(int64_t delay_microseconds, Timer::TimeCallback TimeTask);
@@ -68,15 +71,12 @@ class EventManager : NonCopyableMovable {
   void DoExpiredTimeTasks(TimePoint return_time);
   void DestroyClosedConnections();
 
-  // For the Balancer to pick a EventManager with lowest load
-  uint32_t eventer_amount_;
-
   Poller poller_;
   ConnectionMap connection_map_;
   std::thread thread_;
   Timer timer_;
 
-  MutexLock connection_map_mutex_lock_;
+  mutable MutexLock connection_map_mutex_lock_;
 
   bool should_quit_;
 

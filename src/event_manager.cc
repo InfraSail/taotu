@@ -23,7 +23,7 @@
 
 using namespace taotu;
 
-EventManager::EventManager() : eventer_amount_(0), poller_(&eventer_amount_) {}
+EventManager::EventManager() : poller_() {}
 EventManager::~EventManager() {
   if (thread_.joinable()) {
     thread_.join();
@@ -48,7 +48,6 @@ void EventManager::Work() {
                           std::to_string(::pthread_self()) + ") is stopping.");
   for (auto& [_, conn] : connection_map_) {
     conn->OnDestroying();
-    conn->RemoveMyself();
     delete conn;
   }
   connection_map_.clear();
@@ -64,7 +63,6 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
         new Connecting(this, socket_fd, local_address, peer_address);
     ref_conn = connection_map_[socket_fd];
   }
-  ++eventer_amount_;
   LOG(logger::kDebug,
       "Create a new connection with fd(" + std::to_string(socket_fd) +
           ") between local net address (IP(" + local_address.GetIp() +
@@ -136,9 +134,7 @@ void EventManager::DestroyClosedConnections() {
       LockGuard lock_guard(connection_map_mutex_lock_);
       connection = connection_map_[fd];
       connection_map_.erase(fd);
-      --eventer_amount_;
     }
-    connection->RemoveMyself();
     delete connection;
   }
   closed_fds_.clear();
