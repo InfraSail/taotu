@@ -87,6 +87,8 @@ class EventManager : NonCopyableMovable {
 
   Poller::EventerList active_events_;
   Fds closed_fds_;
+
+  IgnoreSigPipe ignore_sigpipe_obj_;
 };
 
 }  // namespace taotu
