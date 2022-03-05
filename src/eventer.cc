@@ -10,6 +10,9 @@
 
 #include "eventer.h"
 
+#include <poll.h>
+#include <sys/epoll.h>
+
 #include <utility>
 
 #include "logger.h"
@@ -34,7 +37,7 @@ Eventer::~Eventer() {
 void Eventer::Work(TimePoint tp) {
   is_handling_ = true;
   // Hung up and no data to read
-  if ((in_events_ & 0x010) && !(in_events_ & 0x001)) {
+  if ((in_events_ & EPOLLHUP) && !(in_events_ & EPOLLIN)) {
     if (CloseCallback_) {
       LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
                               std::to_string(fd_) + ") is closed.");
@@ -42,12 +45,12 @@ void Eventer::Work(TimePoint tp) {
     }
   }
   // Invalid request
-  if (in_events_ & 0x020) {
+  if (in_events_ & POLLNVAL) {
     LOG(logger::kWarn, "An I/O multiplexing event is triggered now: fd(" +
                            std::to_string(fd_) + ") is not open!");
   }
   // Invalid request and error condition
-  if (in_events_ & (0x020 | 0x008)) {
+  if (in_events_ & (POLLNVAL | EPOLLERR)) {
     if (ErrorCallback_) {
       LOG(logger::kError, "An I/O multiplexing event is triggered now: fd(" +
                               std::to_string(fd_) + ") occurs an error!!!");
@@ -55,7 +58,7 @@ void Eventer::Work(TimePoint tp) {
     }
   }
   // Readable, urgent (read) and half-closed
-  if (in_events_ & (0x001 | 0x002 | 0x2000)) {
+  if (in_events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
     if (ReadCallback_) {
       LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
                               std::to_string(fd_) + ") is readable.");
@@ -63,7 +66,7 @@ void Eventer::Work(TimePoint tp) {
     }
   }
   // Writable
-  if (in_events_ & 0x004) {
+  if (in_events_ & EPOLLOUT) {
     if (WriteCallback_) {
       LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
                               std::to_string(fd_) + ") is writable.");
