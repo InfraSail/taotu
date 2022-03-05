@@ -119,8 +119,6 @@ class Connecting : NonCopyableMovable {
   void ForceClose();
   void ForceCloseAfter(int64_t delay_microseconds);
 
-  void RemoveMyself();
-
  private:
   enum ConnectionState {
     kDisconnected,
