@@ -76,7 +76,6 @@ class Logger : NonCopyableMovable {
   // The unique method to creat the unique actual "Logger" object ("Singleton"
   // pattern)
   static Logger* GetLogger();
-  static void DestroyLogger(Logger* logger);
 
   void EndLogger();
 

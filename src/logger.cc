@@ -34,7 +34,6 @@ Logger* Logger::GetLogger() {
   logger.StartLogger(kLogName);
   return &logger;
 }
-void Logger::DestroyLogger(Logger* logger_raw_ptr) { delete logger_raw_ptr; }
 
 void Logger::EndLogger() {
   is_stopping_ = 1L;
