@@ -11,6 +11,7 @@
 #include "event_manager.h"
 
 #include <pthread.h>
+#include <signal.h>
 
 #include <memory>
 #include <string>
@@ -22,6 +23,8 @@
 #include "timer.h"
 
 using namespace taotu;
+
+IgnoreSigPipe::IgnoreSigPipe() { ::signal(SIGPIPE, SIG_IGN); }
 
 EventManager::EventManager() : poller_() {}
 EventManager::~EventManager() {
