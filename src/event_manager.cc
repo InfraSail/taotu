@@ -26,7 +26,9 @@ using namespace taotu;
 
 IgnoreSigPipe::IgnoreSigPipe() { ::signal(SIGPIPE, SIG_IGN); }
 
-EventManager::EventManager() : poller_(), ignore_sigpipe_obj_() {}
+IgnoreSigPipe ignore_sigpipe_obj_;
+
+EventManager::EventManager() : poller_() {}
 EventManager::~EventManager() {
   if (thread_.joinable()) {
     thread_.join();
