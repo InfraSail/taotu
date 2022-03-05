@@ -29,11 +29,6 @@
 
 namespace taotu {
 
-class IgnoreSigPipe {
- public:
-  IgnoreSigPipe();
-};
-
 /**
  * @brief  // TODO:
  *
