@@ -89,15 +89,17 @@ void Connecting::DoWriting() {
   }
 }
 void Connecting::DoClosing() {
-  LOG(logger::kDebug, "Fd(" + std::to_string(Fd()) + ") with state(\"" +
-                          GetConnectionStateInfo(state_) + "\") is closing.");
-  SetState(kDisconnected);
-  StopReadingWriting();
-  if (OnConnectionCallback_) {
-    OnConnectionCallback_(*this);
-  }
-  if (CloseCallback_) {
-    CloseCallback_(*this);
+  if (state_ != kDisconnected) {
+    LOG(logger::kDebug, "Fd(" + std::to_string(Fd()) + ") with state(\"" +
+                            GetConnectionStateInfo(state_) + "\") is closing.");
+    SetState(kDisconnected);
+    StopReadingWriting();
+    if (OnConnectionCallback_) {
+      OnConnectionCallback_(*this);
+    }
+    if (CloseCallback_) {
+      CloseCallback_(*this);
+    }
   }
 }
 void Connecting::DoWithError() {
