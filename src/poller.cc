@@ -28,9 +28,8 @@ using namespace taotu;
 
 static const int kMaxInitPollerSize = 16;
 
-Poller::Poller(uint32_t* event_amount)
+Poller::Poller()
     : poll_fd_(::epoll_create1(EPOLL_CLOEXEC)),
-      event_amount_(event_amount),
       poll_events_(kMaxInitPollerSize) {
   IsPollFdEffective();
 }
@@ -41,32 +40,25 @@ Poller::~Poller() {
 }
 
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
-  // LOG(logger::kDebug,
-  //     "In thread(" + std::to_string(::pthread_self()) +
-  //         "), The amount of file descriptors in the native poll() is " +
-  //         std::to_string(*event_amount_) + '.');
   int event_amount =
       ::epoll_wait(poll_fd_, &(*(poll_events_.begin())),
                    static_cast<int>(poll_events_.size()), timeout);
   TimePoint return_time;
   int saved_errno = errno;
   if (event_amount > 0) {
-    // LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
-    //                         "), there are" + std::to_string(event_amount) +
-    //                         "events happened.");
     GetActiveEventer(event_amount, active_eventers);
     if (static_cast<size_t>(event_amount) == poll_events_.size()) {
       poll_events_.resize(poll_events_.size() * 2);
     }
   } else if (0 == event_amount) {
-    // LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
-    //                         "), there is nothing happened.");
+    LOG(logger::kWarn, "In thread(" + std::to_string(::pthread_self()) +
+                           "), there is nothing happened!");
   } else {
     if (EINTR != saved_errno) {
       errno = saved_errno;
-      // LOG(logger::kError,
-      //     "In thread(" + std::to_string(::pthread_self()) +
-      //         "), errors occurred when the native poll() executing!!!");
+      LOG(logger::kError,
+          "In thread(" + std::to_string(::pthread_self()) +
+              "), errors occurred when the native poll() executing!!!");
     }
   }
   return return_time;

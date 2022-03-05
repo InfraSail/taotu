@@ -34,7 +34,7 @@ class Poller : NonCopyableMovable {
  public:
   typedef std::vector<Eventer*> EventerList;
 
-  Poller(uint32_t* event_amount);
+  Poller();
   ~Poller();
 
   // Polling (calls the native poll() (poll, epoll or kqueue))
@@ -53,9 +53,6 @@ class Poller : NonCopyableMovable {
 
   // File descriptor of the native poll() (poll, epoll or kqueue)
   int poll_fd_;
-
-  // Referencing to the amount of regarding file descriptors
-  const uint32_t* event_amount_;
 
   // The buffer for active event struct of the native poll() (poll, epoll or
   // kqueue)
