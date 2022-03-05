@@ -60,6 +60,8 @@ void Connecting::DoReading(TimePoint receive_time) {
     if (!(IsConnected())) {
       StopReadingWriting();
     }
+  } else {
+    DoClosing();
   }
 }
 void Connecting::DoWriting() {
