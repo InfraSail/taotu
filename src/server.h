@@ -13,12 +13,12 @@
 
 #include <atomic>
 #include <functional>
-#include <memory>
 
 #include "connecting.h"
 #include "io_buffer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
+#include "reactor_manager.h"
 #include "thread_pool.h"
 #include "time_point.h"
 
@@ -49,13 +49,11 @@ class Server : NonCopyableMovable {
   void RemoveConnection(Connecting& connection);
 
  private:
-  typedef std::unique_ptr<ServerReactorManager> ServerReactorManagerPtr;
-
   void DefaultOnConnectionCallback(Connecting& connection);
   void DefaultOnMessageCallback(Connecting& connection, IoBuffer* io_buffer,
                                 TimePoint time_point);
 
-  ServerReactorManagerPtr reactor_manager_;
+  ServerReactorManager reactor_manager_;
 
   ThreadPool* thread_pool_;
 
