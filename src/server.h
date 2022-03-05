@@ -42,7 +42,7 @@ class Server : NonCopyableMovable {
   void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
   void SetCloseCallback(const std::function<void(Connecting&)>& cb);
 
-  ThreadPool* GetThreadPool() { return thread_pool_; }
+  ThreadPool& GetThreadPool() { return thread_pool_; }
 
   void Start();
 
@@ -55,7 +55,7 @@ class Server : NonCopyableMovable {
 
   ServerReactorManager reactor_manager_;
 
-  ThreadPool* thread_pool_;
+  ThreadPool thread_pool_;
 
   std::atomic_bool is_started_;
 };
