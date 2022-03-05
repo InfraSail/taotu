@@ -213,6 +213,11 @@ void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
   }
 }
 
+void Connecting::RemoveMyself() {
+  eventer_.RemoveMyself();
+  socketer_.Close();
+}
+
 std::string Connecting::GetConnectionStateInfo(ConnectionState state) {
   switch (state) {
     case kDisconnected:
