@@ -11,7 +11,6 @@
 #include "eventer.h"
 
 #include <poll.h>
-#include <sys/epoll.h>
 
 #include <utility>
 

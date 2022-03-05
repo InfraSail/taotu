@@ -11,6 +11,8 @@
 #ifndef TAOTU_SRC_EVENTER_H_
 #define TAOTU_SRC_EVENTER_H_
 
+#include <sys/epoll.h>
+
 #include <functional>
 #include <memory>
 #include <utility>
@@ -72,8 +74,8 @@ class Eventer : NonCopyableMovable {
   // In <poll.h> or <sys/epoll.h>
   enum {
     kNoEvent = 0x0000,
-    kReadEvents = 0x0001 | 0x0002,
-    kWriteEvents = 0x0004,
+    kReadEvents = EPOLLIN | EPOLLPRI,
+    kWriteEvents = EPOLLOUT,
   };
 
   Poller* poller_;
