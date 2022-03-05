@@ -25,7 +25,7 @@
 using namespace taotu;
 
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
-Socketer::~Socketer() {}
+Socketer::~Socketer() { Close(); }
 
 void Socketer::BindAddress(const NetAddress& local_address) {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
@@ -100,13 +100,6 @@ void Socketer::ShutdownReadWrite() {
   }
 }
 
-void Socketer::Close() {
-  // Close the file and give its descriptor back
-  LOG(logger::kDebug,
-      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
-  ::close(socket_fd_);
-}
-
 void Socketer::SetTcpNoDelay(bool on) {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
@@ -145,4 +138,11 @@ void Socketer::SetKeepAlive(bool on) {
                             ") failed to set keep alive " +
                             (on ? "on" : "off") + " !!!");
   }
+}
+
+void Socketer::Close() {
+  // Close the file and give its descriptor back
+  LOG(logger::kDebug,
+      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
+  ::close(socket_fd_);
 }
