@@ -54,7 +54,8 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
                                            bool should_reuse_port)
     : event_managers_(1, new EventManager),
       acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
-                                           listen_address, should_reuse_port)) {
+                                           listen_address, should_reuse_port)),
+      ignore_sigpipe_obj() {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
     acceptor_->RegisterNewConnectionCallback(
