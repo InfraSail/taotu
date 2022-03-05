@@ -47,10 +47,7 @@ static NetAddress GetPeerAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-IgnoreSigPipe::IgnoreSigPipe() {
-  ::printf("123456789098765432123456789065321");
-  ::signal(SIGPIPE, SIG_IGN);
-}
+IgnoreSigPipe::IgnoreSigPipe() { ::signal(SIGPIPE, SIG_IGN); }
 
 ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
                                            int io_thread_amount,
