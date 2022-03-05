@@ -10,6 +10,7 @@
 
 #include "reactor_manager.h"
 
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -44,6 +45,11 @@ static NetAddress GetPeerAddress(int socket_fd) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
   }
   return NetAddress(local_addr);
+}
+
+IgnoreSigPipe::IgnoreSigPipe() {
+  ::printf("123456789098765432123456789065321");
+  ::signal(SIGPIPE, SIG_IGN);
 }
 
 ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,

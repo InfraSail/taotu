@@ -26,6 +26,11 @@
 
 namespace taotu {
 
+class IgnoreSigPipe {
+ public:
+  IgnoreSigPipe();
+};
+
 class Balancer;
 
 /**
@@ -70,6 +75,8 @@ class ServerReactorManager : NonCopyableMovable {
   MessageCallback MessageCallback_;
   NormalCallback WriteCompleteCallback_;
   NormalCallback CloseCallback_;
+
+  IgnoreSigPipe ignore_sigpipe_obj;
 };
 
 /**
@@ -119,6 +126,8 @@ class ClientReactorManager : NonCopyableMovable {
   NormalCallback ConnectionCallback_;
   MessageCallback MessageCallback_;
   NormalCallback WriteCompleteCallback_;
+
+  IgnoreSigPipe ignore_sigpipe_obj;
 };
 
 }  // namespace taotu
