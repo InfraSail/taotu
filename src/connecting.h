@@ -101,8 +101,6 @@ class Connecting : NonCopyableMovable {
 
   // Be called when this connection establishing
   void OnEstablishing();
-  // Be called when this connection destroying
-  void OnDestroying();
 
   void Send(const void* message, size_t msg_len);
   void Send(const std::string& message);

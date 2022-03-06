@@ -128,15 +128,6 @@ void Connecting::OnEstablishing() {
     }
   }
 }
-void Connecting::OnDestroying() {
-  if (IsConnected()) {
-    SetState(kDisconnected);
-    StopReadingWriting();
-    if (OnConnectionCallback_) {
-      OnConnectionCallback_(*this);
-    }
-  }
-}
 
 void Connecting::Send(const void* message, size_t msg_len) {
   if (kDisconnected == state_) {
