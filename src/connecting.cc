@@ -101,6 +101,7 @@ void Connecting::DoClosing() {
     if (CloseCallback_) {
       CloseCallback_(*this);
     }
+    event_manager_->DeleteConnection(Fd());
   }
 }
 void Connecting::DoWithError() {
@@ -209,8 +210,11 @@ void Connecting::ShutDownWrite() {
 
 void Connecting::ForceClose() {
   if (IsConnected() || kDisconnecting == state_) {
-    SetState(kDisconnecting);
-    DoClosing();
+    SetState(kDisconnected);
+    StopReadingWriting();
+    if (CloseCallback_) {
+      CloseCallback_(*this);
+    }
     event_manager_->DeleteConnection(Fd());
   }
 }
