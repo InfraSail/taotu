@@ -56,9 +56,9 @@ void Server::Start() {
 }
 
 void Server::RemoveConnection(Connecting& connection) {
-  LOG(logger::kDebug, "The connection with fd(" +
-                          std::to_string(connection.Fd()) +
-                          ") is being removed.");
+  // LOG(logger::kDebug, "The connection with fd(" +
+  //                         std::to_string(connection.Fd()) +
+  //                         ") is being removed.");
   connection.ForceClose();
 }
 
