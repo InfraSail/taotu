@@ -204,6 +204,9 @@ void Connecting::ForceClose() {
   if (IsConnected() || kDisconnecting == state_) {
     SetState(kDisconnected);
     StopReadingWriting();
+    if (OnConnectionCallback_) {
+      OnConnectionCallback_(*this);
+    }
     if (CloseCallback_) {
       CloseCallback_(*this);
     }
