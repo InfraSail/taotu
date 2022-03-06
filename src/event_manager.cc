@@ -64,12 +64,12 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
         new Connecting(this, socket_fd, local_address, peer_address);
     ref_conn = connection_map_[socket_fd];
   }
-  LOG(logger::kDebug,
-      "Create a new connection with fd(" + std::to_string(socket_fd) +
-          ") between local net address (IP(" + local_address.GetIp() +
-          "), Port(" + std::to_string(local_address.GetPort()) +
-          ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
-          std::to_string(peer_address.GetPort()) + ")).");
+  // LOG(logger::kDebug,
+  //     "Create a new connection with fd(" + std::to_string(socket_fd) +
+  //         ") between local net address (IP(" + local_address.GetIp() +
+  //         "), Port(" + std::to_string(local_address.GetPort()) +
+  //         ")) and peer net address (IP(" + peer_address.GetIp() + "), Port("
+  //         + std::to_string(peer_address.GetPort()) + ")).");
   return ref_conn;
 }
 
@@ -94,16 +94,13 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
 }
 
 void EventManager::DeleteConnection(int fd) {
-  LockGuard lock_guard(connection_map_mutex_lock_);
-  if (connection_map_.count(fd) && connection_map_[fd]->IsDisconnected()) {
-    closed_fds_.push_back(fd);
-  }
+  LockGuard lock_guard_cf(closed_fds_lock_);
+  closed_fds_.insert(fd);
 }
 
 void EventManager::DoWithActiveTasks(TimePoint return_time) {
   for (auto active_event : active_events_) {
     active_event->Work(return_time);
-    DeleteConnection(active_event->Fd());
   }
   active_events_.clear();
 }
@@ -129,12 +126,15 @@ void EventManager::DoExpiredTimeTasks(TimePoint return_time) {
   }
 }
 void EventManager::DestroyClosedConnections() {
+  LockGuard lock_guard(closed_fds_lock_);
   for (auto fd : closed_fds_) {
     Connecting* connection = nullptr;
     {
       LockGuard lock_guard(connection_map_mutex_lock_);
-      connection = connection_map_[fd];
-      connection_map_.erase(fd);
+      if (connection_map_.count(fd) && connection_map_[fd]->IsDisconnected()) {
+        connection = connection_map_[fd];
+        connection_map_.erase(fd);
+      }
     }
     delete connection;
   }

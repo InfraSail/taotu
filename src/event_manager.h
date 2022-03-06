@@ -17,7 +17,7 @@
 #include <memory>
 #include <thread>
 #include <unordered_map>
-#include <vector>
+#include <unordered_set>
 
 #include "connecting.h"
 #include "net_address.h"
@@ -65,7 +65,7 @@ class EventManager : NonCopyableMovable {
 
  private:
   typedef std::unordered_map<int, Connecting*> ConnectionMap;
-  typedef std::vector<int> Fds;
+  typedef std::unordered_set<int> Fds;
 
   void DoWithActiveTasks(TimePoint return_time);
   void DoExpiredTimeTasks(TimePoint return_time);
@@ -77,11 +77,11 @@ class EventManager : NonCopyableMovable {
   Timer timer_;
 
   mutable MutexLock connection_map_mutex_lock_;
-
   bool should_quit_;
 
   Poller::EventerList active_events_;
   Fds closed_fds_;
+  mutable MutexLock closed_fds_lock_;
 };
 
 }  // namespace taotu
