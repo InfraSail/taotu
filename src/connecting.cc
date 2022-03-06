@@ -150,7 +150,7 @@ void Connecting::Send(const void* message, size_t msg_len) {
     // If there is nothing in "output_buffer_", send the message directly
     bool fault = false;
     if (!eventer_.HasWriteEvents() && output_buffer_.GetReadableBytes() == 0) {
-      sent_bytes = ::write(Fd(), message, msg_len);
+      sent_bytes = ::send(Fd(), message, msg_len, MSG_NOSIGNAL);
       if (sent_bytes >= 0) {
         unsent_bytes = msg_len - sent_bytes;
         if (0 == unsent_bytes && WriteCompleteCallback_) {
