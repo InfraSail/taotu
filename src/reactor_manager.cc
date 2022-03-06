@@ -113,7 +113,7 @@ ClientReactorManager::~ClientReactorManager() {
   }
   if (connection != nullptr) {
     connection->RegisterCloseCallback(
-        std::bind(&Connecting::OnDestroying, connection));
+        std::bind(&Connecting::ForceClose, connection));
     connection->ForceClose();
   } else {
     connector_->Stop();
@@ -160,7 +160,7 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
           LockGuard lock_guard(connection_mutex_);
           connection_ = nullptr;
         }
-        connection.OnDestroying();
+        connection.ForceClose();
         if (this->should_retry_ && this->can_connect_) {
           LOG(logger::kDebug,
               "Reconnect to [ Ip(" +
