@@ -142,7 +142,7 @@ void Socketer::SetKeepAlive(bool on) {
 
 void Socketer::Close() {
   // Close the file and give its descriptor back
-  LOG(logger::kDebug,
-      "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
+  // LOG(logger::kDebug,
+  //     "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
   ::close(socket_fd_);
 }
