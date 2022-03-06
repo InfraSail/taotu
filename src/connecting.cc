@@ -101,6 +101,7 @@ void Connecting::DoClosing() {
     if (CloseCallback_) {
       CloseCallback_(*this);
     }
+    eventer_.RemoveMyself();
   }
 }
 void Connecting::DoWithError() {
