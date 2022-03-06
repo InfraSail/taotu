@@ -11,6 +11,7 @@
 #include "io_buffer.h"
 
 #include <errno.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
@@ -143,9 +144,9 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
 }
 
 ssize_t IoBuffer::WriteToFd(int fd) {
-  ssize_t n = ::write(
+  ssize_t n = ::send(
       fd, reinterpret_cast<void*>(const_cast<char*>(GetReadablePosition())),
-      static_cast<size_t>(GetReadableBytes()));
+      static_cast<size_t>(GetReadableBytes()), MSG_NOSIGNAL);
   if (n > 0) {
     Refresh(static_cast<size_t>(n));
   }
