@@ -202,9 +202,8 @@ void Connecting::ShutDownWrite() {
 
 void Connecting::ForceClose() {
   if (kDisconnected != state_) {
-    SetState(kDisconnected);
-    eventer_.RemoveMyself();
-    event_manager_->DeleteConnection(Fd());
+    SetState(kDisconnecting);
+    DoClosing();
   }
 }
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
