@@ -13,7 +13,6 @@
 #define TAOTU_SRC_TIME_POINT_H_
 
 #include <stdint.h>
-#include <stdio.h>
 #include <sys/time.h>
 
 #include <functional>

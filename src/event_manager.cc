@@ -11,7 +11,6 @@
 #include "event_manager.h"
 
 #include <pthread.h>
-#include <signal.h>
 
 #include <memory>
 #include <string>
