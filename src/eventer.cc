@@ -96,6 +96,9 @@ void Eventer::DisableAllEvents() {
   UpdateEvents();
 }
 
-void Eventer::RemoveMyself() { poller_->RemoveEventer(this); }
+void Eventer::RemoveMyself() {
+  out_events_ = kNoEvent;
+  poller_->RemoveEventer(this);
+}
 
 void Eventer::UpdateEvents() { poller_->ModifyEventer(this); }
