@@ -130,8 +130,8 @@ class Connecting : NonCopyableMovable {
 
   EventManager* event_manager_;
 
-  Eventer eventer_;
   Socketer socketer_;
+  Eventer eventer_;
   const NetAddress local_address_;
   const NetAddress peer_address_;
 
