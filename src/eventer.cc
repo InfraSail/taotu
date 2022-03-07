@@ -30,6 +30,7 @@ Eventer::Eventer(Poller* poller, int fd)
 Eventer::~Eventer() {
   while (is_handling_) {
   }
+  RemoveMyself();
   poller_ = nullptr;
 }
 
