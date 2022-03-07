@@ -17,8 +17,6 @@ EchoServer::EchoServer(const taotu::NetAddress& listen_address,
                        bool should_reuse_port)
     : server_(
           std::make_unique<taotu::Server>(listen_address, should_reuse_port)) {
-  server_->SetConnectionCallback(std::bind(&EchoServer::OnConnectionCallback,
-                                           this, std::placeholders::_1));
   server_->SetMessageCallback(
       std::bind(&EchoServer::OnMessageCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
@@ -26,16 +24,6 @@ EchoServer::EchoServer(const taotu::NetAddress& listen_address,
 
 void EchoServer::Start() { server_->Start(); }
 
-void EchoServer::OnConnectionCallback(taotu::Connecting& connection) {
-  taotu::LOG(taotu::logger::kDebug,
-             "EchoServer - (Ip(" + connection.GetLocalNetAddress().GetIp() +
-                 "), Port(" +
-                 std::to_string(connection.GetLocalNetAddress().GetPort()) +
-                 ")) -> (Ip(" + connection.GetPeerNetAddress().GetIp() +
-                 "), Port(" +
-                 std::to_string(connection.GetPeerNetAddress().GetPort()) +
-                 ")) - " + (connection.IsConnected() ? "UP." : "Down."));
-}
 void EchoServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
                                    taotu::TimePoint time_point) {

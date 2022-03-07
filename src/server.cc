@@ -70,7 +70,8 @@ void Server::DefaultOnConnectionCallback(Connecting& connection) {
           std::to_string(connection.GetLocalNetAddress().GetPort()) +
           ") and peer IP(" + connection.GetPeerNetAddress().GetIp() +
           ") Port(" + std::to_string(connection.GetPeerNetAddress().GetPort()) +
-          ").");
+          ") is " + (connection.IsConnected() ? "created" : "closed") +
+          " now.");
 }
 void Server::DefaultOnMessageCallback(Connecting& connection,
                                       IoBuffer* io_buffer,
