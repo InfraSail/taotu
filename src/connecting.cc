@@ -31,6 +31,7 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
       local_address_(local_address),
       peer_address_(peer_address),
       state_(kConnecting) {
+  socketer_.SetKeepAlive(true);
   eventer_.RegisterReadCallback(
       std::bind(&Connecting::DoReading, this, std::placeholders::_1));
   eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));
@@ -38,7 +39,6 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
   eventer_.RegisterErrorCallback(std::bind(&Connecting::DoWithError, this));
   LOG(logger::kDebug, "The TCP connection with fd(" +
                           std::to_string(socket_fd) + ") is being created.");
-  socketer_.SetKeepAlive(true);
 }
 Connecting::~Connecting() {}
 

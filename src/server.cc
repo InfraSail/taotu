@@ -50,8 +50,8 @@ void Server::SetCloseCallback(const std::function<void(Connecting&)>& cb) {
 
 void Server::Start() {
   if (!is_started_.load()) {
-    reactor_manager_.Loop();
     is_started_.store(true);
+    reactor_manager_.Loop();
   }
 }
 
