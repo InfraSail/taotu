@@ -201,18 +201,14 @@ void Connecting::ShutDownWrite() {
 }
 
 void Connecting::ForceClose() {
-  if (IsConnected() || kDisconnecting == state_) {
+  if (kDisconnected != state_) {
     SetState(kDisconnected);
-    StopReadingWriting();
-    if (CloseCallback_) {
-      CloseCallback_(*this);
-    }
     eventer_.RemoveMyself();
     event_manager_->DeleteConnection(Fd());
   }
 }
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
-  if (IsConnected() || kDisconnecting == state_) {
+  if (kDisconnected != state_) {
     event_manager_->RunAfter(delay_microseconds,
                              std::bind(&Connecting::ForceClose, this));
   }
