@@ -47,7 +47,6 @@ void EventManager::Work() {
   LOG(logger::kDebug, "The event loop in thread(" +
                           std::to_string(::pthread_self()) + ") is stopping.");
   for (auto& [_, connection] : connection_map_) {
-    connection->ForceClose();
     delete connection;
   }
   connection_map_.clear();
