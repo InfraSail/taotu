@@ -11,8 +11,6 @@
 
 #include "logger.h"
 
-#include <stdio.h>
-
 #include <functional>
 #include <utility>
 
