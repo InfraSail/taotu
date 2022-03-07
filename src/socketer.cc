@@ -92,14 +92,6 @@ void Socketer::ShutdownWrite() {
   }
 }
 
-void Socketer::ShutdownReadWrite() {
-  if (::shutdown(socket_fd_, SHUT_RDWR) < 0) {
-    LOG(logger::kError,
-        "SocketFd(" + std::to_string(socket_fd_) +
-            ") failed to shutdown reading end and writing end!!!");
-  }
-}
-
 void Socketer::SetTcpNoDelay(bool on) {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
