@@ -46,5 +46,5 @@ void EchoServer::OnMessageCallback(taotu::Connecting& connection,
                  std::to_string(time_point.GetMicroseconds()) + ".");
   connection.Send(message);
   // ::printf("%s", message.c_str());
-  connection.ShutDownWrite();
+  connection.ForceClose();
 }
