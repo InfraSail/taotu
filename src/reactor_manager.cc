@@ -55,7 +55,9 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
     acceptor_->RegisterNewConnectionCallback(
-        [this](int socket_fd, const NetAddress& peer_address){this->AcceptNewConnectionCallback(socket_fd, peer_address);});
+        [this](int socket_fd, const NetAddress& peer_address) {
+          this->AcceptNewConnectionCallback(socket_fd, peer_address);
+        });
   } else {
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
@@ -101,7 +103,7 @@ ClientReactorManager::ClientReactorManager(const NetAddress& server_address,
       can_connect_(true),
       in_current_thread_(in_current_thread) {
   connector_->RegisterNewConnectionCallback(
-      [this](int socket_fd){this->LaunchNewConnectionCallback(socket_fd);});
+      [this](int socket_fd) { this->LaunchNewConnectionCallback(socket_fd); });
 }
 ClientReactorManager::~ClientReactorManager() {
   LOG(logger::kDebug, "Client is destroying.");
@@ -112,7 +114,7 @@ ClientReactorManager::~ClientReactorManager() {
   }
   if (connection != nullptr) {
     connection->RegisterCloseCallback(
-        [](Connecting& connection){connection.ForceClose();});
+        [](Connecting& connection) { connection.ForceClose(); });
     connection->ForceClose();
   } else {
     connector_->Stop();
