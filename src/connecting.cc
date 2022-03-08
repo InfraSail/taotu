@@ -37,12 +37,13 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
   eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));
   eventer_.RegisterCloseCallback(std::bind(&Connecting::DoClosing, this));
   eventer_.RegisterErrorCallback(std::bind(&Connecting::DoWithError, this));
-  LOG(logger::kDebug, "The TCP connection with fd(" +
-                          std::to_string(socket_fd) + ") is being created.");
+  // LOG(logger::kDebug, "The TCP connection with fd(" +
+  //                         std::to_string(socket_fd) + ") is being created.");
 }
 Connecting::~Connecting() {
-  LOG(logger::kDebug,
-      "The TCP connection with fd(" + std::to_string(Fd()) + ") is closing.");
+  // LOG(logger::kDebug,
+  //     "The TCP connection with fd(" + std::to_string(Fd()) + ") is
+  //     closing.");
 }
 
 void Connecting::DoReading(TimePoint receive_time) {
@@ -89,8 +90,9 @@ void Connecting::DoWriting() {
 }
 void Connecting::DoClosing() {
   if (state_ != kDisconnected) {
-    LOG(logger::kDebug, "Fd(" + std::to_string(Fd()) + ") with state(\"" +
-                            GetConnectionStateInfo(state_) + "\") is closing.");
+    // LOG(logger::kDebug, "Fd(" + std::to_string(Fd()) + ") with state(\"" +
+    //                         GetConnectionStateInfo(state_) + "\") is
+    //                         closing.");
     SetState(kDisconnected);
     StopReadingWriting();
     if (OnConnectionCallback_) {
@@ -121,9 +123,6 @@ void Connecting::OnEstablishing() {
   if (kConnecting == state_) {
     SetState(kConnected);
     StartReading();
-    // if (OnConnectionCallback_) {
-    //   OnConnectionCallback_(*this);
-    // }
   }
 }
 
