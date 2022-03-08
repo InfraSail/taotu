@@ -90,6 +90,7 @@ void ServerReactorManager::AcceptNewConnectionCallback(
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(CloseCallback_);
   new_connection->OnEstablishing();
+  ConnectionCallback_(*new_connection);
 }
 
 ClientReactorManager::ClientReactorManager(const NetAddress& server_address,
