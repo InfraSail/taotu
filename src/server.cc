@@ -56,22 +56,23 @@ void Server::Start() {
 }
 
 void Server::RemoveConnection(Connecting& connection) {
-  LOG(logger::kDebug, "The connection with fd(" +
-                          std::to_string(connection.Fd()) +
-                          ") is being removed.");
+  // LOG(logger::kDebug, "The connection with fd(" +
+  //                         std::to_string(connection.Fd()) +
+  //                         ") is being removed.");
   connection.ForceClose();
 }
 
 void Server::DefaultOnConnectionCallback(Connecting& connection) {
-  LOG(logger::kDebug,
-      "A new connection with fd(" + std::to_string(connection.Fd()) +
-          ") on local IP(" + connection.GetLocalNetAddress().GetIp() +
-          ") Port(" +
-          std::to_string(connection.GetLocalNetAddress().GetPort()) +
-          ") and peer IP(" + connection.GetPeerNetAddress().GetIp() +
-          ") Port(" + std::to_string(connection.GetPeerNetAddress().GetPort()) +
-          ") is " + (connection.IsConnected() ? "created" : "closed") +
-          " now.");
+  // LOG(logger::kDebug,
+  //     "A new connection with fd(" + std::to_string(connection.Fd()) +
+  //         ") on local IP(" + connection.GetLocalNetAddress().GetIp() +
+  //         ") Port(" +
+  //         std::to_string(connection.GetLocalNetAddress().GetPort()) +
+  //         ") and peer IP(" + connection.GetPeerNetAddress().GetIp() +
+  //         ") Port(" +
+  //         std::to_string(connection.GetPeerNetAddress().GetPort()) +
+  //         ") is " + (connection.IsConnected() ? "created" : "closed") +
+  //         " now.");
 }
 void Server::DefaultOnMessageCallback(Connecting& connection,
                                       IoBuffer* io_buffer,
