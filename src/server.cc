@@ -22,16 +22,16 @@ Server::Server(const NetAddress& listen_address, bool should_reuse_port,
     : reactor_manager_(listen_address, io_thread_amount, should_reuse_port),
       thread_pool_(calculation_thread_amount),
       is_started_(false) {
-  reactor_manager_.SetConnectionCallback([this](Connecting& connection){
-      this->DefaultOnConnectionCallback(connection);});
-  reactor_manager_.SetMessageCallback(
-      [this](Connecting& connection,
-             IoBuffer* io_buffer,
-             TimePoint time_point){this->DefaultOnMessageCallback(connection,
-                                                                    io_buffer,
-                                                                    time_point);});
+  reactor_manager_.SetConnectionCallback([this](Connecting& connection) {
+    this->DefaultOnConnectionCallback(connection);
+  });
+  reactor_manager_.SetMessageCallback([this](Connecting& connection,
+                                             IoBuffer* io_buffer,
+                                             TimePoint time_point) {
+    this->DefaultOnMessageCallback(connection, io_buffer, time_point);
+  });
   reactor_manager_.SetCloseCallback(
-      [this](Connecting& connection){this->RemoveConnection(connection);});
+      [this](Connecting& connection) { this->RemoveConnection(connection); });
 }
 Server::~Server() {}
 
