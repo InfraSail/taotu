@@ -14,7 +14,6 @@
 #include <functional>
 #include <utility>
 
-using namespace taotu;
 using namespace taotu::logger;
 
 // Relevant to LogLevel
