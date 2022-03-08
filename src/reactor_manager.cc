@@ -28,7 +28,7 @@ using namespace taotu;
 static NetAddress GetLocalAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
@@ -38,7 +38,7 @@ static NetAddress GetLocalAddress(int socket_fd) {
 static NetAddress GetPeerAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
@@ -47,7 +47,7 @@ static NetAddress GetPeerAddress(int socket_fd) {
 }
 
 ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
-                                           int io_thread_amount,
+                                           size_t io_thread_amount,
                                            bool should_reuse_port)
     : event_managers_(1, new EventManager),
       acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
@@ -55,8 +55,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
     acceptor_->RegisterNewConnectionCallback(
-        std::bind(&ServerReactorManager::AcceptNewConnectionCallback, this,
-                  std::placeholders::_1, std::placeholders::_2));
+        [this](int socket_fd, const NetAddress& peer_address){this->AcceptNewConnectionCallback(socket_fd, peer_address);});
   } else {
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
@@ -67,15 +66,15 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
   balancer_ = std::make_unique<Balancer>(&event_managers_, 0);
 }
 ServerReactorManager::~ServerReactorManager() {
-  int io_thread_amount = event_managers_.size();
-  for (int i = 0; i < io_thread_amount; ++i) {
+  size_t io_thread_amount = event_managers_.size();
+  for (size_t i = 0; i < io_thread_amount; ++i) {
     delete event_managers_[i];
   }
 }
 
 void ServerReactorManager::Loop() {
-  int io_thread_amount = event_managers_.size();
-  for (int i = 1; i < io_thread_amount; ++i) {
+  size_t io_thread_amount = event_managers_.size();
+  for (size_t i = 1; i < io_thread_amount; ++i) {
     event_managers_[i]->Loop();
   }
   event_managers_[0]->Work();
@@ -102,8 +101,7 @@ ClientReactorManager::ClientReactorManager(const NetAddress& server_address,
       can_connect_(true),
       in_current_thread_(in_current_thread) {
   connector_->RegisterNewConnectionCallback(
-      std::bind(&ClientReactorManager::LaunchNewConnectionCallback, this,
-                std::placeholders::_1));
+      [this](int socket_fd){this->LaunchNewConnectionCallback(socket_fd);});
 }
 ClientReactorManager::~ClientReactorManager() {
   LOG(logger::kDebug, "Client is destroying.");
@@ -114,7 +112,7 @@ ClientReactorManager::~ClientReactorManager() {
   }
   if (connection != nullptr) {
     connection->RegisterCloseCallback(
-        std::bind(&Connecting::ForceClose, connection));
+        [](Connecting& connection){connection.ForceClose();});
     connection->ForceClose();
   } else {
     connector_->Stop();
