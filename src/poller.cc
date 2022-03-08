@@ -68,10 +68,11 @@ void Poller::AddEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
-                          "), add fd(" + std::to_string(eventer->Fd()) +
-                          ") with events(" + std::to_string(eventer->Events()) +
-                          ") into the native poll().");
+  // LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
+  //                         "), add fd(" + std::to_string(eventer->Fd()) +
+  //                         ") with events(" +
+  //                         std::to_string(eventer->Events()) +
+  //                         ") into the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
@@ -89,10 +90,11 @@ void Poller::ModifyEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
-                          "), modify fd(" + std::to_string(eventer->Fd()) +
-                          ") with events(" + std::to_string(eventer->Events()) +
-                          ") from the native poll().");
+  // LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
+  //                         "), modify fd(" + std::to_string(eventer->Fd()) +
+  //                         ") with events(" +
+  //                         std::to_string(eventer->Events()) +
+  //                         ") from the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
@@ -110,9 +112,9 @@ void Poller::RemoveEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
-                          "), remove fd(" + std::to_string(eventer->Fd()) +
-                          ") from the native poll().");
+  // LOG(logger::kDebug, "In thread(" + std::to_string(::pthread_self()) +
+  //                         "), remove fd(" + std::to_string(eventer->Fd()) +
+  //                         ") from the native poll().");
   struct epoll_event poll_event;
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
