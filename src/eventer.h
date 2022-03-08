@@ -11,7 +11,7 @@
 #ifndef TAOTU_SRC_EVENTER_H_
 #define TAOTU_SRC_EVENTER_H_
 
-#include <sys/epoll.h>
+#include <sys/poll.h>
 
 #include <functional>
 #include <memory>
@@ -53,9 +53,9 @@ class Eventer : NonCopyableMovable {
   }
 
   int Fd() const { return fd_; }
-  int Events() const { return out_events_; }
+  uint32_t Events() const { return out_events_; }
 
-  void ReceiveEvents(int in_events) { in_events_ = in_events; }
+  void ReceiveEvents(uint32_t in_events) { in_events_ = in_events; }
 
   bool HasNoEvent() const { return out_events_ == kNoEvent; }
   bool HasReadEvents() const { return out_events_ & kReadEvents; }
@@ -75,8 +75,8 @@ class Eventer : NonCopyableMovable {
   // In <poll.h> or <sys/epoll.h>
   enum {
     kNoEvent = 0x0000,
-    kReadEvents = EPOLLIN | EPOLLPRI,
-    kWriteEvents = EPOLLOUT,
+    kReadEvents = POLLIN | POLLPRI,
+    kWriteEvents = POLLOUT,
   };
 
   Poller* poller_;
@@ -84,10 +84,10 @@ class Eventer : NonCopyableMovable {
   const int fd_;
 
   // For receiving
-  int in_events_;
+  uint32_t in_events_;
 
   // For setting
-  int out_events_;
+  uint32_t out_events_;
 
   bool is_handling_;
 
