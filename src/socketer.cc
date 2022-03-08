@@ -13,9 +13,7 @@
 
 #include <errno.h>
 #include <netinet/tcp.h>
-#include <strings.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <string>
@@ -27,7 +25,7 @@ using namespace taotu;
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
 Socketer::~Socketer() { Close(); }
 
-void Socketer::BindAddress(const NetAddress& local_address) {
+void Socketer::BindAddress(const NetAddress& local_address) const {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   if (ret < 0) {
@@ -35,18 +33,18 @@ void Socketer::BindAddress(const NetAddress& local_address) {
                             ") failed to bind an address!!!");
   }
 }
-void Socketer::Listen() {
+void Socketer::Listen() const {
   int ret = ::listen(socket_fd_, SOMAXCONN);
   if (ret < 0) {
     LOG(logger::kError,
         "SocketFd(" + std::to_string(socket_fd_) + ") failed to listen!!!");
   }
 }
-int Socketer::Accept(NetAddress* peer_address) {
+int Socketer::Accept(NetAddress* peer_address) const {
   // Ignore whether IP address specification of client-end is IPv4 or IPv6
   struct sockaddr_in6 socket_address6;
   ::memset(&socket_address6, 0, sizeof(socket_address6));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(socket_address6));
+  auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
   int conn_fd = ::accept4(
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
@@ -85,14 +83,14 @@ int Socketer::Accept(NetAddress* peer_address) {
   return conn_fd;
 }
 
-void Socketer::ShutdownWrite() {
+void Socketer::ShutdownWrite() const {
   if (::shutdown(socket_fd_, SHUT_WR) < 0) {
     LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
                             ") failed to shutdown writing end!!!");
   }
 }
 
-void Socketer::SetTcpNoDelay(bool on) {
+void Socketer::SetTcpNoDelay(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
@@ -102,7 +100,7 @@ void Socketer::SetTcpNoDelay(bool on) {
   }
 }
 
-void Socketer::SetReuseAddress(bool on) {
+void Socketer::SetReuseAddress(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
@@ -112,7 +110,7 @@ void Socketer::SetReuseAddress(bool on) {
   }
 }
 
-void Socketer::SetReusePort(bool on) {
+void Socketer::SetReusePort(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEPORT, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
@@ -122,7 +120,7 @@ void Socketer::SetReusePort(bool on) {
   }
 }
 
-void Socketer::SetKeepAlive(bool on) {
+void Socketer::SetKeepAlive(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_KEEPALIVE, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
@@ -132,7 +130,7 @@ void Socketer::SetKeepAlive(bool on) {
   }
 }
 
-void Socketer::Close() {
+void Socketer::Close() const {
   // Close the file and give its descriptor back
   // LOG(logger::kDebug,
   //     "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");

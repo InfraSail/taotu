@@ -24,33 +24,33 @@ namespace taotu {
  */
 class Socketer : NonCopyableMovable {
  public:
-  Socketer(int socket_fd);
+  explicit Socketer(int socket_fd);
   ~Socketer();
 
   // Get the file descriptor of this socket
   int Fd() const { return socket_fd_; }
 
   // Bind local net address info(IP address, port and so on) (For "Acceptor")
-  void BindAddress(const NetAddress& local_address);
+  void BindAddress(const NetAddress& local_address) const;
 
   // Listen to the port of the IP address (For "Acceptor")
-  void Listen();
+  void Listen() const;
 
   // Accept a connection request, create this connection, allocate a file
   // descriptor of this connecting socket and record its net address info (For
   // "Acceptor")
-  int Accept(NetAddress* peer_address);
+  int Accept(NetAddress* peer_address) const;
 
   // Shut down writing-end(self)
-  void ShutdownWrite();
+  void ShutdownWrite() const;
 
-  void SetTcpNoDelay(bool on);
-  void SetReuseAddress(bool on);
-  void SetReusePort(bool on);
-  void SetKeepAlive(bool on);
+  void SetTcpNoDelay(bool on) const;
+  void SetReuseAddress(bool on) const;
+  void SetReusePort(bool on) const;
+  void SetKeepAlive(bool on) const;
 
  private:
-  void Close();
+  void Close() const;
 
   // The file descriptor of this socket
   const int socket_fd_;
