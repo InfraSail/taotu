@@ -19,7 +19,6 @@
 #include <cstring>
 #include <string>
 
-#include "errno.h"
 #include "eventer.h"
 #include "logger.h"
 #include "time_point.h"
@@ -130,7 +129,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
 void Poller::GetActiveEventer(int event_amount,
                               EventerList* active_eventers) const {
   for (int i = 0; i < event_amount; ++i) {
-    Eventer* eventer = static_cast<Eventer*>(poll_events_[i].data.ptr);
+    auto eventer = static_cast<Eventer*>(poll_events_[i].data.ptr);
     eventer->ReceiveEvents(poll_events_[i].events);
     active_eventers->push_back(eventer);
   }
