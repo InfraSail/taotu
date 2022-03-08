@@ -52,7 +52,7 @@ class Balancer {
   int strategy_;
 
   // The mark of the index of the chosen "EventManager" in "event_managers_"
-  int cursor_;
+  size_t cursor_;
 };
 
 }  // namespace taotu

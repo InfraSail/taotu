@@ -21,7 +21,7 @@ Balancer::Balancer(ServerReactorManager::EventManagers* event_managers,
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {
-  size_t evt_mng_num = event_managers_->size();
+  auto evt_mng_num = event_managers_->size();
   switch (strategy_) {
     // "Round Robin"
     case BalancerStrategy::kRoundRobin:
@@ -31,9 +31,9 @@ EventManager* Balancer::PickOneEventManager() {
       break;
     // Pick the I/O thread holding least "Eventer"s
     case BalancerStrategy::kMinEvents:
-      int pos = 0;
+      size_t pos = 0;
       uint32_t min_evts = (*event_managers_)[pos]->GetEventerAmount();
-      for (int i = 1; i < evt_mng_num; ++i) {
+      for (size_t i = 1; i < evt_mng_num; ++i) {
         if ((*event_managers_)[i]->GetEventerAmount() < min_evts) {
           pos = i;
           min_evts =
