@@ -194,6 +194,7 @@ void Connecting::ForceClose() {
     DoClosing();
   }
 }
+// FIXME:
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
   if (kDisconnected != state_) {
     event_manager_->RunAfter(delay_microseconds,
