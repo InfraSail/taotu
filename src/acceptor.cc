@@ -16,13 +16,10 @@
 #include <netinet/in.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <string>
-#include <utility>
 
-#include "eventer.h"
 #include "logger.h"
 #include "net_address.h"
 #include "poller.h"
@@ -46,7 +43,7 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
-  accept_eventer_.RegisterReadCallback(std::bind(&Acceptor::DoReading, this));
+  accept_eventer_.RegisterReadCallback([this](const TimePoint& time_point) { this->DoReading(); });
 }
 Acceptor::~Acceptor() {
   LOG(logger::kDebug, "Acceptor with fd(" +
