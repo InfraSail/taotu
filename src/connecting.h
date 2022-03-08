@@ -68,7 +68,7 @@ class Connecting : NonCopyableMovable {
   void DoReading(TimePoint receive_time);
   void DoWriting();
   void DoClosing();
-  void DoWithError();
+  void DoWithError() const;
 
   void StartReading() {
     if (!eventer_.HasReadEvents()) {

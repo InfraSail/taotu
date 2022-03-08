@@ -33,10 +33,10 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
       state_(kConnecting) {
   socketer_.SetKeepAlive(true);
   eventer_.RegisterReadCallback(
-      std::bind(&Connecting::DoReading, this, std::placeholders::_1));
-  eventer_.RegisterWriteCallback(std::bind(&Connecting::DoWriting, this));
-  eventer_.RegisterCloseCallback(std::bind(&Connecting::DoClosing, this));
-  eventer_.RegisterErrorCallback(std::bind(&Connecting::DoWithError, this));
+      [this](TimePoint receive_time){this->DoReading(receive_time);});
+  eventer_.RegisterWriteCallback([this] { this->DoWriting(); });
+  eventer_.RegisterCloseCallback([this] { this->DoClosing(); });
+  eventer_.RegisterErrorCallback([this] { this->DoWithError(); });
   // LOG(logger::kDebug, "The TCP connection with fd(" +
   //                         std::to_string(socket_fd) + ") is being created.");
 }
@@ -104,9 +104,9 @@ void Connecting::DoClosing() {
     event_manager_->DeleteConnection(Fd());
   }
 }
-void Connecting::DoWithError() {
+void Connecting::DoWithError() const {
   int saved_errno = 0, opt_val;
-  socklen_t opt_len = static_cast<socklen_t>(sizeof(opt_val));
+  auto opt_len = static_cast<socklen_t>(sizeof(opt_val));
   if (::getsockopt(Fd(), SOL_SOCKET, SO_ERROR,
                    reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
     saved_errno = errno;
