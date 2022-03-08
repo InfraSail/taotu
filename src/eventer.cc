@@ -12,8 +12,6 @@
 
 #include <poll.h>
 
-#include <utility>
-
 #include "logger.h"
 #include "poller.h"
 
