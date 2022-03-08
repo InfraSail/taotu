@@ -32,11 +32,11 @@ class Timer : NonCopyableMovable {
   typedef std::multimap<TimePoint, TimeCallback> TimePoints;
   typedef std::vector<std::pair<TimePoint, TimeCallback>> ExpiredTimeTasks;
 
-  Timer() {}
-  ~Timer() {}
+  Timer() = default;
+  ~Timer() = default;
 
   // Register a time task
-  void AddTimeTask(TimePoint time_point, TimeCallback TimeTask);
+  void AddTimeTask(const TimePoint& time_point, TimeCallback TimeTask);
 
   // Get minium time duration for next epoll waiting
   int GetMinTimeDurationSet() const;
