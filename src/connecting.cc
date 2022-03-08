@@ -40,7 +40,10 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
   LOG(logger::kDebug, "The TCP connection with fd(" +
                           std::to_string(socket_fd) + ") is being created.");
 }
-Connecting::~Connecting() {}
+Connecting::~Connecting() {
+  LOG(logger::kDebug,
+      "The TCP connection with fd(" + std::to_string(Fd()) + ") is closing.");
+}
 
 void Connecting::DoReading(TimePoint receive_time) {
   int saved_errno = 0;
@@ -118,9 +121,9 @@ void Connecting::OnEstablishing() {
   if (kConnecting == state_) {
     SetState(kConnected);
     StartReading();
-    if (OnConnectionCallback_) {
-      OnConnectionCallback_(*this);
-    }
+    // if (OnConnectionCallback_) {
+    //   OnConnectionCallback_(*this);
+    // }
   }
 }
 
