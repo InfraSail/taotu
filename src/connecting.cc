@@ -33,7 +33,7 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
       state_(kConnecting) {
   socketer_.SetKeepAlive(true);
   eventer_.RegisterReadCallback(
-      [this](TimePoint receive_time){this->DoReading(receive_time);});
+      [this](TimePoint receive_time) { this->DoReading(receive_time); });
   eventer_.RegisterWriteCallback([this] { this->DoWriting(); });
   eventer_.RegisterCloseCallback([this] { this->DoClosing(); });
   eventer_.RegisterErrorCallback([this] { this->DoWithError(); });
