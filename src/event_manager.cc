@@ -10,9 +10,6 @@
 
 #include "event_manager.h"
 
-#include <pthread.h>
-
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -31,7 +28,7 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  thread_ = std::thread(std::bind(&EventManager::Work, this));
+  thread_ = std::thread([this] { this->Work(); });
 }
 void EventManager::Work() {
   should_quit_ = false;
