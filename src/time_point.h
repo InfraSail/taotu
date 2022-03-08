@@ -31,7 +31,7 @@ class TimePoint {
 
   TimePoint(int64_t duration_microseconds, bool repeated = false);
 
-  TimePoint(int64_t duration_microseconds, TimePoint start_time_point,
+  TimePoint(int64_t duration_microseconds, const TimePoint& start_time_point,
             bool repeated = false);
 
   // Get the time point of next setting (for repeatable condition)
