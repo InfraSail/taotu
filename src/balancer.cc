@@ -12,7 +12,6 @@
 #include "balancer.h"
 
 #include "event_manager.h"
-#include "logger.h"
 #include "reactor_manager.h"
 
 using namespace taotu;

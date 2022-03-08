@@ -35,8 +35,9 @@ void EventManager::Loop() {
 }
 void EventManager::Work() {
   should_quit_ = false;
-  LOG(logger::kDebug, "The event loop in thread(" +
-                          std::to_string(::pthread_self()) + ") is starting.");
+  // LOG(logger::kDebug, "The event loop in thread(" +
+  //                         std::to_string(::pthread_self()) + ") is
+  //                         starting.");
   while (!should_quit_) {
     auto return_time =
         poller_.Poll(timer_.GetMinTimeDurationSet(), &active_events_);
@@ -44,8 +45,9 @@ void EventManager::Work() {
     DoExpiredTimeTasks(return_time);
     DestroyClosedConnections();
   }
-  LOG(logger::kDebug, "The event loop in thread(" +
-                          std::to_string(::pthread_self()) + ") is stopping.");
+  // LOG(logger::kDebug, "The event loop in thread(" +
+  //                         std::to_string(::pthread_self()) + ") is
+  //                         stopping.");
   for (auto& [_, connection] : connection_map_) {
     delete connection;
   }
@@ -62,12 +64,12 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
         new Connecting(this, socket_fd, local_address, peer_address);
     ref_conn = connection_map_[socket_fd];
   }
-  LOG(logger::kDebug,
-      "Create a new connection with fd(" + std::to_string(socket_fd) +
-          ") between local net address (IP(" + local_address.GetIp() +
-          "), Port(" + std::to_string(local_address.GetPort()) +
-          ")) and peer net address (IP(" + peer_address.GetIp() + "), Port(" +
-          std::to_string(peer_address.GetPort()) + ")).");
+  // LOG(logger::kDebug,
+  //     "Create a new connection with fd(" + std::to_string(socket_fd) +
+  //         ") between local net address (IP(" + local_address.GetIp() +
+  //         "), Port(" + std::to_string(local_address.GetPort()) +
+  //         ")) and peer net address (IP(" + peer_address.GetIp() + "), Port("
+  //         + std::to_string(peer_address.GetPort()) + ")).");
   return ref_conn;
 }
 
