@@ -21,7 +21,7 @@ Balancer::Balancer(ServerReactorManager::EventManagers* event_managers,
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {
-  int evt_mng_num = event_managers_->size();
+  size_t evt_mng_num = event_managers_->size();
   switch (strategy_) {
     // "Round Robin"
     case BalancerStrategy::kRoundRobin:

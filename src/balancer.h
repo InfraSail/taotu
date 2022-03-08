@@ -31,7 +31,7 @@ enum BalancerStrategy {
  */
 class Balancer {
  public:
-  Balancer(ServerReactorManager::EventManagers* event_managers,
+  explicit Balancer(ServerReactorManager::EventManagers* event_managers,
            int strategy = BalancerStrategy::kMinEvents);
   ~Balancer() { event_managers_ = nullptr; }
 
