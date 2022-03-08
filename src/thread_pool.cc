@@ -18,9 +18,9 @@
 
 using namespace taotu;
 
-ThreadPool::ThreadPool(int thread_amount)
+ThreadPool::ThreadPool(size_t thread_amount)
     : que_pdt_idx_(0), should_stop_(false) {
-  for (int i = 0; i < thread_amount; ++i) {
+  for (size_t i = 0; i < thread_amount; ++i) {
     threads_.emplace_back(std::make_unique<std::thread>([this]() {
       while (true) {
         std::function<void()> CurTask;

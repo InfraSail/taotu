@@ -32,7 +32,7 @@ namespace taotu {
  */
 class ThreadPool : NonCopyableMovable {
  public:
-  ThreadPool(int thread_amount);
+  explicit ThreadPool(size_t thread_amount = 4);
   ~ThreadPool();
 
   void AddTask(std::function<void()> task);
