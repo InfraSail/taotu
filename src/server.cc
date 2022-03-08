@@ -23,6 +23,8 @@ Server::Server(const NetAddress& listen_address, bool should_reuse_port,
     : reactor_manager_(listen_address, io_thread_amount, should_reuse_port),
       thread_pool_(calculation_thread_amount),
       is_started_(false) {
+  reactor_manager_.SetConnectionCallback(std::bind(
+      &Server::DefaultOnConnectionCallback, this, std::placeholders::_1));
   reactor_manager_.SetMessageCallback(
       std::bind(&Server::DefaultOnMessageCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
@@ -60,6 +62,17 @@ void Server::RemoveConnection(Connecting& connection) {
   connection.ForceClose();
 }
 
+void Server::DefaultOnConnectionCallback(Connecting& connection) {
+  LOG(logger::kDebug,
+      "A new connection with fd(" + std::to_string(connection.Fd()) +
+          ") on local IP(" + connection.GetLocalNetAddress().GetIp() +
+          ") Port(" +
+          std::to_string(connection.GetLocalNetAddress().GetPort()) +
+          ") and peer IP(" + connection.GetPeerNetAddress().GetIp() +
+          ") Port(" + std::to_string(connection.GetPeerNetAddress().GetPort()) +
+          ") is " + (connection.IsConnected() ? "created" : "closed") +
+          " now.");
+}
 void Server::DefaultOnMessageCallback(Connecting& connection,
                                       IoBuffer* io_buffer,
                                       TimePoint time_point) {
