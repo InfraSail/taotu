@@ -31,7 +31,6 @@ Eventer::~Eventer() {
   while (is_handling_) {
   }
   RemoveMyself();
-  poller_ = nullptr;
 }
 
 void Eventer::Work(TimePoint tp) {
@@ -39,8 +38,8 @@ void Eventer::Work(TimePoint tp) {
   // Hung up and no data to read
   if ((in_events_ & EPOLLHUP) && !(in_events_ & EPOLLIN)) {
     if (CloseCallback_) {
-      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-                              std::to_string(fd_) + ") is closed.");
+      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+      //                         std::to_string(fd_) + ") is closed.");
       CloseCallback_();
     }
   }
@@ -60,16 +59,16 @@ void Eventer::Work(TimePoint tp) {
   // Readable, urgent (read) and half-closed
   if (in_events_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
     if (ReadCallback_) {
-      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-                              std::to_string(fd_) + ") is readable.");
+      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+      //                         std::to_string(fd_) + ") is readable.");
       ReadCallback_(tp);
     }
   }
   // Writable
   if (in_events_ & EPOLLOUT) {
     if (WriteCallback_) {
-      LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-                              std::to_string(fd_) + ") is writable.");
+      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
+      //                         std::to_string(fd_) + ") is writable.");
       WriteCallback_();
     }
   }
