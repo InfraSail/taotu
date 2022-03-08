@@ -49,7 +49,6 @@ class Server : NonCopyableMovable {
   void RemoveConnection(Connecting& connection);
 
  private:
-  void DefaultOnConnectionCallback(Connecting& connection);
   void DefaultOnMessageCallback(Connecting& connection, IoBuffer* io_buffer,
                                 TimePoint time_point);
 
