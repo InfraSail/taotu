@@ -32,7 +32,7 @@ enum BalancerStrategy {
 class Balancer {
  public:
   explicit Balancer(ServerReactorManager::EventManagers* event_managers,
-           int strategy = BalancerStrategy::kMinEvents);
+                    int strategy = BalancerStrategy::kMinEvents);
   ~Balancer() { event_managers_ = nullptr; }
 
   // Set the strategy of balancing the load of file handles distributed to each
