@@ -27,7 +27,22 @@
 
 #include "non_copyable_movable.h"
 
-namespace taotu::logger {
+namespace taotu {
+
+// Note: Only these APIs are allowed for log!!!
+/************************Open Logger APIs***************************/
+// Start the unique logger
+#define START_LOG(log_file_name) \
+  logger::Logger::GetLogger()->StartLogger(log_file_name)
+
+// End the unique logger
+#define END_LOG() logger::Logger::GetLogger()->EndLogger()
+
+// The unique API for recording logs
+#define LOG(...) logger::Logger::GetLogger()->RecordLogs(__VA_ARGS__)
+/********************************************************************/
+
+namespace logger {
 
 // Relevant to Log_level_info_prefix
 enum LogLevel {
@@ -125,6 +140,7 @@ class Logger : NonCopyableMovable {
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;
 };
+}  // namespace logger
 }  // namespace taotu
 
 #endif  // !TAOTU_SRC_LOGGER_H_
