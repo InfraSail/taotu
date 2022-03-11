@@ -3,5 +3,5 @@ SET(SIMPLE_TIME_SOURCE
   time.cc
 )
 
-ADD_EXECUTABLE(simple_time ${SIMPLE_TIME_SOURCE} "${PROJECT_BINARY_DIR}/output/bin")
+ADD_EXECUTABLE(simple_time ${SIMPLE_TIME_SOURCE})
 TARGET_LINK_LIBRARIES(simple_time PUBLIC taotu-static)
