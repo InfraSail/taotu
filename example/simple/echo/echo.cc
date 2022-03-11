@@ -16,7 +16,7 @@
 EchoServer::EchoServer(const taotu::NetAddress& listen_address,
                        bool should_reuse_port)
     : server_(std::make_unique<taotu::Server>(listen_address, should_reuse_port,
-                                              4, 0)) {
+                                              3, 0)) {
   server_->SetMessageCallback(
       std::bind(&EchoServer::OnMessageCallback, this, std::placeholders::_1,
                 std::placeholders::_2, std::placeholders::_3));
