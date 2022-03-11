@@ -11,7 +11,7 @@
 #ifndef TAOTU_EXAMPLE_SIMPLE_TIME_H_
 #define TAOTU_EXAMPLE_SIMPLE_TIME_H_
 
-#include "../../../src/server.h"
+#include "../../src/server.h"
 
 class TimeServer : taotu::NonCopyableMovable {
  public:
