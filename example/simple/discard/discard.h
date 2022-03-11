@@ -15,8 +15,9 @@
 
 class DiscardServer : taotu::NonCopyableMovable {
  public:
-  DiscardServer(const taotu::NetAddress& listen_address,
-                bool should_reuse_port);
+  DiscardServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
+                size_t io_thread_amount = 3,
+                size_t calculation_thread_amount = 0);
 
   void Start();
 

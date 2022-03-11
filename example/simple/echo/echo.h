@@ -17,7 +17,8 @@
 
 class EchoServer : taotu::NonCopyableMovable {
  public:
-  EchoServer(const taotu::NetAddress& listen_address, bool should_reuse_port);
+  EchoServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
+             size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
 
   void Start();
 

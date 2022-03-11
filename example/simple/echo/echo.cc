@@ -14,12 +14,16 @@
 #include <string>
 
 EchoServer::EchoServer(const taotu::NetAddress& listen_address,
-                       bool should_reuse_port)
+                       bool should_reuse_port, size_t io_thread_amount,
+                       size_t calculation_thread_amount)
     : server_(std::make_unique<taotu::Server>(listen_address, should_reuse_port,
-                                              3, 0)) {
-  server_->SetMessageCallback(
-      std::bind(&EchoServer::OnMessageCallback, this, std::placeholders::_1,
-                std::placeholders::_2, std::placeholders::_3));
+                                              io_thread_amount,
+                                              calculation_thread_amount)) {
+  server_->SetMessageCallback([this](taotu::Connecting& connection,
+                                     taotu::IoBuffer* io_buffer,
+                                     taotu::TimePoint time_point) {
+    this->OnMessageCallback(connection, io_buffer, time_point);
+  });
 }
 
 void EchoServer::Start() { server_->Start(); }

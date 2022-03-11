@@ -10,8 +10,28 @@
 
 #include "time.h"
 
-int main() {
-  TimeServer time_server{taotu::NetAddress{4567, false, false}, false};
-  time_server.Start();
+int main(int argc, char* argv[]) {
+  if (1 == argc) {
+    TimeServer time_server{taotu::NetAddress{4567}, false};
+    time_server.Start();
+  } else if (2 == argc) {
+    TimeServer time_server{taotu::NetAddress{static_cast<uint16_t>(
+                               std::stoi(std::string{argv[1]}))},
+                           false};
+    time_server.Start();
+  } else if (3 == argc) {
+    TimeServer time_server{
+        taotu::NetAddress{
+            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
+    time_server.Start();
+  } else {
+    TimeServer time_server{
+        taotu::NetAddress{
+            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]})),
+        static_cast<size_t>(std::stoi(std::string{argv[3]}))};
+    time_server.Start();
+  }
   return 0;
 }
