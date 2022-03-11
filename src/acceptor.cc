@@ -43,8 +43,9 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
-  accept_eventer_.RegisterReadCallback(
-      [this](const TimePoint& time_point) { this->DoReading(); });
+  accept_eventer_.RegisterReadCallback([this](const TimePoint& time_point) {
+    this->DoReading();
+  });  // Register the accepting action as an reading event handler
 }
 Acceptor::~Acceptor() {
   LOG(logger::kDebug, "Acceptor with fd(" +
