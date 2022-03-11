@@ -62,14 +62,14 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  for (size_t i = 1; i < io_thread_amount; ++i) {
+  for (size_t i = 0; i < io_thread_amount; ++i) {
     event_managers_.emplace_back(new EventManager);
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_, 0);
 }
 ServerReactorManager::~ServerReactorManager() {
-  size_t io_thread_amount = event_managers_.size();
-  for (size_t i = 0; i < io_thread_amount; ++i) {
+  size_t thread_amount = event_managers_.size();
+  for (size_t i = 0; i < thread_amount; ++i) {
     delete event_managers_[i];
   }
 }
