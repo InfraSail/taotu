@@ -31,9 +31,9 @@ EventManager* Balancer::PickOneEventManager() {
       break;
     // Pick the I/O thread holding least "Eventer"s
     case BalancerStrategy::kMinEvents:
-      size_t pos = 0;
+      size_t pos = 1;
       uint32_t min_evts = (*event_managers_)[pos]->GetEventerAmount();
-      for (size_t i = 1; i < evt_mng_num; ++i) {
+      for (size_t i = 2; i < evt_mng_num; ++i) {
         if ((*event_managers_)[i]->GetEventerAmount() < min_evts) {
           pos = i;
           min_evts =
