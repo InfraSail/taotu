@@ -1,7 +1,8 @@
 /**
  * @file event_manager.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "EventManager" which is the manager of an
+ * event loop in single I/O thread.
  * @date 2021-12-03
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -39,7 +40,9 @@ void EventManager::Work() {
   //                         starting.");
   while (!should_quit_) {
     auto return_time =
-        poller_.Poll(timer_.GetMinTimeDurationSet(), &active_events_);
+        poller_.Poll(timer_.GetMinTimeDurationSet(),
+                     &active_events_);  // Return time is the time point of the
+                                        // end of this polling
     DoWithActiveTasks(return_time);
     DoExpiredTimeTasks(return_time);
     DestroyClosedConnections();
@@ -111,9 +114,13 @@ void EventManager::DoExpiredTimeTasks(TimePoint return_time) {
       ExpiredTimeCallback();
     }
     auto context = expired_time_task.first.GetContext();
-    if (0 != context) {
+    if (0 != context) {  // If this time task is periodic, register it again
+                         // (just for the next time)
       auto IsContinue = expired_time_task.first.GetTaskContinueCallback();
-      if (IsContinue) {
+      if (IsContinue) {  // If this periodic time task has a conditional
+                         // judgement rule which can decide whether the time
+                         // task should be done again, just judge it and take
+                         // the corresponding action
         if (IsContinue()) {
           RunEveryUntil(context, std::move(ExpiredTimeCallback), return_time,
                         std::move(IsContinue));
