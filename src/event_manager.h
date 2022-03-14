@@ -85,14 +85,17 @@ class EventManager : NonCopyableMovable {
   // I/O multiplexing manager
   Poller poller_;
 
-  // All connnections in this loop (also within this thread)
+  // All connnections in this loop (also within this thread) (Mapping: file
+  // descriptor -> conncetion class pointer)
   ConnectionMap connection_map_;
 
   std::thread thread_;
 
   Timer timer_;
 
+  // Spin lock protecting the connection map of this loop (also of this thread)
   mutable MutexLock connection_map_mutex_lock_;
+
   bool should_quit_;
 
   // List for active events returned from the I/O multiplexing waiting each loop
@@ -100,6 +103,9 @@ class EventManager : NonCopyableMovable {
 
   // Set of file discriptors of connections which should be destroyed
   Fds closed_fds_;
+
+  // Spin lock protecting the set of file discriptors of connections which
+  // should be destroyed
   mutable MutexLock closed_fds_lock_;
 };
 
