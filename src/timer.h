@@ -45,7 +45,10 @@ class Timer : NonCopyableMovable {
   ExpiredTimeTasks GetExpiredTimeTasks();
 
  private:
+  // List of all time tasks (the time points and the corresponding tasks)
   TimePoints time_points_;
+
+  // Spin lock protecting the list of all time tasks
   mutable MutexLock mutex_lock_;
 };
 
