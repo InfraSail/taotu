@@ -85,22 +85,27 @@ class IoBuffer {
   // Reset reading and writing index to initial status
   void RefreshRW();
 
-  // Reset writing index after writing
+  // Reset writing index after writing by a specific length
   void RefreshW(size_t len) { writing_index_ += len; }
 
-  // Reset indexes
+  // Reset indexes by a specific length
   void Refresh(size_t len);
 
+  // Reset indexes by the length of an integer
   template <class Int>
   void RefreshInt() {
     Refresh(sizeof(Int));
   }
 
-  // Read content
+  // Read content as a string that has a specific length
   std::string RetrieveAString(size_t len);
+
+  // Read all content as a string
   std::string RetrieveAllAsString() {
     return RetrieveAString(GetReadableBytes());
   }
+
+  // Read content as an integer
   template <class Int>
   Int RetrieveInt() {
     Int result = GetReadableInt<Int>();
@@ -108,22 +113,27 @@ class IoBuffer {
     return result;
   }
 
-  // Set the optional message header
+  // Set the optional message header which is a length-limited string
   void SetHeadContent(const void* str, size_t len);
+
+  // Set the optional message header which is an integer
   template <class Int>
   void SetHeadContentInt(Int x) {
     Int int_str = Host2Network<Int>(x);
     SetHeadContent(static_cast<const void*>(&int_str), sizeof(Int));
   }
 
-  // Write content
+  // Write content which is a string
   void Append(const void* str, size_t len);
+
+  // Write content which is an integer
   template <class Int>
   void AppendInt(Int x) {
     Int int_str = Host2Network<Int>(x);
     Append(static_cast<const void*>(&int_str), sizeof(Int));
   }
 
+  // Ensure that there is enough space for writing
   void EnsureWritableSpace(size_t len);
 
   // Only be called in user code
@@ -139,11 +149,13 @@ class IoBuffer {
  private:
   typedef std::vector<char> BufferType;
 
+  // Get the raw begin of the buffer
   const char* GetBufferBegin() const { return &*buffer_.begin(); }
 
   // Reserve space for writing
   void ReserveWritableSpace(size_t len);
 
+  // Get a readable integer
   template <class Int>
   Int GetReadableInt() const {
     if (sizeof(Int) > GetReadableBytes()) {
