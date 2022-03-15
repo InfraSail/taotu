@@ -81,10 +81,17 @@ class Logger : NonCopyableMovable {
 
   // Initialize this logger (have to be called before recording logs)
   void StartLogger(const std::string& log_file_name);
+
+  // Initialize this logger (have to be called before recording logs)
   void StartLogger(std::string&& log_file_name);
 
+  // Record log
   void RecordLogs(LogLevel log_type, const char* log_info);
+
+  // Record log
   void RecordLogs(LogLevel log_type, const std::string& log_info);
+
+  // Record log
   void RecordLogs(LogLevel log_type, std::string&& log_info);
 
  protected:
