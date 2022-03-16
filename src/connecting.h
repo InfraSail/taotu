@@ -1,7 +1,7 @@
 /**
  * @file connecting.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Connecting" which is a TCP connection (status).
  * @date 2021-12-27
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 
+#include <atomic>
 #include <functional>
 #include <string>
 #include <utility>
@@ -30,7 +31,13 @@ namespace taotu {
 class EventManager;
 
 /**
- * @brief  // TODO:
+ * @brief "Connecting" offers a series of APIs for users. Whether writing the
+ * server or client, it will always be a significant utility part for custom
+ * logic code of coders. It gives the functions of customizing the way to handle
+ * reading, writing and closing, deciding the events which should be paid
+ * attention to, forcibly closing, message sending (asynchronously at most of
+ * time), shut down the writing end (this end) and so on. Moreover, it gives you
+ * rights to operate the buffers for input and output.
  *
  */
 class Connecting : NonCopyableMovable {
@@ -65,9 +72,16 @@ class Connecting : NonCopyableMovable {
   }
   void RegisterCloseCallback(const NormalCallback& cb) { CloseCallback_ = cb; }
 
+  // Execute when the reading event happens
   void DoReading(TimePoint receive_time);
+
+  // Execute when the writing event happens
   void DoWriting();
+
+  // Execute when this TCP connection ought to be closed
   void DoClosing();
+
+  // Execute when error happens
   void DoWithError() const;
 
   void StartReading() {
@@ -102,19 +116,26 @@ class Connecting : NonCopyableMovable {
   // Be called when this connection establishing
   void OnEstablishing();
 
+  // Send the message (asynchronously at most of time)
   void Send(const void* message, size_t msg_len);
+
+  // Send the message (asynchronously at most of time)
   void Send(const std::string& message);
+
+  // Send the message (asynchronously at most of time)
   void Send(IoBuffer* io_buffer);
 
+  // Shut down the writing end (close half == stop writing indeed)
   void ShutDownWrite();
 
-  bool IsConnected() const { return kConnected == state_; }
-  bool IsDisconnected() const { return kDisconnected == state_; }
+  bool IsConnected() const { return kConnected == state_.load(); }
+  bool IsDisconnected() const { return kDisconnected == state_.load(); }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
+  // Close this TCP connection directly (at the end of this loop)
   void ForceClose();
-  void ForceCloseAfter(int64_t delay_microseconds);
+  // FIXME: void ForceCloseAfter(int64_t delay_microseconds);
 
  private:
   enum ConnectionState {
@@ -124,29 +145,57 @@ class Connecting : NonCopyableMovable {
     kDisconnecting
   };
 
-  void SetState(ConnectionState state) { state_ = state; }
+  // Set the state of this TCP connection
+  void SetState(ConnectionState state) { state_.store(state); }
 
+  // For logging (display the connection state)
   static std::string GetConnectionStateInfo(ConnectionState state);
 
+  // Reference to its master event manager in its thread
   EventManager* event_manager_;
 
+  // To manage the socket of its own
   Socketer socketer_;
+
+  // To manage the event of its own
   Eventer eventer_;
+
+  // Record of the local net address info
   const NetAddress local_address_;
+
+  // Record of the peer net address info
   const NetAddress peer_address_;
 
+  // Callback function which will be called after this TCP connection creating
+  // and before this TCP connection destroying
   NormalCallback OnConnectionCallback_;
+
+  // Callback function which will be called after each reading
   OnMessageCallback OnMessageCallback_;
+
+  // Callback function which will be called after each real writing
   NormalCallback WriteCompleteCallback_;
+
+  // Callback function which will be called when the I/O buffer for output
+  // reaches up to a threshold
   HighWaterMarkCallback HighWaterMarkCallback_;
+
+  // Callback function which will be called when this TCP connection should be
+  // closed
   NormalCallback CloseCallback_;
 
+  // Threshold that the high mark callback function will be called when the I/O
+  // buffer for output reaches up to
   size_t high_water_mark_;
 
+  // I/O buffer for input
   IoBuffer input_buffer_;
+
+  // I/O buffer for output
   IoBuffer output_buffer_;
 
-  ConnectionState state_;
+  // Connection state (atomic)
+  std::atomic<ConnectionState> state_;
 };
 
 }  // namespace taotu
