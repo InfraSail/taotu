@@ -89,7 +89,7 @@ class Logger : NonCopyableMovable {
   // Initialize this logger (have to be called before recording logs)
   void StartLogger(std::string&& log_file_name);
 
-  // Record log
+  // Record log (use variable length parameters)
   template <class... Args>
   void RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
     int msg_len = ::snprintf(nullptr, 0, log_info, args...);
