@@ -13,7 +13,6 @@
 #define TAOTU_SRC_LOGGER_H_
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -63,6 +62,9 @@ enum {
 
 }  // namespace
 
+// The file name of the log
+static const std::string kLogName{"log.txt"};
+
 // Relevant to LogLevel
 static const std::string Log_level_info_prefix[3]{
     "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
@@ -91,13 +93,7 @@ class Logger : NonCopyableMovable {
 
   // Record log (use variable length parameters)
   template <class... Args>
-  void RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
-    int msg_len = ::snprintf(nullptr, 0, log_info, args...);
-    char* message = new char[msg_len + 1];
-    ::snprintf(message, msg_len + 1, log_info, args...);
-    RecordLogs(static_cast<const char*>(message));
-    delete[] message;
-  }
+  void RecordLogs(LogLevel log_type, const char* log_info, Args... args);
 
   // Record log
   void RecordLogs(LogLevel log_type, const std::string& log_info);
