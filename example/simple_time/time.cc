@@ -35,11 +35,10 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
   std::string message{io_buffer->RetrieveAllAsString()};
   ssize_t msg_len = message.size();
   message = message.substr(0, msg_len - 1);
-  taotu::LOG(taotu::logger::kDebug,
-             "Fd(" + std::to_string(connection.Fd()) + ") is echoing " +
-                 std::to_string(msg_len) + " bytes(" + message +
-                 ") received at " +
-                 std::to_string(time_point.GetMicroseconds()) + ".");
+  taotu::LOG(taotu::logger::kDebug, "Fd(%d) is receiving %u bytes(%s) at %lld.",
+             connection.Fd(), message.size(),
+             message.substr(0, message.size() - 1).c_str(),
+             time_point.GetMicroseconds());
   int64_t now_time = time_point.GetMicroseconds();
   time_t seconds = static_cast<time_t>(now_time / (1000 * 1000));
   struct tm tm_time;

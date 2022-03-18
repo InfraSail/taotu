@@ -33,11 +33,10 @@ void DiscardServer::OnMessageCallback(taotu::Connecting& connection,
                                       taotu::IoBuffer* io_buffer,
                                       taotu::TimePoint time_point) {
   std::string message{io_buffer->RetrieveAllAsString()};
-  taotu::LOG(taotu::logger::kDebug,
-             "Fd(" + std::to_string(connection.Fd()) + ") is echoing " +
-                 std::to_string(message.size()) + " bytes(" +
-                 message.substr(0, message.size() - 1) + ") received at " +
-                 std::to_string(time_point.GetMicroseconds()) + ".");
+  taotu::LOG(taotu::logger::kDebug, "Fd(%d) is receiving %u bytes(%s) at %lld.",
+             connection.Fd(), message.size(),
+             message.substr(0, message.size() - 1).c_str(),
+             time_point.GetMicroseconds());
   ::printf("%s", message.c_str());
   connection.Send("");
   connection.ForceClose();
