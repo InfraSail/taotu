@@ -63,6 +63,10 @@ enum {
 
 }  // namespace
 
+// Relevant to LogLevel
+static const std::string Log_level_info_prefix[3]{
+    "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
+
 /**
  * @brief "Logger" uses a special ring buffer called "Disruptor": the index of
  * writable position is atomic. And it uses "Singleton" pattern, so there is
@@ -86,7 +90,14 @@ class Logger : NonCopyableMovable {
   void StartLogger(std::string&& log_file_name);
 
   // Record log
-  void RecordLogs(LogLevel log_type, const char* log_info);
+  template <class... Args>
+  void RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
+    int msg_len = ::snprintf(nullptr, 0, log_info, args...);
+    char* message = new char[msg_len + 1];
+    ::snprintf(message, msg_len + 1, log_info, args...);
+    RecordLogs(static_cast<const char*>(message));
+    delete[] message;
+  }
 
   // Record log
   void RecordLogs(LogLevel log_type, const std::string& log_info);
