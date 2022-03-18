@@ -48,9 +48,7 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   });  // Register the accepting action as an reading event handler
 }
 Acceptor::~Acceptor() {
-  LOG(logger::kDebug, "Acceptor with fd(" +
-                          std::to_string(accept_soketer_.Fd()) +
-                          ") is closing.");
+  LOG(logger::kDebug, "Acceptor with fd(%d) is closing.", accept_soketer_.Fd());
   is_listening_ = false;
   ::close(idle_fd_);
 }
@@ -59,9 +57,8 @@ void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
   accept_eventer_.EnableReadEvents();
-  LOG(logger::kDebug, "Acceptor with fd(" +
-                          std::to_string(accept_soketer_.Fd()) +
-                          ") is listening.");
+  LOG(logger::kDebug, "Acceptor with fd(%d) is listening.",
+      accept_soketer_.Fd());
 }
 
 void Acceptor::DoReading() {
@@ -76,9 +73,9 @@ void Acceptor::DoReading() {
       ::close(conn_fd);
     }
   } else {
-    LOG(logger::kError, "Acceptor with Fd(" +
-                            std::to_string(accept_soketer_.Fd()) +
-                            ") failed to accept a new TCP connection!!!");
+    LOG(logger::kError,
+        "Acceptor with Fd(%d) failed to accept a new TCP connection!!!",
+        accept_soketer_.Fd());
     if (errno == EMFILE) {  // If it fails to connect, clear the waiting list of
                             // listening
       ::close(idle_fd_);
