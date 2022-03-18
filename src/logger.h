@@ -93,7 +93,14 @@ class Logger : NonCopyableMovable {
 
   // Record log (use variable length parameters)
   template <class... Args>
-  void RecordLogs(LogLevel log_type, const char* log_info, Args... args);
+  void RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
+    int msg_len =
+        ::snprintf(nullptr, static_cast<size_t>(0), log_info, args...);
+    char* message = new char[msg_len + 1];
+    ::snprintf(message, static_cast<size_t>(msg_len + 1), log_info, args...);
+    RecordLogs(static_cast<const char*>(message));
+    delete[] message;
+  }
 
   // Record log
   void RecordLogs(LogLevel log_type, const std::string& log_info);

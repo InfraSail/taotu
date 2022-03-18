@@ -66,15 +66,6 @@ void Logger::StartLogger(std::string&& log_file_name) {
   UpdateLoggerTime();
 }
 
-template <class... Args>
-void Logger::RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
-  int msg_len = ::snprintf(nullptr, static_cast<size_t>(0), log_info, args...);
-  char* message = new char[msg_len + 1];
-  ::snprintf(static_cast<const char*>(message),
-             static_cast<size_t>(msg_len + 1), log_info, args...);
-  RecordLogs(static_cast<const char*>(message));
-  delete[] message;
-}
 void Logger::RecordLogs(LogLevel log_type, const std::string& log_info) {
   RecordLogs(Log_level_info_prefix[log_type] + log_info);
 }
