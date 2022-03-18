@@ -36,7 +36,7 @@ ThreadPool::ThreadPool(size_t thread_amount)
           if (this->should_stop_ &&
               this->task_queues_[this->que_pdt_idx_].empty() &&
               this->task_queues_[!(this->que_pdt_idx_)]
-                  .empty()) {  // If there is no task and the thread pool should
+                  .empty()) {  // If there is no task, the thread pool should
                                // stop
             return;
           }
