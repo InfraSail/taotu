@@ -34,37 +34,42 @@ void Eventer::Work(TimePoint tp) {
   // Hung up and no data to read
   if ((in_events_ & POLLHUP) && !(in_events_ & POLLIN)) {
     if (CloseCallback_) {
-      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-      //                         std::to_string(fd_) + ") is closed.");
+      // LOG(logger::kDebug,
+      //     "An I/O multiplexing event is triggered now: fd(%d) is closed.",
+      //     fd_);
       CloseCallback_();
     }
   }
   // Invalid request
   if (in_events_ & POLLNVAL) {
-    LOG(logger::kWarn, "An I/O multiplexing event is triggered now: fd(" +
-                           std::to_string(fd_) + ") is not open!");
+    LOG(logger::kWarn,
+        "An I/O multiplexing event is triggered now: fd(%d) is not open!", fd_);
   }
   // Invalid request and error condition
   if (in_events_ & (POLLNVAL | POLLERR)) {
     if (ErrorCallback_) {
-      LOG(logger::kError, "An I/O multiplexing event is triggered now: fd(" +
-                              std::to_string(fd_) + ") occurs an error!!!");
+      LOG(logger::kError,
+          "An I/O multiplexing event is triggered now: fd(%d) occurs an "
+          "error!!!",
+          fd_);
       ErrorCallback_();
     }
   }
   // Readable, urgent (read) and half-closed
   if (in_events_ & (POLLIN | POLLPRI | POLLRDHUP)) {
     if (ReadCallback_) {
-      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-      //                         std::to_string(fd_) + ") is readable.");
+      // LOG(logger::kDebug,
+      //     "An I/O multiplexing event is triggered now: fd(%d) is readable.",
+      //     fd_);
       ReadCallback_(tp);
     }
   }
   // Writable
   if (in_events_ & POLLOUT) {
     if (WriteCallback_) {
-      // LOG(logger::kDebug, "An I/O multiplexing event is triggered now: fd(" +
-      //                         std::to_string(fd_) + ") is writable.");
+      // LOG(logger::kDebug,
+      //     "An I/O multiplexing event is triggered now: fd(%d) is writable.",
+      //     fd_);
       WriteCallback_();
     }
   }
