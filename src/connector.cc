@@ -153,8 +153,8 @@ void Connector::DoRetrying(int socket_fd) {
         std::min(retry_dalay_microseconds_ * 2,
                  static_cast<int>(kMaxRetryDelayMicroseconds));
   } else {
-    // LOG(logger::kDebug, "Connector fd(socket_fd) is not retrying to
-    // connect.", socket_fd);
+    // LOG(logger::kDebug, "Connector fd(%d) is not retrying to connect.",
+    //     socket_fd);
   }
 }
 
