@@ -159,8 +159,7 @@ void Connector::DoRetrying(int socket_fd) {
 }
 
 void Connector::DoWriting() {
-  LOG(logger::kDebug,
-      "Connector fd(" + std::to_string(eventer_->Fd()) + ") is writing.");
+  LOG(logger::kDebug, "Connector fd(%d) is writing.", eventer_->Fd());
   if (kConnecting == state_) {
     int socket_fd = RemoveAndReset();
     int error = GetSocketError(socket_fd);
@@ -207,9 +206,8 @@ void Connector::DoWithError() {
     int socket_fd = RemoveAndReset();
     int error = GetSocketError(socket_fd);
     char errno_info[512];
-    LOG(logger::kWarn,
-        "Connector fd(" + std::to_string(socket_fd) + ") has the error(" +
-            ::strerror_r(error, errno_info, sizeof(errno_info)) + ")!");
+    LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", socket_fd,
+        ::strerror_r(error, errno_info, sizeof(errno_info)));
     DoRetrying(socket_fd);
   }
 }
