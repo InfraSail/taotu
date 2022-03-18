@@ -122,9 +122,9 @@ ClientReactorManager::~ClientReactorManager() {
 }
 
 void ClientReactorManager::Connect() {
-  LOG(logger::kDebug,
-      "Connect to IP(" + connector_->GetServerAddress().GetIp() + ") Port(" +
-          std::to_string(connector_->GetServerAddress().GetPort()) + ")");
+  LOG(logger::kDebug, "Connect to IP(%s) Port(%u)",
+      connector_->GetServerAddress().GetIp().c_str(),
+      connector_->GetServerAddress().GetPort());
   can_connect_ = true;
   connector_->Start();
   if (in_current_thread_) {
@@ -163,12 +163,9 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
         }
         connection.ForceClose();
         if (this->should_retry_ && this->can_connect_) {
-          LOG(logger::kDebug,
-              "Reconnect to [ Ip(" +
-                  this->connector_->GetServerAddress().GetIp() + "), Port(" +
-                  std::to_string(
-                      this->connector_->GetServerAddress().GetPort()) +
-                  ") ].");
+          LOG(logger::kDebug, "Reconnect to [ Ip(%s), Port(%u) ].",
+              this->connector_->GetServerAddress().GetIp().c_str(),
+              this->connector_->GetServerAddress().GetPort());
           this->connector_->Restart();
         }
       },
