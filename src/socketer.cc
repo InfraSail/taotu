@@ -29,15 +29,14 @@ void Socketer::BindAddress(const NetAddress& local_address) const {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
                    static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   if (ret < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to bind an address!!!");
+    LOG(logger::kError, "SocketFd(%d) failed to bind an address!!!",
+        socket_fd_);
   }
 }
 void Socketer::Listen() const {
   int ret = ::listen(socket_fd_, SOMAXCONN);
   if (ret < 0) {
-    LOG(logger::kError,
-        "SocketFd(" + std::to_string(socket_fd_) + ") failed to listen!!!");
+    LOG(logger::kError, "SocketFd(%d) failed to listen!!!", socket_fd_);
   }
 }
 int Socketer::Accept(NetAddress* peer_address) const {
@@ -69,12 +68,12 @@ int Socketer::Accept(NetAddress* peer_address) const {
       case ENOTSOCK:
       case EOPNOTSUPP:
         // unexpected errors
-        LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                                ") accept: unexpected error!!!");
+        LOG(logger::kError, "SocketFd(%d) accept: unexpected error!!!",
+            socket_fd_);
         break;
       default:
-        LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                                ") accept: unknown error!!!");
+        LOG(logger::kError, "SocketFd(%d) accept: unknown error!!!",
+            socket_fd_);
         break;
     }
   } else {
@@ -85,8 +84,8 @@ int Socketer::Accept(NetAddress* peer_address) const {
 
 void Socketer::ShutdownWrite() const {
   if (::shutdown(socket_fd_, SHUT_WR) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to shutdown writing end!!!");
+    LOG(logger::kError, "SocketFd(%d) failed to shutdown writing end!!!",
+        socket_fd_);
   }
 }
 
@@ -94,9 +93,8 @@ void Socketer::SetTcpNoDelay(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, IPPROTO_TCP, TCP_NODELAY, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to set no delay(TCP) " +
-                            (on ? "on" : "off") + " !!!");
+    LOG(logger::kError, "SocketFd(%d) failed to set no delay(TCP) %s!!!",
+        socket_fd_, (on ? "on" : "off"));
   }
 }
 
@@ -104,9 +102,8 @@ void Socketer::SetReuseAddress(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to set reuse address " +
-                            (on ? "on" : "off") + " !!!");
+    LOG(logger::kError, "SocketFd(%d) failed to set reuse address %s!!!",
+        socket_fd_, (on ? "on" : "off"));
   }
 }
 
@@ -114,9 +111,8 @@ void Socketer::SetReusePort(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEPORT, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to set reuse port " +
-                            (on ? "on" : "off") + " !!!");
+    LOG(logger::kError, "SocketFd(%d) failed to set reuse port %s!!!",
+        socket_fd_, (on ? "on" : "off"));
   }
 }
 
@@ -124,15 +120,14 @@ void Socketer::SetKeepAlive(bool on) const {
   int opt = on ? 1 : 0;
   if (::setsockopt(socket_fd_, SOL_SOCKET, SO_KEEPALIVE, &opt,
                    static_cast<socklen_t>(sizeof(opt))) < 0) {
-    LOG(logger::kError, "SocketFd(" + std::to_string(socket_fd_) +
-                            ") failed to set keep alive " +
-                            (on ? "on" : "off") + " !!!");
+    LOG(logger::kError, "SocketFd(%d) failed to set keep alive %s!!!",
+        socket_fd_, (on ? "on" : "off"));
   }
 }
 
 void Socketer::Close() const {
+  // LOG(logger::kDebug, "SocketFd(%d) is closing.", socket_fd_);
+
   // Close the file and give its descriptor back
-  // LOG(logger::kDebug,
-  //     "SocketFd(" + std::to_string(socket_fd_) + ") is closing.");
   ::close(socket_fd_);
 }
