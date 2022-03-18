@@ -71,9 +71,8 @@ void Acceptor::DoReading() {
     if (NewConnectionCallback_) {
       NewConnectionCallback_(conn_fd, peer_address);
     } else {
-      LOG(logger::kError, "Acceptor with fd(" +
-                              std::to_string(accept_soketer_.Fd()) +
-                              ") is closing!!!");
+      LOG(logger::kError, "Acceptor with fd(%d) is closing!!!",
+          accept_soketer_.Fd());
       ::close(conn_fd);
     }
   } else {
