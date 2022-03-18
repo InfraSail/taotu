@@ -105,8 +105,7 @@ void IoBuffer::ShrinkWritableSpace(size_t len) {
   // We do not use the member function of vector<> -- shrink_to_fit() because it
   // is a non-binding request
   if (len <= 32) {  // Reserving too little writable space is meaningless
-    LOG(logger::kWarn,
-        "Shrinking buffer to " + std::to_string(len) + "bytes failed!");
+    LOG(logger::kWarn, "Shrinking buffer to %ubytes failed!", len);
     return;
   }
   IoBuffer buffer;
@@ -131,8 +130,7 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
       ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
   if (n < 0) {
     *tmp_errno = errno;
-    LOG(logger::kError,
-        "Discrete reading in Fd(" + std::to_string(fd) + ") failed!!!");
+    LOG(logger::kError, "Discrete reading in Fd(%d) failed!!!", fd);
   } else if (static_cast<size_t>(n) <= static_cast<size_t>(writable_bytes)) {
     writing_index_ += n;
   } else {
