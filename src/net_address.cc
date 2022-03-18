@@ -37,16 +37,20 @@ NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
     if (::inet_pton(AF_INET6, ip.c_str(), &socket_address6_.sin6_addr) <= 0) {
-      LOG(logger::kError, "IPv6 presentation format (" + ip +
-                              ") failed to convert to network format!!!");
+      LOG(logger::kError,
+          "IPv6 presentation format (%s) failed to convert to network "
+          "format!!!",
+          ip.c_str());
     }
     socket_address6_.sin6_port = ::htons(port);
   } else {
     ::memset(&socket_address_, 0, sizeof(socket_address_));
     socket_address_.sin_family = AF_INET;
     if (::inet_pton(AF_INET, ip.c_str(), &socket_address_.sin_addr) <= 0) {
-      LOG(logger::kError, "IPv4 presentation format (" + ip +
-                              ") failed to convert to network format!!!");
+      LOG(logger::kError,
+          "IPv4 presentation format (%s) failed to convert to network "
+          "format!!!",
+          ip.c_str());
     }
     socket_address_.sin_port = ::htons(port);
   }
