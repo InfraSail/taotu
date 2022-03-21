@@ -51,9 +51,9 @@ enum {
 
 /**
  * @brief "IoBuffer" uses multiple contiguous and scalable memory blocks as the
- * I/O buffer. It records the reading and writing indexes and always reserves 8
- * bytes in the front of the buffer as an optional message header. For Coping
- * with large traffic, it provides a solution using discrete reading.
+ * I/O buffer. It records the reading and writing indexes and always reserves
+ * more than 8 bytes in the front of the buffer as an optional message header.
+ * For Coping with large traffic, it provides a solution using discrete reading.
  *
  */
 class IoBuffer {
