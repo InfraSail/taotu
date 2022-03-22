@@ -14,6 +14,7 @@
 #include <endian.h>
 
 #include <functional>
+#include <string>
 
 #include "../../src/connecting.h"
 #include "../../src/io_buffer.h"
