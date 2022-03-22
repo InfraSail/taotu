@@ -97,8 +97,12 @@ class Logger : NonCopyableMovable {
   void RecordLogs(LogLevel log_type, const char* log_info, Args... args) {
     int msg_len =
         ::snprintf(nullptr, static_cast<size_t>(0), log_info, args...);
-    char* message = new char[msg_len + 1];
-    ::snprintf(message, static_cast<size_t>(msg_len + 1), log_info, args...);
+    size_t prefix_size = Log_level_info_prefix[log_type].size();
+    char* message = new char[prefix_size + static_cast<size_t>(msg_len) + 1];
+    ::memcpy(static_cast<void*>(message),
+             Log_level_info_prefix[log_type].c_str(), prefix_size);
+    ::snprintf(message + prefix_size, static_cast<size_t>(msg_len + 1),
+               log_info, args...);
     RecordLogs(static_cast<const char*>(message));
     delete[] message;
   }
