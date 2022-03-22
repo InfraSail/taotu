@@ -105,12 +105,25 @@ class IoBuffer {
     return RetrieveAString(GetReadableBytes());
   }
 
-  // Read content as an integer
+  // Read content as an integer (refresh the indexes)
   template <class Int>
   Int RetrieveInt() {
     Int result = GetReadableInt<Int>();
     RefreshInt<Int>();
     return result;
+  }
+
+  // Get a readable integer (do not refresh the indexes)
+  template <class Int>
+  Int GetReadableInt() const {
+    if (sizeof(Int) > GetReadableBytes()) {
+      LOG(logger::kError,
+          "Reading the Integer number in Head content failed!!!");
+      return static_cast<Int>(0);
+    }
+    Int result = static_cast<Int>(0);
+    ::memcpy(static_cast<void*>(result), GetBufferBegin(), sizeof(Int));
+    return Network2Host<Int>(result);
   }
 
   // Set the optional message header which is a length-limited string
@@ -154,19 +167,6 @@ class IoBuffer {
 
   // Reserve space for writing
   void ReserveWritableSpace(size_t len);
-
-  // Get a readable integer
-  template <class Int>
-  Int GetReadableInt() const {
-    if (sizeof(Int) > GetReadableBytes()) {
-      LOG(logger::kError,
-          "Reading the Integer number in Head content failed!!!");
-      return static_cast<Int>(0);
-    }
-    Int result = static_cast<Int>(0);
-    ::memcpy(static_cast<void*>(result), GetBufferBegin(), sizeof(Int));
-    return Network2Host<Int>(result);
-  }
 
   template <class Int>
   static Int Host2Network(Int x) {
