@@ -14,6 +14,7 @@
 #include <memory>
 #include <utility>
 
+#include "net_address.h"
 #include "non_copyable_movable.h"
 #include "reactor_manager.h"
 
