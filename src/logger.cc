@@ -158,9 +158,10 @@ void Logger::RecordLogs(std::string&& log_info) {
   // Splice this log record
   std::string time_now_str{time_now_str_.c_str()};
   std::string log_data(time_now_str.size() + log_info.size() + 2, ' ');
-  ::memcpy(const_cast<char*>(log_data.c_str()), time_now_str.c_str(),
-           time_now_str.size());
-  ::memcpy(const_cast<char*>(log_data.c_str()) + time_now_str.size() + 1,
+  ::memcpy(reinterpret_cast<void*>(const_cast<char*>(log_data.c_str())),
+           time_now_str.c_str(), time_now_str.size());
+  ::memcpy(reinterpret_cast<void*>(const_cast<char*>(log_data.c_str()) +
+                                   time_now_str.size() + 1),
            log_info.c_str(), log_info.size());
   log_data.back() = '\n';
   // Put this log record into ring buffer
