@@ -122,7 +122,7 @@ class IoBuffer {
       return static_cast<Int>(0);
     }
     Int result = static_cast<Int>(0);
-    ::memcpy(static_cast<void*>(result), GetBufferBegin(), sizeof(Int));
+    ::memcpy(static_cast<void*>(&result), GetBufferBegin(), sizeof(Int));
     return Network2Host<Int>(result);
   }
 
