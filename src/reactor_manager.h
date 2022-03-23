@@ -80,9 +80,8 @@ class ClientReactorManager : NonCopyableMovable {
  public:
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
-  typedef std::shared_ptr<EventManager> EventManagerPtr;
 
-  ClientReactorManager(EventManagerPtr event_manager,
+  ClientReactorManager(EventManager* event_manager,
                        const NetAddress& server_address);
   ~ClientReactorManager();
 
@@ -103,7 +102,7 @@ class ClientReactorManager : NonCopyableMovable {
  private:
   void LaunchNewConnectionCallback(int socket_fd);
 
-  EventManagerPtr event_manager_;
+  EventManager* event_manager_;
   Connector connector_;
 
   Connecting* connection_;

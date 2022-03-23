@@ -94,10 +94,10 @@ void ServerReactorManager::AcceptNewConnectionCallback(
   ConnectionCallback_(*new_connection);
 }
 
-ClientReactorManager::ClientReactorManager(EventManagerPtr event_manager,
+ClientReactorManager::ClientReactorManager(EventManager* event_manager,
                                            const NetAddress& server_address)
-    : event_manager_(),
-      connector_(event_manager_.get(), server_address),
+    : event_manager_(event_manager),
+      connector_(event_manager_, server_address),
       connection_(nullptr),
       should_retry_(false),
       can_connect_(true) {
