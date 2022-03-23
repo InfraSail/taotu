@@ -96,8 +96,8 @@ void Connector::Stop() {
 }
 
 void Connector::Connect() {
-  int socket_fd = eventer_->Fd();
-  int status = ::connect(socket_fd, server_address_.GetNetAddress(),
+  int conn_fd = eventer_->Fd();
+  int status = ::connect(conn_fd, server_address_.GetNetAddress(),
                          static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   int saved_errno = (0 == status) ? 0 : errno;
   switch (saved_errno) {
@@ -105,14 +105,14 @@ void Connector::Connect() {
     case EINPROGRESS:
     case EINTR:
     case EISCONN:
-      DoConnecting(socket_fd);
+      DoConnecting(conn_fd);
       break;
     case EAGAIN:
     case EADDRINUSE:
     case EADDRNOTAVAIL:
     case ECONNREFUSED:
     case ENETUNREACH:
-      DoRetrying(socket_fd);
+      DoRetrying(conn_fd);
       break;
     case EACCES:
     case EPERM:
@@ -122,31 +122,31 @@ void Connector::Connect() {
     case EFAULT:
     case ENOTSOCK:
       LOG(logger::kError, "Connector fd(%d) is closing because of an error!!!",
-          socket_fd);
-      ::close(socket_fd);
+          conn_fd);
+      ::close(conn_fd);
       break;
     default:
       LOG(logger::kError,
           "Connector fd(%d) is closing because of an unkown error(%d)!!!",
-          socket_fd, saved_errno);
-      ::close(socket_fd);
+          conn_fd, saved_errno);
+      ::close(conn_fd);
       break;
   }
 }
-void Connector::DoConnecting(int socket_fd) {
+void Connector::DoConnecting(int conn_fd) {
   SetState(kConnecting);
-  eventer_ = std::make_unique<Eventer>(event_manager_->GetPoller(), socket_fd);
+  eventer_ = std::make_unique<Eventer>(event_manager_->GetPoller(), conn_fd);
   eventer_->RegisterWriteCallback(std::bind(&Connector::DoWriting, this));
   eventer_->RegisterErrorCallback(std::bind(&Connector::DoWithError, this));
   eventer_->EnableWriteEvents();
 }
-void Connector::DoRetrying(int socket_fd) {
-  LOG(logger::kWarn, "Connector fd(%d) is closing for retrying!", socket_fd);
-  ::close(socket_fd);
+void Connector::DoRetrying(int conn_fd) {
+  LOG(logger::kWarn, "Connector fd(%d) is closing for retrying!", conn_fd);
+  ::close(conn_fd);
   SetState(kDisconnected);
   if (can_connect_) {
     // LOG(logger::kDebug, "Connector fd(%d) is retrying to connect.",
-    // socket_fd);
+    // conn_fd);
     event_manager_->RunAfter(retry_dalay_microseconds_,
                              std::bind(&Connector::Start, this));
     retry_dalay_microseconds_ =
@@ -154,18 +154,18 @@ void Connector::DoRetrying(int socket_fd) {
                  static_cast<int>(kMaxRetryDelayMicroseconds));
   } else {
     // LOG(logger::kDebug, "Connector fd(%d) is not retrying to connect.",
-    //     socket_fd);
+    //     conn_fd);
   }
 }
 
 void Connector::DoWriting() {
   LOG(logger::kDebug, "Connector fd(%d) is writing.", eventer_->Fd());
   if (kConnecting == state_) {
-    int socket_fd = RemoveAndReset();
-    int error = GetSocketError(socket_fd);
-    auto IsSelfConnected = [](int socket_fd) -> bool {
-      struct sockaddr_in6 local_address = GetLocalSocketAddress6(socket_fd);
-      struct sockaddr_in6 peer_address = GetPeerSocketAddress6(socket_fd);
+    int conn_fd = RemoveAndReset();
+    int error = GetSocketError(conn_fd);
+    auto IsSelfConnected = [](int conn_fd) -> bool {
+      struct sockaddr_in6 local_address = GetLocalSocketAddress6(conn_fd);
+      struct sockaddr_in6 peer_address = GetPeerSocketAddress6(conn_fd);
       if (local_address.sin6_family == AF_INET) {
         const struct sockaddr_in* laddr4 =
             reinterpret_cast<struct sockaddr_in*>(&local_address);
@@ -183,18 +183,18 @@ void Connector::DoWriting() {
     };
     if (error) {
       char errno_info[512];
-      LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", socket_fd,
+      LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", conn_fd,
           ::strerror_r(error, errno_info, sizeof(errno_info)));
-      DoRetrying(socket_fd);
-    } else if (IsSelfConnected(socket_fd)) {
-      // LOG(logger::kDebug, "Connector fd(%d) is self-connected.", socket_fd);
-      DoRetrying(socket_fd);
+      DoRetrying(conn_fd);
+    } else if (IsSelfConnected(conn_fd)) {
+      // LOG(logger::kDebug, "Connector fd(%d) is self-connected.", conn_fd);
+      DoRetrying(conn_fd);
     } else {
       SetState(kConnected);
       if (can_connect_ && NewConnectionCallback_) {
-        NewConnectionCallback_(socket_fd);
+        NewConnectionCallback_(conn_fd);
       } else {
-        ::close(socket_fd);
+        ::close(conn_fd);
       }
     }
   }
@@ -203,19 +203,19 @@ void Connector::DoWithError() {
   LOG(logger::kError, "Connector fd(%d) has the error with the state(%d).",
       eventer_->Fd(), state_);
   if (kConnecting == state_) {
-    int socket_fd = RemoveAndReset();
-    int error = GetSocketError(socket_fd);
+    int conn_fd = RemoveAndReset();
+    int error = GetSocketError(conn_fd);
     char errno_info[512];
-    LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", socket_fd,
+    LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", conn_fd,
         ::strerror_r(error, errno_info, sizeof(errno_info)));
-    DoRetrying(socket_fd);
+    DoRetrying(conn_fd);
   }
 }
 
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
   eventer_->RemoveMyself();
-  int socket_fd = eventer_->Fd();
+  int conn_fd = eventer_->Fd();
   eventer_.reset();
-  return socket_fd;
+  return conn_fd;
 }
