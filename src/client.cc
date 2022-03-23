@@ -10,12 +10,12 @@
 
 #include "client.h"
 
-#include <memory>
-
 using namespace taotu;
 
-Client::Client(const NetAddress& server_address, bool should_retry_)
-    : reactor_manager_(std::make_unique<ClientReactorManager>(server_address)) {
+Client::Client(EventManagerPtr event_manager, const NetAddress& server_address,
+               bool should_retry_)
+    : reactor_manager_(std::make_unique<ClientReactorManager>(event_manager,
+                                                              server_address)) {
   reactor_manager_->SetRetryOn(should_retry_);
 }
 Client::~Client() {}

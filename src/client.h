@@ -26,7 +26,10 @@ namespace taotu {
  */
 class Client : NonCopyableMovable {
  public:
-  Client(const NetAddress& server_address, bool should_retry_);
+  typedef std::shared_ptr<EventManager> EventManagerPtr;
+
+  Client(EventManagerPtr event_manager, const NetAddress& server_address,
+         bool should_retry_);
   ~Client();
 
   void SetConnectionCallback(std::function<void(Connecting&)> cb) {
