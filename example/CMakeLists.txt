@@ -1,3 +1,4 @@
 ADD_SUBDIRECTORY(simple_echo)
 ADD_SUBDIRECTORY(simple_discard)
 ADD_SUBDIRECTORY(simple_time)
+ADD_SUBDIRECTORY(chat_room)

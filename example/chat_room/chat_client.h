@@ -20,7 +20,7 @@
 
 class ChatClient : taotu::NonCopyableMovable {
  public:
-  ChatClient(const taotu::NetAddress& listen_address);
+  ChatClient(const taotu::NetAddress& connect_address);
 
   void Connect();
   void Disconnect();

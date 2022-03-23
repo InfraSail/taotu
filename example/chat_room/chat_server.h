@@ -21,7 +21,7 @@
 class ChatServer : taotu::NonCopyableMovable {
  public:
   ChatServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
-             size_t io_thread_amount, size_t calculation_thread_amount);
+             size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
 
   void Start();
 
