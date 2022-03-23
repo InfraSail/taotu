@@ -94,15 +94,14 @@ void ServerReactorManager::AcceptNewConnectionCallback(
   ConnectionCallback_(*new_connection);
 }
 
-ClientReactorManager::ClientReactorManager(const NetAddress& server_address,
-                                           bool in_current_thread)
+ClientReactorManager::ClientReactorManager(EventManagerPtr event_manager,
+                                           const NetAddress& server_address)
     : event_manager_(),
-      connector_(std::make_unique<Connector>(&event_manager_, server_address)),
+      connector_(event_manager_.get(), server_address),
       connection_(nullptr),
       should_retry_(false),
-      can_connect_(true),
-      in_current_thread_(in_current_thread) {
-  connector_->RegisterNewConnectionCallback(
+      can_connect_(true) {
+  connector_.RegisterNewConnectionCallback(
       [this](int socket_fd) { this->LaunchNewConnectionCallback(socket_fd); });
 }
 ClientReactorManager::~ClientReactorManager() {
@@ -117,21 +116,16 @@ ClientReactorManager::~ClientReactorManager() {
         [](Connecting& connection) { connection.ForceClose(); });
     connection->ForceClose();
   } else {
-    connector_->Stop();
+    connector_.Stop();
   }
 }
 
 void ClientReactorManager::Connect() {
   LOG(logger::kDebug, "Connect to IP(%s) Port(%u)",
-      connector_->GetServerAddress().GetIp().c_str(),
-      connector_->GetServerAddress().GetPort());
+      connector_.GetServerAddress().GetIp().c_str(),
+      connector_.GetServerAddress().GetPort());
   can_connect_ = true;
-  connector_->Start();
-  if (in_current_thread_) {
-    event_manager_.Work();
-  } else {
-    event_manager_.Loop();
-  }
+  connector_.Start();
 }
 void ClientReactorManager::Disconnect() {
   can_connect_ = false;
@@ -144,13 +138,13 @@ void ClientReactorManager::Disconnect() {
 }
 void ClientReactorManager::Stop() {
   can_connect_ = false;
-  connector_->Stop();
+  connector_.Stop();
 }
 
 void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   NetAddress peer_address(GetPeerAddress(socket_fd));
   NetAddress local_address(GetLocalAddress(socket_fd));
-  auto new_connection = event_manager_.InsertNewConnection(
+  auto new_connection = event_manager_->InsertNewConnection(
       socket_fd, local_address, peer_address);
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
@@ -164,9 +158,9 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
         connection.ForceClose();
         if (this->should_retry_ && this->can_connect_) {
           LOG(logger::kDebug, "Reconnect to [ Ip(%s), Port(%u) ].",
-              this->connector_->GetServerAddress().GetIp().c_str(),
-              this->connector_->GetServerAddress().GetPort());
-          this->connector_->Restart();
+              this->connector_.GetServerAddress().GetIp().c_str(),
+              this->connector_.GetServerAddress().GetPort());
+          this->connector_.Restart();
         }
       },
       std::placeholders::_1));
