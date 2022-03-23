@@ -80,9 +80,10 @@ class ClientReactorManager : NonCopyableMovable {
  public:
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
+  typedef std::shared_ptr<EventManager> EventManagerPtr;
 
-  ClientReactorManager(const NetAddress& server_address,
-                       bool in_current_thread = true);
+  ClientReactorManager(EventManagerPtr event_manager,
+                       const NetAddress& server_address);
   ~ClientReactorManager();
 
   void Connect();
@@ -100,19 +101,15 @@ class ClientReactorManager : NonCopyableMovable {
   void SetRetryOn(bool on) { should_retry_ = on; }
 
  private:
-  typedef std::unique_ptr<Connector> ConnectorPtr;
-
   void LaunchNewConnectionCallback(int socket_fd);
 
-  EventManager event_manager_;
-  ConnectorPtr connector_;
+  EventManagerPtr event_manager_;
+  Connector connector_;
 
   Connecting* connection_;
 
   bool should_retry_;
   bool can_connect_;
-
-  bool in_current_thread_;
 
   MutexLock connection_mutex_;
 
