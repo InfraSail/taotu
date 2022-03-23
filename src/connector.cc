@@ -21,6 +21,7 @@
 
 #include "connecting.h"
 #include "logger.h"
+#include "time_point.h"
 
 using namespace taotu;
 
@@ -214,6 +215,6 @@ int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
   eventer_->RemoveMyself();
   int conn_fd = eventer_->Fd();
-  eventer_.reset();
+  event_manager_->RunAt(TimePoint{}, [&]() { this->eventer_.reset(); });
   return conn_fd;
 }
