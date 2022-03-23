@@ -68,14 +68,6 @@ Connector::Connector(EventManager* event_manager,
       state_(kDisconnected),
       can_connect_(false),
       retry_dalay_microseconds_(static_cast<int>(kInitRetryDelayMicroseconds)) {
-  int socket_fd =
-      ::socket(server_address_.GetFamily(),
-               SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
-  if (socket_fd < 0) {
-    LOG(logger::kError, "Fail to initialize for connector!!!");
-    ::exit(-1);
-  }
-  eventer_ = std::make_unique<Eventer>(event_manager->GetPoller(), socket_fd);
 }
 
 void Connector::Start() {
@@ -96,8 +88,14 @@ void Connector::Stop() {
 }
 
 void Connector::Connect() {
-  int conn_fd = eventer_->Fd();
-  int status = ::connect(conn_fd, server_address_.GetNetAddress(),
+  int sock_fd =
+      ::socket(server_address_.GetFamily(),
+               SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+  if (sock_fd < 0) {
+    LOG(logger::kError, "Fail to initialize for connector!!!");
+    ::exit(-1);
+  }
+  int status = ::connect(sock_fd, server_address_.GetNetAddress(),
                          static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
   int saved_errno = (0 == status) ? 0 : errno;
   switch (saved_errno) {
@@ -105,14 +103,14 @@ void Connector::Connect() {
     case EINPROGRESS:
     case EINTR:
     case EISCONN:
-      DoConnecting(conn_fd);
+      DoConnecting(sock_fd);
       break;
     case EAGAIN:
     case EADDRINUSE:
     case EADDRNOTAVAIL:
     case ECONNREFUSED:
     case ENETUNREACH:
-      DoRetrying(conn_fd);
+      DoRetrying(sock_fd);
       break;
     case EACCES:
     case EPERM:
@@ -122,14 +120,14 @@ void Connector::Connect() {
     case EFAULT:
     case ENOTSOCK:
       LOG(logger::kError, "Connector fd(%d) is closing because of an error!!!",
-          conn_fd);
-      ::close(conn_fd);
+          sock_fd);
+      ::close(sock_fd);
       break;
     default:
       LOG(logger::kError,
           "Connector fd(%d) is closing because of an unkown error(%d)!!!",
-          conn_fd, saved_errno);
-      ::close(conn_fd);
+          sock_fd, saved_errno);
+      ::close(sock_fd);
       break;
   }
 }
