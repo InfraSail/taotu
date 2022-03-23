@@ -26,9 +26,7 @@ namespace taotu {
  */
 class Client : NonCopyableMovable {
  public:
-  typedef std::shared_ptr<EventManager> EventManagerPtr;
-
-  Client(EventManagerPtr event_manager, const NetAddress& server_address,
+  Client(EventManager* event_manager, const NetAddress& server_address,
          bool should_retry_);
   ~Client();
 
