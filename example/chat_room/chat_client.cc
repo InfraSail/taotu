@@ -12,10 +12,10 @@
 
 #include <stdio.h>
 
-ChatClient::ChatClient(const taotu::NetAddress& listen_address)
+ChatClient::ChatClient(const taotu::NetAddress& connect_address)
     : event_manager_(std::make_shared<taotu::EventManager>()),
-      client_(std::make_unique<taotu::Client>(event_manager_, listen_address,
-                                              true)),
+      client_(std::make_unique<taotu::Client>(event_manager_.get(),
+                                              connect_address, true)),
       codec_([this](taotu::Connecting& connection, const std::string& message,
                     taotu::TimePoint time_point) {
         this->OnCodecMessage(connection, message, time_point);
@@ -30,7 +30,10 @@ ChatClient::ChatClient(const taotu::NetAddress& listen_address)
   });
 }
 
-void ChatClient::Connect() { client_->Connect(); }
+void ChatClient::Connect() {
+  client_->Connect();
+  event_manager_->Loop();
+}
 void ChatClient::Disconnect() { client_->Disconnect(); }
 
 void ChatClient::Write(const std::string& message) {

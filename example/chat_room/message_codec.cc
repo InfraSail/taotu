@@ -29,7 +29,7 @@ void Codec::OnMessage(taotu::Connecting& connection, taotu::IoBuffer* io_buffer,
       taotu::LOG(taotu::logger::kError, "Invalid length!!!");
       connection.ShutDownWrite();
       break;
-    } else if (io_buffer->GetReadableBytes() >=
+    } else if (static_cast<int32_t>(io_buffer->GetReadableBytes()) >=
                msg_len + kHeadLength) {  // Only read the complete message
       io_buffer->Refresh(kHeadLength);
       std::string message(io_buffer->GetReadablePosition(), msg_len);
