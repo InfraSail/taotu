@@ -20,6 +20,7 @@ ChatClient::ChatClient(const taotu::NetAddress& connect_address)
                     taotu::TimePoint time_point) {
         this->OnCodecMessage(connection, message, time_point);
       }) {
+  event_manager_->Loop();
   client_->SetConnectionCallback([this](taotu::Connecting& connection) {
     this->OnConnection(connection);
   });
@@ -30,10 +31,7 @@ ChatClient::ChatClient(const taotu::NetAddress& connect_address)
   });
 }
 
-void ChatClient::Connect() {
-  client_->Connect();
-  event_manager_->Loop();
-}
+void ChatClient::Connect() { client_->Connect(); }
 void ChatClient::Disconnect() { client_->Disconnect(); }
 
 void ChatClient::Write(const std::string& message) {
