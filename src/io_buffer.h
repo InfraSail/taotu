@@ -91,12 +91,6 @@ class IoBuffer {
   // Reset indexes by a specific length
   void Refresh(size_t len);
 
-  // Reset indexes by the length of an integer
-  template <class Int>
-  void RefreshInt() {
-    Refresh(sizeof(Int));
-  }
-
   // Read content as a string that has a specific length
   std::string RetrieveAString(size_t len);
 
@@ -105,46 +99,59 @@ class IoBuffer {
     return RetrieveAString(GetReadableBytes());
   }
 
-  // Read content as an integer (refresh the indexes)
-  template <class Int>
-  Int RetrieveInt() {
-    Int result = GetReadableInt<Int>();
-    RefreshInt<Int>();
-    return result;
-  }
+  // Read content as an 8-bit integer (refresh the indexes)
+  int8_t RetrieveInt8();
 
-  // Get a readable integer (do not refresh the indexes)
-  template <class Int>
-  Int GetReadableInt() const {
-    if (sizeof(Int) > GetReadableBytes()) {
-      LOG(logger::kError,
-          "Reading the Integer number in Head content failed!!!");
-      return static_cast<Int>(0);
-    }
-    Int result = static_cast<Int>(0);
-    ::memcpy(static_cast<void*>(&result), GetBufferBegin(), sizeof(result));
-    return Network2Host<Int>(result);
-  }
+  // Read content as a 16-bit integer (refresh the indexes)
+  int16_t RetrieveInt16();
+
+  // Read content as a 32-bit integer (refresh the indexes)
+  int32_t RetrieveInt32();
+
+  // Read content as a 64-bit integer (refresh the indexes)
+  int64_t RetrieveInt64();
+
+  // Get a readable 8-bit integer (do not refresh the indexes)
+  int8_t GetReadableInt8() const;
+
+  // Get a readable 16-bit integer (do not refresh the indexes)
+  int16_t GetReadableInt16() const;
+
+  // Get a readable 32-bit integer (do not refresh the indexes)
+  int32_t GetReadableInt32() const;
+
+  // Get a readable 64-bit integer (do not refresh the indexes)
+  int64_t GetReadableInt64() const;
 
   // Set the optional message header which is a length-limited string
   void SetHeadContent(const void* str, size_t len);
 
-  // Set the optional message header which is an integer
-  template <class Int>
-  void SetHeadContentInt(Int x) {
-    Int int_str = Host2Network<Int>(x);
-    SetHeadContent(static_cast<const void*>(&int_str), sizeof(int_str));
-  }
+  // Set the optional message header which is an 8-bit integer
+  void SetHeadContentInt8(int8_t x);
+
+  // Set the optional message header which is a 16-bit integer
+  void SetHeadContentInt16(int16_t x);
+
+  // Set the optional message header which is a 32-bit integer
+  void SetHeadContentInt32(int32_t x);
+
+  // Set the optional message header which is a 64-bit integer
+  void SetHeadContentInt64(int64_t x);
 
   // Write content which is a string
   void Append(const void* str, size_t len);
 
-  // Write content which is an integer
-  template <class Int>
-  void AppendInt(Int x) {
-    Int int_str = Host2Network<Int>(x);
-    Append(static_cast<const void*>(&int_str), sizeof(Int));
-  }
+  // Write content which is an 8-bit integer
+  void AppendInt8(int8_t x);
+
+  // Write content which is a 16-bit integer
+  void AppendInt16(int16_t x);
+
+  // Write content which is a 32-bit integer
+  void AppendInt32(int32_t x);
+
+  // Write content which is a 64-bit integer
+  void AppendInt64(int64_t x);
 
   // Ensure that there is enough space for writing
   void EnsureWritableSpace(size_t len);
@@ -167,38 +174,6 @@ class IoBuffer {
 
   // Reserve space for writing
   void ReserveWritableSpace(size_t len);
-
-  template <class Int>
-  static Int Host2Network(Int x) {
-    switch (sizeof(x)) {
-      case 8:
-        return x;
-      case 16:
-        return static_cast<int16_t>(htobe16(static_cast<uint16_t>(x)));
-      case 32:
-        return static_cast<int32_t>(htobe32(static_cast<uint32_t>(x)));
-      case 64:
-        return static_cast<int64_t>(htobe64(static_cast<uint64_t>(x)));
-      default:
-        return static_cast<Int>(0);
-    }
-  }
-
-  template <class Int>
-  static Int Network2Host(Int x) {
-    switch (sizeof(x)) {
-      case 8:
-        return x;
-      case 16:
-        return static_cast<int16_t>(be16toh(static_cast<uint16_t>(x)));
-      case 32:
-        return static_cast<int32_t>(be32toh(static_cast<uint32_t>(x)));
-      case 64:
-        return static_cast<int64_t>(be64toh(static_cast<uint64_t>(x)));
-      default:
-        return static_cast<Int>(0);
-    }
-  }
 
   BufferType buffer_;
   size_t reading_index_;

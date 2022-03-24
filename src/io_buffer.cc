@@ -78,6 +78,70 @@ std::string IoBuffer::RetrieveAString(size_t len) {
   return ret;
 }
 
+int8_t IoBuffer::RetrieveInt8() {
+  auto result = GetReadableInt8();
+  Refresh(sizeof(int8_t));
+  return result;
+}
+
+int16_t IoBuffer::RetrieveInt16() {
+  auto result = GetReadableInt16();
+  Refresh(sizeof(int16_t));
+  return result;
+}
+
+int32_t IoBuffer::RetrieveInt32() {
+  auto result = GetReadableInt32();
+  Refresh(sizeof(int32_t));
+  return result;
+}
+
+int64_t IoBuffer::RetrieveInt64() {
+  auto result = GetReadableInt64();
+  Refresh(sizeof(int64_t));
+  return result;
+}
+
+int8_t IoBuffer::GetReadableInt8() const {
+  auto result = static_cast<int8_t>(0);
+  if (sizeof(int8_t) > GetReadableBytes()) {
+    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    return result;
+  }
+  result = static_cast<int8_t>(*GetReadablePosition());
+  return result;
+}
+
+int16_t IoBuffer::GetReadableInt16() const {
+  auto result = static_cast<int16_t>(0);
+  if (sizeof(int16_t) > GetReadableBytes()) {
+    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    return result;
+  }
+  ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int16_t));
+  return static_cast<int16_t>(be16toh(static_cast<uint16_t>(result)));
+}
+
+int32_t IoBuffer::GetReadableInt32() const {
+  auto result = static_cast<int32_t>(0);
+  if (sizeof(int32_t) > GetReadableBytes()) {
+    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    return result;
+  }
+  ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int32_t));
+  return static_cast<int32_t>(be32toh(static_cast<uint32_t>(result)));
+}
+
+int64_t IoBuffer::GetReadableInt64() const {
+  auto result = static_cast<int64_t>(0);
+  if (sizeof(int64_t) > GetReadableBytes()) {
+    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    return result;
+  }
+  ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int64_t));
+  return static_cast<int64_t>(be64toh(static_cast<uint64_t>(result)));
+}
+
 void IoBuffer::SetHeadContent(const void* str, size_t len) {
   if (len > GetReservedBytes()) {
     LOG(logger::kError, "Reserved head space is not enough!!!");
@@ -88,11 +152,49 @@ void IoBuffer::SetHeadContent(const void* str, size_t len) {
            len);
 }
 
+void IoBuffer::SetHeadContentInt8(int8_t x) {
+  SetHeadContent(static_cast<const void*>(&x), sizeof(x));
+}
+
+void IoBuffer::SetHeadContentInt16(int16_t x) {
+  auto int_bt = static_cast<int16_t>(htobe16(static_cast<uint16_t>(x)));
+  SetHeadContent(static_cast<const void*>(&int_bt), sizeof(int_bt));
+}
+
+void IoBuffer::SetHeadContentInt32(int32_t x) {
+  auto int_bt = static_cast<int32_t>(htobe32(static_cast<uint32_t>(x)));
+  SetHeadContent(static_cast<const void*>(&int_bt), sizeof(int_bt));
+}
+
+void IoBuffer::SetHeadContentInt64(int64_t x) {
+  auto int_bt = static_cast<int64_t>(htobe64(static_cast<uint64_t>(x)));
+  SetHeadContent(static_cast<const void*>(&int_bt), sizeof(int_bt));
+}
+
 void IoBuffer::Append(const void* str, size_t len) {
   EnsureWritableSpace(len);
   ::memcpy(static_cast<void*>(const_cast<char*>(GetWritablePosition())), str,
            len);
   RefreshW(len);
+}
+
+void IoBuffer::AppendInt8(int8_t x) {
+  Append(static_cast<const void*>(&x), sizeof(x));
+}
+
+void IoBuffer::AppendInt16(int16_t x) {
+  auto int_bt = static_cast<int16_t>(htobe16(static_cast<uint16_t>(x)));
+  Append(static_cast<const void*>(&int_bt), sizeof(int_bt));
+}
+
+void IoBuffer::AppendInt32(int32_t x) {
+  auto int_bt = static_cast<int32_t>(htobe32(static_cast<uint32_t>(x)));
+  Append(static_cast<const void*>(&int_bt), sizeof(int_bt));
+}
+
+void IoBuffer::AppendInt64(int64_t x) {
+  auto int_bt = static_cast<int64_t>(htobe64(static_cast<uint64_t>(x)));
+  Append(static_cast<const void*>(&int_bt), sizeof(int_bt));
 }
 
 void IoBuffer::EnsureWritableSpace(size_t len) {
@@ -156,8 +258,8 @@ void IoBuffer::ReserveWritableSpace(size_t len) {
     buffer_.resize(writing_index_ + len);
   } else {
     // Move forward to-read contents if too much space are reserved in the
-    // front of the buffer
-    // Then the writable space will be enough without dilatating
+    // front of the buffer, and then the writable space will be enough without
+    // dilatating
     ::memcpy(static_cast<void*>(
                  const_cast<char*>(GetBufferBegin() + kReservedCapacity)),
              static_cast<const void*>(GetBufferBegin() + reading_index_),
