@@ -164,9 +164,9 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
         }
       },
       std::placeholders::_1));
-  new_connection->OnEstablishing();
   {
     LockGuard lock_guard(connection_mutex_);
     connection_ = new_connection;
   }
+  new_connection->OnEstablishing();
 }
