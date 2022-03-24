@@ -122,7 +122,7 @@ class IoBuffer {
       return static_cast<Int>(0);
     }
     Int result = static_cast<Int>(0);
-    ::memcpy(static_cast<void*>(&result), GetBufferBegin(), sizeof(Int));
+    ::memcpy(static_cast<void*>(&result), GetBufferBegin(), sizeof(result));
     return Network2Host<Int>(result);
   }
 
@@ -133,7 +133,7 @@ class IoBuffer {
   template <class Int>
   void SetHeadContentInt(Int x) {
     Int int_str = Host2Network<Int>(x);
-    SetHeadContent(static_cast<const void*>(&int_str), sizeof(Int));
+    SetHeadContent(static_cast<const void*>(&int_str), sizeof(int_str));
   }
 
   // Write content which is a string
