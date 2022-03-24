@@ -24,7 +24,7 @@ Codec::Codec(const MessageCallback& cb) : MessageCallback_(cb) {}
 void Codec::OnMessage(taotu::Connecting& connection, taotu::IoBuffer* io_buffer,
                       taotu::TimePoint time_point) {
   while (io_buffer->GetReadableBytes() >= kHeadLength) {
-    int32_t msg_len = io_buffer->GetReadableInt<int32_t>();
+    auto msg_len = io_buffer->GetReadableInt32();
     if (msg_len > 65536 || msg_len < 0) {  // Handle the error
       taotu::LOG(taotu::logger::kError, "Invalid length!!!");
       connection.ShutDownWrite();
@@ -44,7 +44,7 @@ void Codec::OnMessage(taotu::Connecting& connection, taotu::IoBuffer* io_buffer,
 void Codec::Send(taotu::Connecting* connection, const std::string& message) {
   taotu::IoBuffer io_buffer;
   io_buffer.Append(message.data(), message.size());  // Fill the message body
-  int32_t msg_len = static_cast<int32_t>(message.size());
-  io_buffer.SetHeadContentInt(msg_len);
+  auto msg_len = static_cast<int32_t>(message.size());
+  io_buffer.SetHeadContentInt32(msg_len);
   connection->Send(&io_buffer);  // Fill the message head
 }
