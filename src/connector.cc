@@ -17,6 +17,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cstdio>
 #include <string>
 
 #include "connecting.h"
@@ -73,7 +74,7 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  Connect();
+  event_manager_->RunAt(TimePoint{}, [this]() { this->Connect(); });
 }
 void Connector::Restart() {
   SetState(kDisconnected);
@@ -212,9 +213,13 @@ void Connector::DoWithError() {
 }
 
 int Connector::RemoveAndReset() {
+  ::printf("111111111111\n");
   eventer_->DisableAllEvents();
-  eventer_->RemoveMyself();
+  ::printf("222222222222\n");
+  ::printf("333333333333\n");
   int conn_fd = eventer_->Fd();
-  event_manager_->RunAt(TimePoint{}, [&]() { this->eventer_.reset(); });
+  ::printf("444444444444\n");
+  event_manager_->RunAt(TimePoint{}, [this]() { this->eventer_.reset(); });
+  ::printf("555555555555_%d\n", conn_fd);
   return conn_fd;
 }
