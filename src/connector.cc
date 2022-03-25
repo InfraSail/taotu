@@ -215,6 +215,7 @@ void Connector::DoWithError() {
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
   int conn_fd = eventer_->Fd();
+  eventer_->GetReadyDestroy();
   eventer_.reset();
   return conn_fd;
 }
