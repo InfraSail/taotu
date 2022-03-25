@@ -74,7 +74,7 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  event_manager_->RunAt(TimePoint{}, [this]() { this->Connect(); });
+  this->Connect();
 }
 void Connector::Restart() {
   SetState(kDisconnected);
@@ -213,13 +213,8 @@ void Connector::DoWithError() {
 }
 
 int Connector::RemoveAndReset() {
-  ::printf("111111111111\n");
   eventer_->DisableAllEvents();
-  ::printf("222222222222\n");
-  ::printf("333333333333\n");
   int conn_fd = eventer_->Fd();
-  ::printf("444444444444\n");
-  event_manager_->RunAt(TimePoint{}, [this]() { this->eventer_.reset(); });
-  ::printf("555555555555_%d\n", conn_fd);
+  eventer_.reset();
   return conn_fd;
 }
