@@ -169,4 +169,5 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
     connection_ = new_connection;
   }
   new_connection->OnEstablishing();
+  ConnectionCallback_(*new_connection);
 }
