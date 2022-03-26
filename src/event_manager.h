@@ -1,8 +1,8 @@
 /**
  * @file event_manager.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "EventManager" which is the manager of an event
- * loop in single I/O thread.
+ * @brief Declaration of class "EventManager" (single "Reactor") which is the
+ * manager of an event loop in single I/O thread.
  * @date 2021-12-03
  *
  * @copyright Copyright (c) 2021 Sigma711
