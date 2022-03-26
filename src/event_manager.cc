@@ -1,8 +1,8 @@
 /**
  * @file event_manager.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Implementation of class "EventManager" which is the manager of an
- * event loop in single I/O thread.
+ * @brief Implementation of class "EventManager" (single "Reactor") which is the
+ * manager of an event loop in single I/O thread.
  * @date 2021-12-03
  *
  * @copyright Copyright (c) 2021 Sigma711
