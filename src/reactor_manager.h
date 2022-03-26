@@ -1,7 +1,9 @@
 /**
  * @file reactor_manager.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declarations of class "ServerReactorManager" which manages reactors in
+ * the server and class "ClientReactorManager" which manages the "Reactor" in
+ * the client.
  * @date 2021-12-16
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -29,7 +31,10 @@ namespace taotu {
 class Balancer;
 
 /**
- * @brief  // TODO:
+ * @brief "ServerReactorManager" is the engine of the server which manages
+ * almost everything including new connections' creation and concurrent I/O. It
+ * allows users to difine what to do by some flags and different callback
+ * functions.
  *
  */
 class ServerReactorManager : NonCopyableMovable {
@@ -53,17 +58,25 @@ class ServerReactorManager : NonCopyableMovable {
   }
   void SetCloseCallback(const NormalCallback& cb) { CloseCallback_ = cb; }
 
+  // Drive the engine (push everything starting)
   void Loop();
 
  private:
   typedef std::unique_ptr<Acceptor> AcceptorPtr;
   typedef std::unique_ptr<Balancer> BalancerPtr;
 
+  // Build a new connection and insert it into the corresponding I/O thread
   void AcceptNewConnectionCallback(int socket_fd,
                                    const NetAddress& peer_address);
 
+  // event managers which are the "Reactor"s that manages events in their own
+  // I/O threads
   EventManagers event_managers_;
+
+  // Acceptor for accpect new connections in the main thread
   AcceptorPtr acceptor_;
+
+  // Load balancer for dispatching new connections into I/O threads
   BalancerPtr balancer_;
 
   NormalCallback ConnectionCallback_;
@@ -73,7 +86,11 @@ class ServerReactorManager : NonCopyableMovable {
 };
 
 /**
- * @brief  // TODO:
+ * @brief "ClientReactorManager" is the disposable engine of the client which
+ * manages the almost everything of single connection including new connection's
+ * creation and I/O. It needs a "EventManager" defined by users (for sharing the
+ * "EventManager") to put in and allows users to difine what to do by some flags
+ * and different callback functions.
  *
  */
 class ClientReactorManager : NonCopyableMovable {
@@ -85,8 +102,14 @@ class ClientReactorManager : NonCopyableMovable {
                        const NetAddress& server_address);
   ~ClientReactorManager();
 
+  // Try to connect to the specifiction net address
   void Connect();
+
+  // Disconnect and shut down writing
   void Disconnect();
+
+  // Stop the connection (if because of acceptable exceptions in hardware-level,
+  // just retry)
   void Stop();
 
   void SetConnectionCallback(const NormalCallback& cb) {
@@ -100,6 +123,7 @@ class ClientReactorManager : NonCopyableMovable {
   void SetRetryOn(bool on) { should_retry_ = on; }
 
  private:
+  // Build a new connection and insert it into the corresponding I/O thread
   void LaunchNewConnectionCallback(int socket_fd);
 
   EventManager* event_manager_;
