@@ -51,5 +51,4 @@ void TimeServer::OnMessageCallback(taotu::Connecting& connection,
   std::string data(buf);
   data += '\n';
   connection.Send(data);
-  connection.ForceClose();
 }
