@@ -1,7 +1,8 @@
 /**
  * @file connector.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Connector" which is the connector of new
+ * connections requests the server and create new connections.
  * @date 2021-12-12
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -22,7 +23,9 @@
 namespace taotu {
 
 /**
- * @brief  // TODO:
+ * @brief "Connector" is dedicated to handle new connection creations and build
+ * the connections in the main thread (then register it into corresponding I/O
+ * threads).
  *
  */
 class Connector : NonCopyableMovable {
@@ -32,6 +35,7 @@ class Connector : NonCopyableMovable {
   Connector(EventManager* event_manager, const NetAddress& server_address);
   ~Connector() {}
 
+  // Start the connector to connect the server
   void Start();
   void Restart();
   void Stop();
@@ -53,6 +57,8 @@ class Connector : NonCopyableMovable {
   typedef std::unique_ptr<Eventer> EventerPtr;
   enum State { kDisconnected, kConnecting, kConnected };
 
+  // After successful connecting, call it to reset because the connector's file
+  // descriptot is disposable
   int RemoveAndReset();
 
   void SetState(State state) { state_ = state; }
