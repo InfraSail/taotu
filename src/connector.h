@@ -37,10 +37,15 @@ class Connector : NonCopyableMovable {
 
   // Start the connector to connect the server
   void Start();
+
+  // Restart the connector to connect the server
   void Restart();
+
+  // Stop the connector to connect the server
   void Stop();
 
   void Connect();
+
   void DoConnecting(int socket_fd);
   void DoRetrying(int socket_fd);
 
@@ -50,7 +55,9 @@ class Connector : NonCopyableMovable {
 
   const NetAddress& GetServerAddress() { return server_address_; }
 
+  // Build a new connection
   void DoWriting();
+
   void DoWithError();
 
  private:
