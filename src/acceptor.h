@@ -26,7 +26,8 @@ class Poller;
 
 /**
  * @brief "Acceptor" is dedicated to handle new connection requests and build
- * the connections in the main thread.
+ * the connections in the main thread (then register it into corresponding I/O
+ * threads).
  *
  */
 class Acceptor : NonCopyableMovable {
