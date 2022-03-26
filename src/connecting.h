@@ -142,7 +142,7 @@ class Connecting : NonCopyableMovable {
     kDisconnected,
     kConnecting,
     kConnected,
-    kDisconnecting
+    kDisconnecting,
   };
 
   // Set the state of this TCP connection
