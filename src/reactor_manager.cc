@@ -1,7 +1,9 @@
 /**
  * @file reactor_manager.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementations of class "ServerReactorManager" which manages reactors
+ * in the server and class "ClientReactorManager" which manages the "Reactor" in
+ * the client.
  * @date 2021-12-16
  *
  * @copyright Copyright (c) 2021 Sigma711
