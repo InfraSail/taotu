@@ -26,7 +26,9 @@
 
 using namespace taotu;
 
-enum { kMaxEventAmount = 600000 };
+enum {
+  kMaxEventAmount = 600000,
+};
 
 Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
                    bool should_reuse_port)
