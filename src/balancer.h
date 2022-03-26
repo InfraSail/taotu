@@ -20,8 +20,8 @@ namespace taotu {
 
 enum BalancerStrategy {
   kRoundRobin = 0,  // Use "Round Robin" strategy
-  kMinEvents = 1  // Use the strategy which always picks the I/O thread holding
-                  // least "Eventer"s
+  kMinEvents = 1,  // Use the strategy which always picks the I/O thread holding
+                   // least "Eventer"s
 };
 
 /**
