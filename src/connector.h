@@ -41,7 +41,7 @@ class Connector : NonCopyableMovable {
   // Restart the connector to connect the server
   void Restart();
 
-  // Stop the connector to connect the server
+  // Stop the connector to connect the server (maybe retry in some conditions)
   void Stop();
 
   void Connect();
