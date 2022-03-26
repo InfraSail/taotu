@@ -1,7 +1,8 @@
 /**
  * @file connector.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Connector" which is the connector of new
+ * connections requests the server and create new connections.
  * @date 2021-12-12
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -28,7 +29,7 @@ using namespace taotu;
 
 enum {
   kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
-  kInitRetryDelayMicroseconds = 500 * 1000
+  kInitRetryDelayMicroseconds = 500 * 1000,
 };
 
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
@@ -74,7 +75,7 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  this->Connect();
+  Connect();
 }
 void Connector::Restart() {
   SetState(kDisconnected);
@@ -215,7 +216,7 @@ void Connector::DoWithError() {
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
   int conn_fd = eventer_->Fd();
-  eventer_->GetReadyDestroy();
+  eventer_->GetReadyDestroy();  // Set Eventer::is_handling_ flag off
   eventer_.reset();
   return conn_fd;
 }
