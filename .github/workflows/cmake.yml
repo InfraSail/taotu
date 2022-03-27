@@ -3,10 +3,10 @@ name: CMake
 on:
   push:
     branches:
-      - main
       - '*'
   pull_request:
-    types: [opened, sychronize, reopened]
+    branches:
+      - '*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
