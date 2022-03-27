@@ -23,7 +23,7 @@ namespace taotu {
 
 /**
  * @brief "Client" offer APIs which can handle client-end new TCP connection
- * creating to users.
+ * creation to users.
  *
  */
 class Client : NonCopyableMovable {
