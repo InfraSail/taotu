@@ -1,7 +1,7 @@
 /**
  * @file connector.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Implementation of class "Connector" which is the connector of new
+ * @brief Implementation of class "Connector" which is the connector of new TCP
  * connections requests the server and create new connections.
  * @date 2021-12-12
  *
