@@ -1,7 +1,7 @@
 /**
  * @file acceptor.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Implementation of class "Acceptor" which is the accetor of new
+ * @brief Implementation of class "Acceptor" which is the accetor of new TCP
  * connection requests from clients and create the connections.
  * @date 2021-12-03
  *
