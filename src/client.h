@@ -1,7 +1,8 @@
 /**
  * @file client.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Client" which is the encapsulation of the
+ * client.
  * @date 2022-01-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -21,7 +22,8 @@
 namespace taotu {
 
 /**
- * @brief  // TODO:
+ * @brief "Client" offer APIs which can handle client-end new TCP connection
+ * creating to users.
  *
  */
 class Client : NonCopyableMovable {
