@@ -43,13 +43,20 @@ class Client : NonCopyableMovable {
     reactor_manager_->SetWriteCompleteCallback(std::move(cb));
   }
 
+  // Try to connect to the specific net address
   void Connect();
+
+  // Disconnect and shut down writing
   void Disconnect();
+
+  // Stop the TCP connection (if because of acceptable exceptions in
+  // hardware-level, just retry)
   void Stop();
 
  private:
   typedef std::unique_ptr<ClientReactorManager> ClientReactorManagerPtr;
 
+  // Reactor manager (the "engine")
   ClientReactorManagerPtr reactor_manager_;
 };
 
