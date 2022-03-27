@@ -32,7 +32,8 @@ namespace taotu {
 
 /**
  * @brief "EventManager" manages the events (including I/O tasks and time tasks)
- * in a loop which uses I/O multiplexing and a time task queue.
+ * in a loop which uses I/O multiplexing and a time task queue. It is a
+ * "Reactor".
  *
  */
 class EventManager : NonCopyableMovable {
