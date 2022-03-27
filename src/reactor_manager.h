@@ -98,7 +98,7 @@ class ServerReactorManager : NonCopyableMovable {
  * @brief "ClientReactorManager" is the disposable engine of the client which
  * manages the almost everything of single TCP connection including new TCP
  * connection's creation and I/O. It needs a "EventManager" defined by users
- * (for sharing the "EventManager") to put in and allows users to difine what to
+ * (for sharing the "EventManager") to put in and allows users to define what to
  * do by some flags and different callback functions.
  *
  */
