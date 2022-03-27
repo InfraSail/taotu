@@ -35,5 +35,4 @@ void EchoServer::OnMessageCallback(taotu::Connecting& connection,
   taotu::LOG(taotu::logger::kDebug, "Fd(%d) is receiving %u bytes at %lld.",
              connection.Fd(), message.size(), time_point.GetMicroseconds());
   connection.Send(message);
-  connection.ForceClose();
 }

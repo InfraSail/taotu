@@ -39,5 +39,4 @@ void DiscardServer::OnMessageCallback(taotu::Connecting& connection,
              time_point.GetMicroseconds());
   ::printf("%s", message.c_str());
   connection.Send("");
-  connection.ForceClose();
 }
