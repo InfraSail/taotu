@@ -1,7 +1,7 @@
 /**
  * @file connector.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "Connector" which is the connector of new
+ * @brief Declaration of class "Connector" which is the connector of new TCP
  * connections requests the server and create new connections.
  * @date 2021-12-12
  *
@@ -59,7 +59,7 @@ class Connector : NonCopyableMovable {
 
   const NetAddress& GetServerAddress() { return server_address_; }
 
-  // Execute when create a new conncetion
+  // Execute when create a new TCP conncetion
   void DoWriting();
 
   // Execute when error happens
@@ -69,17 +69,21 @@ class Connector : NonCopyableMovable {
   typedef std::unique_ptr<Eventer> EventerPtr;
   enum State { kDisconnected, kConnecting, kConnected };
 
-  // After successful connecting, call it to reset because the connector's file
-  // descriptot is disposable
+  // After successful connecting, call it to reset because the TCP connection's
+  // file descriptot is disposable
   int RemoveAndReset();
 
   void SetState(State state) { state_ = state; }
 
+  // Pointer to the specific "EventManager" ("Reactor")
   EventManager* event_manager_;
+
   NetAddress server_address_;
   State state_;
   bool can_connect_;
   int retry_dalay_microseconds_;
+
+  // Be called when a new TCP connection should be created
   NewConnectionCallback NewConnectionCallback_;
 
   EventerPtr eventer_;
