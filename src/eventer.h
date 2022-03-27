@@ -82,6 +82,7 @@ class Eventer : NonCopyableMovable {
     kWriteEvents = POLLOUT,
   };
 
+  // Pointer to its master poller
   Poller* poller_;
 
   const int fd_;
@@ -94,9 +95,17 @@ class Eventer : NonCopyableMovable {
 
   bool is_handling_;
 
+  // Callback function which will be called after each reading
   ReadCallback ReadCallback_;
+
+  // Callback function which will be called after each real writing
   NormalCallback WriteCallback_;
+
+  // Callback function which will be called when this TCP connection should be
+  // closed
   NormalCallback CloseCallback_;
+
+  // Callback function which will be called when error happens
   NormalCallback ErrorCallback_;
 };
 
