@@ -55,12 +55,16 @@ class Acceptor : NonCopyableMovable {
   void DoReading();
 
  private:
-  // The file descriptor of this accepting socket
+  // Socketer which is about configurations of the socket
   Socketer accept_soketer_;
+
+  // Eventer which is about event's setting
   Eventer accept_eventer_;
 
   bool is_listening_;
-  int idle_fd_;  // For discarding failed connections
+
+  // For discarding failed connections
+  int idle_fd_;
 
   NewConnectionCallback NewConnectionCallback_;
 };
