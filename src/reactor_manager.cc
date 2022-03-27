@@ -65,6 +65,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
     ::exit(-1);
   }
   for (size_t i = 0; i < io_thread_amount; ++i) {
+    // Initialize "Reactor"s
     event_managers_.emplace_back(new EventManager);
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_, 0);
@@ -79,20 +80,24 @@ ServerReactorManager::~ServerReactorManager() {
 void ServerReactorManager::Loop() {
   size_t io_thread_amount = event_managers_.size();
   for (size_t i = 1; i < io_thread_amount; ++i) {
+    // Start each event loop in the corresponding I/O thread
     event_managers_[i]->Loop();
   }
+  // Start an event loop in main thread (mainly for accepting)
   event_managers_[0]->Work();
 }
 
 void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
-      socket_fd, GetLocalAddress(socket_fd), peer_address);
+      socket_fd, GetLocalAddress(socket_fd),
+      peer_address);  // Pick a "Reactor" with lowest load and insert the new
+                      // connection created just now into it
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(CloseCallback_);
-  new_connection->OnEstablishing();
+  new_connection->OnEstablishing();  // Set the status flag on and start reading
   ConnectionCallback_(*new_connection);
 }
 
@@ -170,6 +175,6 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
     LockGuard lock_guard(connection_mutex_);
     connection_ = new_connection;
   }
-  new_connection->OnEstablishing();
+  new_connection->OnEstablishing();  // Set the status flag on and start reading
   ConnectionCallback_(*new_connection);
 }

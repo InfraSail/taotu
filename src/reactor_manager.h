@@ -69,11 +69,11 @@ class ServerReactorManager : NonCopyableMovable {
   void AcceptNewConnectionCallback(int socket_fd,
                                    const NetAddress& peer_address);
 
-  // event managers which are the "Reactor"s that manages events in their own
+  // Event managers which are the "Reactor"s that manages events in their own
   // I/O threads
   EventManagers event_managers_;
 
-  // Acceptor for accpect new connections in the main thread
+  // Acceptor for accpecting new connections in the main thread
   AcceptorPtr acceptor_;
 
   // Load balancer for dispatching new connections into I/O threads
@@ -126,14 +126,19 @@ class ClientReactorManager : NonCopyableMovable {
   // Build a new connection and insert it into the corresponding I/O thread
   void LaunchNewConnectionCallback(int socket_fd);
 
+  // Event manager defined by users
   EventManager* event_manager_;
+
+  // Connector for creating a new connection in main thread
   Connector connector_;
 
+  // Connection created
   Connecting* connection_;
 
   bool should_retry_;
   bool can_connect_;
 
+  // Spin lock protecting the connection pointer
   MutexLock connection_mutex_;
 
   NormalCallback ConnectionCallback_;
