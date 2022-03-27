@@ -1,8 +1,8 @@
 /**
  * @file acceptor.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "Acceptor" which is the accetor of new connection
- * requests from clients and create the connections.
+ * @brief Declaration of class "Acceptor" which is the accetor of new TCP
+ * connection requests from clients and create the connections.
  * @date 2021-12-03
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -25,9 +25,9 @@ namespace taotu {
 class Poller;
 
 /**
- * @brief "Acceptor" is dedicated to handle new connection requests and build
- * the connections in the main thread (then register it into corresponding I/O
- * threads).
+ * @brief "Acceptor" is dedicated to handle new TCP connection requests and
+ * build the connections in the main thread (then register it into corresponding
+ * I/O threads).
  *
  */
 class Acceptor : NonCopyableMovable {
@@ -50,7 +50,7 @@ class Acceptor : NonCopyableMovable {
     NewConnectionCallback_ = cb;
   }
 
-  // Accept a connection request, create this connection, allocate a file
+  // Accept a TCP connection request, create this connection, allocate a file
   // descriptor of this connecting socket and record its net address info
   void DoReading();
 
@@ -66,6 +66,7 @@ class Acceptor : NonCopyableMovable {
   // For discarding failed connections
   int idle_fd_;
 
+  // Be called when a new TCP connection request wait for being handled
   NewConnectionCallback NewConnectionCallback_;
 };
 
