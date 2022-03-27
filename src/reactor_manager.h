@@ -117,8 +117,8 @@ class ClientReactorManager : NonCopyableMovable {
   // Disconnect and shut down writing
   void Disconnect();
 
-  // Stop the connection (if because of acceptable exceptions in hardware-level,
-  // just retry)
+  // Stop the TCP connection (if because of acceptable exceptions in
+  // hardware-level, just retry)
   void Stop();
 
   void SetConnectionCallback(const NormalCallback& cb) {
