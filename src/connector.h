@@ -44,6 +44,7 @@ class Connector : NonCopyableMovable {
   // Stop the connector to connect the server (maybe retry in some conditions)
   void Stop();
 
+  // Try to connect to the specific net address
   void Connect();
 
   // Execute when preparing for connecting
