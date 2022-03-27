@@ -46,7 +46,10 @@ class Connector : NonCopyableMovable {
 
   void Connect();
 
+  // Execute when preparing for connecting
   void DoConnecting(int socket_fd);
+
+  // Execute when retrying
   void DoRetrying(int socket_fd);
 
   void RegisterNewConnectionCallback(const NewConnectionCallback& cb) {
@@ -55,9 +58,10 @@ class Connector : NonCopyableMovable {
 
   const NetAddress& GetServerAddress() { return server_address_; }
 
-  // Build a new connection
+  // Execute when create a new conncetion
   void DoWriting();
 
+  // Execute when error happens
   void DoWithError();
 
  private:
