@@ -32,8 +32,8 @@ class Balancer;
 
 /**
  * @brief "ServerReactorManager" is the engine of the server which manages
- * almost everything including new connections' creation and concurrent I/O. It
- * allows users to difine what to do by some flags and different callback
+ * almost everything including new TCP connections' creation and concurrent I/O.
+ * It allows users to difine what to do by some flags and different callback
  * functions.
  *
  */
@@ -58,14 +58,14 @@ class ServerReactorManager : NonCopyableMovable {
   }
   void SetCloseCallback(const NormalCallback& cb) { CloseCallback_ = cb; }
 
-  // Drive the engine (push everything starting)
+  // Drive the engine (push everything starting -- start all event loops)
   void Loop();
 
  private:
   typedef std::unique_ptr<Acceptor> AcceptorPtr;
   typedef std::unique_ptr<Balancer> BalancerPtr;
 
-  // Build a new connection and insert it into the corresponding I/O thread
+  // Build a new TCP connection and insert it into the corresponding I/O thread
   void AcceptNewConnectionCallback(int socket_fd,
                                    const NetAddress& peer_address);
 
@@ -96,10 +96,10 @@ class ServerReactorManager : NonCopyableMovable {
 
 /**
  * @brief "ClientReactorManager" is the disposable engine of the client which
- * manages the almost everything of single connection including new connection's
- * creation and I/O. It needs a "EventManager" defined by users (for sharing the
- * "EventManager") to put in and allows users to difine what to do by some flags
- * and different callback functions.
+ * manages the almost everything of single TCP connection including new TCP
+ * connection's creation and I/O. It needs a "EventManager" defined by users
+ * (for sharing the "EventManager") to put in and allows users to difine what to
+ * do by some flags and different callback functions.
  *
  */
 class ClientReactorManager : NonCopyableMovable {
@@ -132,13 +132,13 @@ class ClientReactorManager : NonCopyableMovable {
   void SetRetryOn(bool on) { should_retry_ = on; }
 
  private:
-  // Build a new connection and insert it into the corresponding I/O thread
+  // Build a new TCP connection and insert it into the corresponding I/O thread
   void LaunchNewConnectionCallback(int socket_fd);
 
   // Event manager defined by users
   EventManager* event_manager_;
 
-  // Connector for creating a new connection in main thread
+  // Connector for creating a new TCP connection in main thread
   Connector connector_;
 
   // Connection created
