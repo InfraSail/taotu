@@ -1,7 +1,8 @@
 /**
  * @file server.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Server" which is the encapsulation of the
+ * server.
  * @date 2022-01-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -27,7 +28,8 @@ namespace taotu {
 class ServerReactorManager;
 
 /**
- * @brief  // TODO:
+ * @brief "Server" offer APIs which can handle server-end new TCP connection
+ * creations to users.
  *
  */
 class Server : NonCopyableMovable {
@@ -45,6 +47,7 @@ class Server : NonCopyableMovable {
 
   ThreadPool& GetThreadPool() { return thread_pool_; }
 
+  // Start all "Reactors" (make all event loops run)
   void Start();
 
   void RemoveConnection(Connecting& connection);
@@ -54,8 +57,10 @@ class Server : NonCopyableMovable {
   void DefaultOnMessageCallback(Connecting& connection, IoBuffer* io_buffer,
                                 TimePoint time_point);
 
+  // Reactor manager (the "engine")
   ServerReactorManager reactor_manager_;
 
+  // Thread pool for caculation
   ThreadPool thread_pool_;
 
   std::atomic_bool is_started_;
