@@ -111,7 +111,7 @@ class ClientReactorManager : NonCopyableMovable {
                        const NetAddress& server_address);
   ~ClientReactorManager();
 
-  // Try to connect to the specifiction net address
+  // Try to connect to the specific net address
   void Connect();
 
   // Disconnect and shut down writing
