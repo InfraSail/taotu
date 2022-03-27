@@ -79,9 +79,18 @@ class ServerReactorManager : NonCopyableMovable {
   // Load balancer for dispatching new connections into I/O threads
   BalancerPtr balancer_;
 
+  // Callback function which will be called after this TCP connection creating
+  // and before this TCP connection destroying
   NormalCallback ConnectionCallback_;
+
+  // Callback function which will be called after each reading
   MessageCallback MessageCallback_;
+
+  // Callback function which will be called after each real writing
   NormalCallback WriteCompleteCallback_;
+
+  // Callback function which will be called when this TCP connection should be
+  // closed
   NormalCallback CloseCallback_;
 };
 
@@ -141,8 +150,14 @@ class ClientReactorManager : NonCopyableMovable {
   // Spin lock protecting the connection pointer
   MutexLock connection_mutex_;
 
+  // Callback function which will be called after this TCP connection creating
+  // and before this TCP connection destroying
   NormalCallback ConnectionCallback_;
+
+  // Callback function which will be called after each reading
   MessageCallback MessageCallback_;
+
+  // Callback function which will be called after each real writing
   NormalCallback WriteCompleteCallback_;
 };
 
