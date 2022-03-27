@@ -1,7 +1,8 @@
 /**
  * @file client.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Client" which is the encapsulation of the
+ * client.
  * @date 2022-01-22
  *
  * @copyright Copyright (c) 2022 Sigma711
