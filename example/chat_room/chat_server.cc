@@ -54,8 +54,11 @@ void ChatServer::OnCodecMessage(taotu::Connecting& connection,
                                 const std::string& message, taotu::TimePoint) {
   ::printf("<<< %s\n", message.c_str());
   taotu::LockGuard lock_guard(connections_lock_);
+  int conn_fd = connection.Fd();
   for (ConnectionSet::iterator itr = connections_.begin();
        itr != connections_.end(); ++itr) {
-    codec_.Send(*itr, message);
+    if (conn_fd != (*itr)->Fd()) {
+      codec_.Send(*itr, message);
+    }
   }
 }
