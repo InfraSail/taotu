@@ -25,8 +25,6 @@
 
 namespace taotu {
 
-class ServerReactorManager;
-
 /**
  * @brief "Server" offer APIs which can handle server-end new TCP connection
  * creations to users.
