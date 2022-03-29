@@ -11,20 +11,50 @@
 
 #include "event_manager.h"
 
-// #include <pthread.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <sys/eventfd.h>
+#include <unistd.h>
 
 #include <string>
 #include <utility>
 
 #include "connecting.h"
+#include "eventer.h"
 #include "logger.h"
 #include "spin_lock.h"
 #include "timer.h"
 
 using namespace taotu;
 
-EventManager::EventManager() : poller_() {}
+EventManager::EventManager()
+    : poller_(), wake_up_eventer_(&poller_, []() -> int {
+        int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+        if (event_fd < 0) {
+          LOG(logger::kError,
+              "Creating wake_up_eventer fails in I/O thread(%lu)",
+              ::pthread_self());
+          ::exit(-1);
+        }
+        return event_fd;
+      }()) {
+  wake_up_eventer_.RegisterReadCallback([this](TimePoint) {
+    uint64_t msg = 1;
+    ssize_t n = ::read(this->wake_up_eventer_.Fd(),
+                       reinterpret_cast<void*>(&msg), sizeof(msg));
+    if (n != sizeof(msg)) {
+      LOG(logger::kError,
+          "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
+          "bytes.",
+          ::pthread_self(), msg);
+    }
+  });
+  wake_up_eventer_.EnableReadEvents();
+}
 EventManager::~EventManager() {
+  wake_up_eventer_.DisableAllEvents();
+  wake_up_eventer_.RemoveMyself();
+  ::close(wake_up_eventer_.Fd());
   if (thread_.joinable()) {
     thread_.join();
   }
@@ -97,6 +127,18 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
 void EventManager::DeleteConnection(int fd) {
   LockGuard lock_guard_cf(closed_fds_lock_);
   closed_fds_.insert(fd);
+}
+
+void EventManager::WakeUp() {
+  uint64_t msg = 1;
+  ssize_t n = ::write(this->wake_up_eventer_.Fd(),
+                      reinterpret_cast<void*>(&msg), sizeof(msg));
+  if (n != sizeof(msg)) {
+    LOG(logger::kError,
+        "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
+        "bytes.",
+        ::pthread_self(), msg);
+  }
 }
 
 void EventManager::DoWithActiveTasks(TimePoint return_time) {
