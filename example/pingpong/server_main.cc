@@ -7,3 +7,36 @@
  * @copyright Copyright (c) 2022 Sigma711
  *
  */
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include <string>
+
+#include "pingpong_server.h"
+
+int main(int argc, char* argv[]) {
+  if (1 == argc) {
+    PingpongServer pingpong_server{taotu::NetAddress{4567}, false};
+    pingpong_server.Start();
+  } else if (2 == argc) {
+    PingpongServer pingpong_server{taotu::NetAddress{static_cast<uint16_t>(
+                                       std::stoi(std::string{argv[1]}))},
+                                   false};
+    pingpong_server.Start();
+  } else if (3 == argc) {
+    PingpongServer pingpong_server{
+        taotu::NetAddress{
+            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
+    pingpong_server.Start();
+  } else {
+    PingpongServer pingpong_server{
+        taotu::NetAddress{
+            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]})),
+        static_cast<size_t>(std::stoi(std::string{argv[3]}))};
+    pingpong_server.Start();
+  }
+  return 0;
+}
