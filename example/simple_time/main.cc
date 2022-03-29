@@ -8,6 +8,11 @@
  *
  */
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include <string>
+
 #include "time.h"
 
 int main(int argc, char* argv[]) {
