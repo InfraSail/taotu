@@ -124,6 +124,11 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
 }
 
+void EventManager::RunSoon(Timer::TimeCallback TimeTask) {
+  timer_.AddTimeTask(TimePoint{}, std::move(TimeTask));
+  WakeUp();
+}
+
 void EventManager::DeleteConnection(int fd) {
   LockGuard lock_guard_cf(closed_fds_lock_);
   closed_fds_.insert(fd);
@@ -131,8 +136,8 @@ void EventManager::DeleteConnection(int fd) {
 
 void EventManager::WakeUp() {
   uint64_t msg = 1;
-  ssize_t n = ::write(this->wake_up_eventer_.Fd(),
-                      reinterpret_cast<void*>(&msg), sizeof(msg));
+  ssize_t n = ::write(wake_up_eventer_.Fd(), reinterpret_cast<void*>(&msg),
+                      sizeof(msg));
   if (n != sizeof(msg)) {
     LOG(logger::kError,
         "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
