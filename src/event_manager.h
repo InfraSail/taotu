@@ -21,6 +21,7 @@
 #include <unordered_set>
 
 #include "connecting.h"
+#include "eventer.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
 #include "poller.h"
@@ -72,6 +73,8 @@ class EventManager : NonCopyableMovable {
   // Delete the specific connection of this loop
   void DeleteConnection(int fd);
 
+  void WakeUp();
+
  private:
   typedef std::unordered_map<int, Connecting*> ConnectionMap;
   typedef std::unordered_set<int> Fds;
@@ -108,6 +111,9 @@ class EventManager : NonCopyableMovable {
   // Spin lock protecting the set of file discriptors of connections which
   // should be destroyed
   mutable MutexLock closed_fds_lock_;
+
+  // To wake up this I/O thread
+  Eventer wake_up_eventer_;
 };
 
 }  // namespace taotu
