@@ -53,7 +53,7 @@ class Socketer : NonCopyableMovable {
   void Close() const;
 
   // The file descriptor of this socket
-  const int socket_fd_;
+  mutable int socket_fd_;
 };
 
 }  // namespace taotu

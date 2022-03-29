@@ -128,6 +128,9 @@ void Socketer::SetKeepAlive(bool on) const {
 void Socketer::Close() const {
   // LOG(logger::kDebug, "SocketFd(%d) is closing.", socket_fd_);
 
-  // Close the file and give its descriptor back
-  ::close(socket_fd_);
+  if (socket_fd_ != -1) {
+    // Close the file and give its descriptor back
+    ::close(socket_fd_);
+    socket_fd_ = -1;
+  }
 }
