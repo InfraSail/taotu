@@ -70,6 +70,9 @@ class EventManager : NonCopyableMovable {
       TimePoint start_time_point = TimePoint::FNow(),
       std::function<bool()> IsContinue = std::function<bool()>{});
 
+  // Register a time task which should be done as soon as possible
+  void RunSoon(Timer::TimeCallback TimeTask);
+
   // Delete the specific connection of this loop
   void DeleteConnection(int fd);
 
