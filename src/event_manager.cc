@@ -146,6 +146,8 @@ void EventManager::WakeUp() {
   }
 }
 
+void EventManager::Quit() { should_quit_ = true; }
+
 void EventManager::DoWithActiveTasks(TimePoint return_time) {
   for (auto active_event : active_events_) {
     active_event->Work(return_time);
