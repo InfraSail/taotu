@@ -56,6 +56,8 @@ class Connecting : NonCopyableMovable {
   const NetAddress& GetLocalNetAddress() const { return local_address_; }
   const NetAddress& GetPeerNetAddress() const { return peer_address_; }
 
+  EventManager& GetEventManager() { return *event_manager_; }
+
   void RegisterOnConnectionCallback(const NormalCallback& cb) {
     OnConnectionCallback_ = cb;
   }
