@@ -76,7 +76,12 @@ class EventManager : NonCopyableMovable {
   // Delete the specific connection of this loop
   void DeleteConnection(int fd);
 
+  // Wake up this I/O thread
   void WakeUp();
+
+  // Quit this event loop (if using it in another thread, EventManager::WakeUp()
+  // should be called first)
+  void Quit();
 
  private:
   typedef std::unordered_map<int, Connecting*> ConnectionMap;
@@ -103,6 +108,7 @@ class EventManager : NonCopyableMovable {
   // Spin lock protecting the connection map of this loop (also of this thread)
   mutable MutexLock connection_map_mutex_lock_;
 
+  // The flag for deciding whether the event loop should quit
   bool should_quit_;
 
   // List for active events returned from the I/O multiplexing waiting each loop
