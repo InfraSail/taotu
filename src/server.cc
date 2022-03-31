@@ -36,7 +36,6 @@ Server::Server(EventManager* event_manager, const NetAddress& listen_address,
   reactor_manager_.SetCloseCallback(
       [this](Connecting& connection) { this->RemoveConnection(connection); });
 }
-Server::~Server() {}
 
 void Server::SetConnectionCallback(const std::function<void(Connecting&)>& cb) {
   reactor_manager_.SetConnectionCallback(cb);

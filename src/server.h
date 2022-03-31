@@ -35,7 +35,6 @@ class Server : NonCopyableMovable {
   explicit Server(EventManager* event_manager, const NetAddress& listen_address,
                   bool should_reuse_port = false, size_t io_thread_amount = 6,
                   size_t calculation_thread_amount = 4);
-  ~Server();
 
   void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
   void SetMessageCallback(
