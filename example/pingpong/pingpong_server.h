@@ -20,6 +20,7 @@ class PingpongServer : taotu::NonCopyableMovable {
   PingpongServer(const taotu::NetAddress& listen_address,
                  bool should_reuse_port, size_t io_thread_amount = 3,
                  size_t calculation_thread_amount = 0);
+  ~PingpongServer() { delete event_manager_; }
 
   void Start();
 
@@ -29,6 +30,7 @@ class PingpongServer : taotu::NonCopyableMovable {
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);
 
+  taotu::EventManager* event_manager_;
   std::unique_ptr<taotu::Server> server_;
 };
 
