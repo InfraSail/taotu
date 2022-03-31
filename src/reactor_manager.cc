@@ -48,7 +48,8 @@ static NetAddress GetPeerAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
+ServerReactorManager::ServerReactorManager(EventManager* event_manager,
+                                           const NetAddress& listen_address,
                                            size_t io_thread_amount,
                                            bool should_reuse_port)
     : event_managers_(1, new EventManager),
@@ -64,7 +65,8 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
     LOG(logger::kError, "Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  for (size_t i = 0; i < io_thread_amount; ++i) {
+  event_managers_[0] = event_manager;
+  for (size_t i = 1; i < io_thread_amount; ++i) {
     // Initialize "Reactor"s
     event_managers_.emplace_back(new EventManager);
   }
@@ -72,7 +74,7 @@ ServerReactorManager::ServerReactorManager(const NetAddress& listen_address,
 }
 ServerReactorManager::~ServerReactorManager() {
   size_t thread_amount = event_managers_.size();
-  for (size_t i = 0; i < thread_amount; ++i) {
+  for (size_t i = 1; i < thread_amount; ++i) {
     delete event_managers_[i];
   }
 }
@@ -83,8 +85,10 @@ void ServerReactorManager::Loop() {
     // Start each event loop in the corresponding I/O thread
     event_managers_[i]->Loop();
   }
-  // Start an event loop in main thread (mainly for accepting)
-  event_managers_[0]->Work();
+  // Do not start an event loop in main thread (mainly for accepting)
+  // Like this:
+  // event_managers_[0]->Work();
+  // Let user do it by themselves
 }
 
 void ServerReactorManager::AcceptNewConnectionCallback(

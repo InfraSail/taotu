@@ -44,7 +44,8 @@ class ServerReactorManager : NonCopyableMovable {
 
   typedef std::vector<EventManager*> EventManagers;
 
-  ServerReactorManager(const NetAddress& listen_address,
+  ServerReactorManager(EventManager* event_manager,
+                       const NetAddress& listen_address,
                        size_t io_thread_amount = 6,
                        bool should_reuse_port = false);
   ~ServerReactorManager();
