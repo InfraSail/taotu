@@ -98,9 +98,10 @@ void Eventer::DisableAllEvents() {
 }
 
 void Eventer::RemoveMyself() {
-  if (out_events_ != kNoEvent) {
+  if (out_events_ != 4294967290) {
     out_events_ = kNoEvent;
     poller_->RemoveEventer(this);
+    out_events_ = 4294967290;
   }
 }
 
