@@ -24,6 +24,7 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
       timeout_(timeout) {
   event_manager_->RunAfter(timeout_ * 1000 * 1000,
                            [this]() { this->DoWithTimeout(); });
+  event_managers_[0] = event_manager_.get();
   for (int i = 1; i < thread_count; ++i) {
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
