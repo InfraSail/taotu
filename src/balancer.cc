@@ -26,7 +26,7 @@ EventManager* Balancer::PickOneEventManager() {
     // "Round Robin"
     case BalancerStrategy::kRoundRobin:
       if (++cursor_ >= evt_mng_num) {
-        cursor_ = 0;
+        cursor_ = 1;
       }
       break;
     // Pick the I/O thread holding least "Eventer"s
