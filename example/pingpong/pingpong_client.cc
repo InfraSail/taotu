@@ -33,8 +33,6 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   }
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (int i = 0; i < session_count_; ++i) {
-    char buf[32];
-    ::snprintf(buf, sizeof(buf), "C%05d", i);
     sessions_.push_back(std::make_unique<Session>(
         balancer_->PickOneEventManager(), server_address, this));
     sessions_.back()->Start();
