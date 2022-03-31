@@ -22,6 +22,7 @@ class ChatServer : taotu::NonCopyableMovable {
  public:
   ChatServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
+  ~ChatServer() { delete event_manager_; }
 
   void Start();
 
@@ -32,6 +33,7 @@ class ChatServer : taotu::NonCopyableMovable {
   void OnCodecMessage(taotu::Connecting& connection, const std::string& message,
                       taotu::TimePoint);
 
+  taotu::EventManager* event_manager_;
   std::unique_ptr<taotu::Server> server_;
   Codec codec_;
   ConnectionSet connections_;
