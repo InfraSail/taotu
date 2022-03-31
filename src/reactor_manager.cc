@@ -52,7 +52,7 @@ ServerReactorManager::ServerReactorManager(EventManager* event_manager,
                                            const NetAddress& listen_address,
                                            size_t io_thread_amount,
                                            bool should_reuse_port)
-    : event_managers_(1, new EventManager),
+    : event_managers_({event_manager}),
       acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
                                            listen_address, should_reuse_port)) {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
@@ -66,7 +66,7 @@ ServerReactorManager::ServerReactorManager(EventManager* event_manager,
     ::exit(-1);
   }
   event_managers_[0] = event_manager;
-  for (size_t i = 1; i < io_thread_amount; ++i) {
+  for (size_t i = 0; i < io_thread_amount; ++i) {
     // Initialize "Reactor"s
     event_managers_.emplace_back(new EventManager);
   }
