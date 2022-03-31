@@ -32,7 +32,7 @@ namespace taotu {
  */
 class Server : NonCopyableMovable {
  public:
-  explicit Server(const NetAddress& listen_address,
+  explicit Server(EventManager* event_manager, const NetAddress& listen_address,
                   bool should_reuse_port = false, size_t io_thread_amount = 6,
                   size_t calculation_thread_amount = 4);
   ~Server();
