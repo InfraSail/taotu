@@ -17,9 +17,10 @@
 TimeServer::TimeServer(const taotu::NetAddress& listen_address,
                        bool should_reuse_port, size_t io_thread_amount,
                        size_t calculation_thread_amount)
-    : server_(std::make_unique<taotu::Server>(listen_address, should_reuse_port,
-                                              io_thread_amount,
-                                              calculation_thread_amount)) {
+    : event_manager_(new taotu::EventManager),
+      server_(std::make_unique<taotu::Server>(
+          event_manager_, listen_address, should_reuse_port, io_thread_amount,
+          calculation_thread_amount)) {
   server_->SetMessageCallback([this](taotu::Connecting& connection,
                                      taotu::IoBuffer* io_buffer,
                                      taotu::TimePoint time_point) {
@@ -27,7 +28,10 @@ TimeServer::TimeServer(const taotu::NetAddress& listen_address,
   });
 }
 
-void TimeServer::Start() { server_->Start(); }
+void TimeServer::Start() {
+  server_->Start();
+  event_manager_->Work();
+}
 
 void TimeServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
