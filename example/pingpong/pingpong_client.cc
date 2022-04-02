@@ -73,7 +73,7 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
 }
 
 void PingpongClient::DoWithTimeout() {
-  taotu::LOG(taotu::logger::kWarn, "");
+  taotu::LOG(taotu::logger::kWarn, "All stopped!");
   for (auto& session : sessions_) {
     session->Stop();
   }
