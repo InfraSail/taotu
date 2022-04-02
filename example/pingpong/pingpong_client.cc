@@ -18,13 +18,12 @@
 PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
                                int block_size, int session_count, int timeout,
                                int thread_count)
-    : event_manager_(std::make_unique<taotu::EventManager>()),
-      event_managers_(++thread_count),
+    : event_managers_(++thread_count),
       session_count_(session_count),
       timeout_(timeout) {
-  event_manager_->RunAfter(timeout_ * 1000 * 1000,
-                           [this]() { this->DoWithTimeout(); });
-  event_managers_[0] = event_manager_.get();
+  event_managers_[0] = new taotu::EventManager;
+  event_managers_[0]->RunAfter(timeout_ * 1000 * 1000,
+                               [this]() { this->DoWithTimeout(); });
   for (int i = 1; i < thread_count; ++i) {
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
@@ -40,9 +39,14 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   }
 }
 PingpongClient::~PingpongClient() {
-  size_t thread_count = event_managers_.size();
-  for (size_t i = 1; i < thread_count; ++i) {
-    delete event_managers_[i];
+  for (auto& event_manager : event_managers_) {
+    delete event_manager;
+  }
+}
+
+void PingpongClient::Start() {
+  if (!event_managers_.empty()) {
+    event_managers_[0]->Work();
   }
 }
 

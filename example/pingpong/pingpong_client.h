@@ -30,7 +30,7 @@ class PingpongClient : taotu::NonCopyableMovable {
                  int session_count, int timeout, int thread_count);
   ~PingpongClient();
 
-  void Start() { event_manager_->Work(); }
+  void Start();
 
   const std::string& GetMessage() const { return message_; }
 
@@ -42,7 +42,6 @@ class PingpongClient : taotu::NonCopyableMovable {
 
   void DoWithTimeout();
 
-  std::unique_ptr<taotu::EventManager> event_manager_;
   EventManagers event_managers_;
   int session_count_;
   int timeout_;
