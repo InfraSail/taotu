@@ -80,7 +80,7 @@ class EventManager : NonCopyableMovable {
   void WakeUp();
 
   // Quit this event loop (if using it in another thread, EventManager::WakeUp()
-  // should be called first)
+  // should be called after that)
   void Quit();
 
  private:

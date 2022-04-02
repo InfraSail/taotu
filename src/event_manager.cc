@@ -105,23 +105,38 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
 }
 
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
+  TimePoint tmp_time_point = time_point;
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
+  if (timer_.GetMinTimeDurationSet() >=
+      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+    WakeUp();
+  }
 }
 void EventManager::RunAfter(int64_t delay_microseconds,
                             Timer::TimeCallback TimeTask) {
-  timer_.AddTimeTask(TimePoint{delay_microseconds}, std::move(TimeTask));
+  TimePoint tmp_time_point{delay_microseconds};
+  timer_.AddTimeTask(tmp_time_point, std::move(TimeTask));
+  if (timer_.GetMinTimeDurationSet() >=
+      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+    WakeUp();
+  }
 }
 void EventManager::RunEveryUntil(int64_t interval_microseconds,
                                  Timer::TimeCallback TimeTask,
                                  TimePoint start_time_point,
                                  std::function<bool()> IsContinue) {
   TimePoint time_point{interval_microseconds, start_time_point, true};
+  TimePoint tmp_time_point = time_point;
   // Check if the function which decides whether to continue the cycle should be
   // set (for repeatable condition)
   if (IsContinue) {
     time_point.SetTaskContinueCallback(std::move(IsContinue));
   }
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
+  if (timer_.GetMinTimeDurationSet() >=
+      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+    WakeUp();
+  }
 }
 
 void EventManager::RunSoon(Timer::TimeCallback TimeTask) {
