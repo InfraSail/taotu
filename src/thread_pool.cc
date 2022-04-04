@@ -15,8 +15,6 @@
 #include <thread>
 #include <utility>
 
-#include "logger.h"
-
 using namespace taotu;
 
 ThreadPool::ThreadPool(size_t thread_amount)
@@ -74,16 +72,5 @@ ThreadPool::~ThreadPool() {
     if (one_thread->joinable()) {
       one_thread->join();
     }
-  }
-}
-
-void ThreadPool::AddTask(std::function<void()> task) {
-  if (should_stop_) {
-    LOG(logger::kWarn, "Fail to add a task into the calculation thread pool!");
-  } else {
-    std::lock_guard<std::mutex> lock(que_csm_mutex_);
-    task_queues_[que_pdt_idx_].emplace(std::move(task));
-    pdt_csm_cond_var_
-        .notify_one();  // Awake one thread to consume (after this producing)
   }
 }
