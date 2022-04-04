@@ -16,12 +16,15 @@
 #include <array>
 #include <condition_variable>
 #include <functional>
+#include <future>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <thread>
 #include <vector>
 
+#include "logger.h"
 #include "non_copyable_movable.h"
 
 namespace taotu {
@@ -37,7 +40,25 @@ class ThreadPool : NonCopyableMovable {
   ~ThreadPool();
 
   // Order the thread pool to execute a function
-  void AddTask(std::function<void()> task);
+  template <class Function>
+  auto AddTask(const std::function<Function>& task)
+      -> std::optional<std::future<typename Function::result_type>> {
+    if (should_stop_) {
+      LOG(logger::kWarn,
+          "Fail to add a task into the calculation thread pool!");
+      return std::nullopt;
+    } else {
+      auto task_future =
+          std::packaged_task<typename Function::result_type>(task);
+      std::future<typename Function::result_type> res_ftr =
+          task_future.get_future();
+      std::lock_guard<std::mutex> lock(que_csm_mutex_);
+      task_queues_[que_pdt_idx_].emplace(std::move(task));
+      pdt_csm_cond_var_
+          .notify_one();  // Awake one thread to consume (after this producing)
+      return res_ftr;
+    }
+  }
 
  private:
   std::vector<std::unique_ptr<std::thread>> threads_;
