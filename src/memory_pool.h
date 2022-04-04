@@ -39,6 +39,9 @@ class MemoryPool : NonCopyableMovable {
   MemoryPool();
   ~MemoryPool();
 
+  void* Allocate1MemoryBlock();
+  void Free1MemoryBlock(void* memory_block_ptr);
+
  private:
 };
 
