@@ -137,8 +137,8 @@ void Connector::Connect() {
 void Connector::DoConnecting(int conn_fd) {
   SetState(kConnecting);
   eventer_ = std::make_unique<Eventer>(event_manager_->GetPoller(), conn_fd);
-  eventer_->RegisterWriteCallback(std::bind(&Connector::DoWriting, this));
-  eventer_->RegisterErrorCallback(std::bind(&Connector::DoWithError, this));
+  eventer_->RegisterWriteCallback([this]() { this->DoWriting(); });
+  eventer_->RegisterErrorCallback([this]() { this->DoWithError(); });
   eventer_->EnableWriteEvents();
 }
 void Connector::DoRetrying(int conn_fd) {
@@ -149,7 +149,7 @@ void Connector::DoRetrying(int conn_fd) {
     // LOG(logger::kDebug, "Connector fd(%d) is retrying to connect.",
     // conn_fd);
     event_manager_->RunAfter(retry_dalay_microseconds_,
-                             std::bind(&Connector::Start, this));
+                             [this]() { this->Start(); });
     retry_dalay_microseconds_ =
         std::min(retry_dalay_microseconds_ * 2,
                  static_cast<int>(kMaxRetryDelayMicroseconds));
@@ -164,30 +164,32 @@ void Connector::DoWriting() {
   if (kConnecting == state_) {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
-    auto IsSelfConnected = [](int conn_fd) -> bool {
-      struct sockaddr_in6 local_address = GetLocalSocketAddress6(conn_fd);
-      struct sockaddr_in6 peer_address = GetPeerSocketAddress6(conn_fd);
-      if (local_address.sin6_family == AF_INET) {
-        const struct sockaddr_in* laddr4 =
-            reinterpret_cast<struct sockaddr_in*>(&local_address);
-        const struct sockaddr_in* raddr4 =
-            reinterpret_cast<struct sockaddr_in*>(&peer_address);
-        return laddr4->sin_port == raddr4->sin_port &&
-               laddr4->sin_addr.s_addr == raddr4->sin_addr.s_addr;
-      } else if (local_address.sin6_family == AF_INET6) {
-        return local_address.sin6_port == peer_address.sin6_port &&
-               ::memcmp(&local_address.sin6_addr, &peer_address.sin6_addr,
-                        sizeof local_address.sin6_addr) == 0;
-      } else {
-        return false;
-      }
-    };
     if (error) {
       char errno_info[512];
       LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", conn_fd,
           ::strerror_r(error, errno_info, sizeof(errno_info)));
       DoRetrying(conn_fd);
-    } else if (IsSelfConnected(conn_fd)) {
+    } else if ([](int conn_fd) -> bool {
+                 struct sockaddr_in6 local_address =
+                     GetLocalSocketAddress6(conn_fd);
+                 struct sockaddr_in6 peer_address =
+                     GetPeerSocketAddress6(conn_fd);
+                 if (local_address.sin6_family == AF_INET) {
+                   const struct sockaddr_in* laddr4 =
+                       reinterpret_cast<struct sockaddr_in*>(&local_address);
+                   const struct sockaddr_in* raddr4 =
+                       reinterpret_cast<struct sockaddr_in*>(&peer_address);
+                   return laddr4->sin_port == raddr4->sin_port &&
+                          laddr4->sin_addr.s_addr == raddr4->sin_addr.s_addr;
+                 } else if (local_address.sin6_family == AF_INET6) {
+                   return local_address.sin6_port == peer_address.sin6_port &&
+                          ::memcmp(&local_address.sin6_addr,
+                                   &peer_address.sin6_addr,
+                                   sizeof local_address.sin6_addr) == 0;
+                 } else {
+                   return false;
+                 }
+               }(conn_fd)) {
       // LOG(logger::kDebug, "Connector fd(%d) is self-connected.", conn_fd);
       DoRetrying(conn_fd);
     } else {
