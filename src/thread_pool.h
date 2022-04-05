@@ -22,6 +22,7 @@
 #include <optional>
 #include <queue>
 #include <thread>
+#include <type_traits>
 #include <vector>
 
 #include "logger.h"
@@ -39,24 +40,25 @@ class ThreadPool : NonCopyableMovable {
   explicit ThreadPool(size_t thread_amount = 4);
   ~ThreadPool();
 
-  // Order the thread pool to execute a function
+  // Order the thread pool to execute a function and reture a "std::future"
+  // object for retrieving the return value
   template <class Function>
-  auto AddTask(const std::function<Function>& task)
-      -> std::optional<std::future<typename Function::result_type>> {
+  auto AddTask(std::function<Function>&& task)
+      -> std::future<typename std::invoke_result<Function>::type> {
     if (should_stop_) {
       LOG(logger::kWarn,
           "Fail to add a task into the calculation thread pool!");
       return std::nullopt;
     } else {
-      auto task_future =
-          std::packaged_task<typename Function::result_type>(task);
-      std::future<typename Function::result_type> res_ftr =
-          task_future.get_future();
+      auto task_future_pkg = std::make_shared<std::packaged_task<Function>>(
+          std::forward<std::function<Function>>(task));
+      auto result_future = task_future_pkg->get_future();
       std::lock_guard<std::mutex> lock(que_csm_mutex_);
-      task_queues_[que_pdt_idx_].emplace(std::move(task));
+      task_queues_[que_pdt_idx_].emplace(
+          [task_future_pkg]() { (*task_future_pkg)(); });
       pdt_csm_cond_var_
           .notify_one();  // Awake one thread to consume (after this producing)
-      return res_ftr;
+      return result_future;
     }
   }
 
