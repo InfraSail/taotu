@@ -189,7 +189,7 @@ void Connector::DoWriting() {
                  } else {
                    return false;
                  }
-               }(conn_fd)) {
+               }(conn_fd)) {  // Check whether it is self-connected
       // LOG(logger::kDebug, "Connector fd(%d) is self-connected.", conn_fd);
       DoRetrying(conn_fd);
     } else {
