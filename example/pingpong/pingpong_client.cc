@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 
+#include <utility>
+
 #include "../../src/balancer.h"
 #include "../../src/logger.h"
 
@@ -97,7 +99,7 @@ Session::Session(taotu::EventManager* event_manager,
   client_.SetMessageCallback([this](taotu::Connecting& connection,
                                     taotu::IoBuffer* io_buffer,
                                     taotu::TimePoint time_point) {
-    this->OnMessageCallback(connection, io_buffer, time_point);
+    this->OnMessageCallback(connection, io_buffer, std::move(time_point));
   });
 }
 
