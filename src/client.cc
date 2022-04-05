@@ -19,18 +19,17 @@ Client::Client(EventManager* event_manager, const NetAddress& server_address,
                                                               server_address)) {
   reactor_manager_->SetRetryOn(should_retry_);
 }
-Client::~Client() {}
 
 void Client::SetConnectionCallback(const std::function<void(Connecting&)>& cb) {
-  reactor_manager_->SetConnectionCallback(std::move(cb));
+  reactor_manager_->SetConnectionCallback(cb);
 }
 void Client::SetMessageCallback(
     const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb) {
-  reactor_manager_->SetMessageCallback(std::move(cb));
+  reactor_manager_->SetMessageCallback(cb);
 }
 void Client::SetWriteCompleteCallback(
     const std::function<void(Connecting&)>& cb) {
-  reactor_manager_->SetWriteCompleteCallback(std::move(cb));
+  reactor_manager_->SetWriteCompleteCallback(cb);
 }
 
 void Client::Connect() { reactor_manager_->Connect(); }

@@ -30,7 +30,6 @@ class Client : NonCopyableMovable {
  public:
   Client(EventManager* event_manager, const NetAddress& server_address,
          bool should_retry_);
-  ~Client();
 
   void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
   void SetMessageCallback(
