@@ -32,16 +32,10 @@ class Client : NonCopyableMovable {
          bool should_retry_);
   ~Client();
 
-  void SetConnectionCallback(std::function<void(Connecting&)> cb) {
-    reactor_manager_->SetConnectionCallback(std::move(cb));
-  }
+  void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
   void SetMessageCallback(
-      std::function<void(Connecting&, IoBuffer*, TimePoint)> cb) {
-    reactor_manager_->SetMessageCallback(std::move(cb));
-  }
-  void SetWriteCompleteCallback(std::function<void(Connecting&)> cb) {
-    reactor_manager_->SetWriteCompleteCallback(std::move(cb));
-  }
+      const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb);
+  void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
 
   // Try to connect to the specific net address
   void Connect();
