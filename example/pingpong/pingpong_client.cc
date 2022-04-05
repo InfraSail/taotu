@@ -72,7 +72,8 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
         static_cast<double>(total_bytes_read) /
             static_cast<double>(total_messages_read),
         static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
-    connection.GetEventManager().Quit();
+    auto& master_event_manager = connection.GetEventManager();
+    master_event_manager.RunSoon([&]() { master_event_manager.Quit(); });
   }
 }
 
