@@ -75,7 +75,7 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  Connect();
+  event_manager_->RunSoon([this]() { this->Connect(); });
 }
 void Connector::Restart() {
   SetState(kDisconnected);
