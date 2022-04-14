@@ -80,14 +80,17 @@ void Connector::Start() {
 void Connector::Restart() {
   SetState(kDisconnected);
   retry_dalay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
-  Start();
+  can_connect_ = true;
+  Connect();
 }
 void Connector::Stop() {
   can_connect_ = false;
-  if (kConnecting == state_) {
-    SetState(kDisconnected);
-    DoRetrying(RemoveAndReset());
-  }
+  event_manager_->RunSoon([this]() {
+    if (kConnecting == state_) {
+      this->SetState(kDisconnected);
+      this->DoRetrying(this->RemoveAndReset());
+    }
+  });
 }
 
 void Connector::Connect() {
@@ -217,8 +220,8 @@ void Connector::DoWithError() {
 
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
+  eventer_->RemoveMyself();
   int conn_fd = eventer_->Fd();
-  eventer_->GetReadyDestroy();  // Set Eventer::is_handling_ flag off
-  eventer_.reset();
+  event_manager_->RunSoon([this]() { this->eventer_.reset(); });
   return conn_fd;
 }
