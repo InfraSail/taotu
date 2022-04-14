@@ -36,7 +36,7 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (size_t i = 0; i < session_count_; ++i) {
     sessions_.emplace_back(std::make_unique<Session>(
-        balancer_->PickOneEventManager(), server_address, shared_from_this()));
+        balancer_->PickOneEventManager(), server_address, this));
     sessions_[i]->Start();
   }
 }
@@ -88,7 +88,7 @@ void PingpongClient::DoWithTimeout() {
 
 Session::Session(taotu::EventManager* event_manager,
                  const taotu::NetAddress& server_address,
-                 std::shared_ptr<PingpongClient> master_client)
+                 PingpongClient* master_client)
     : client_(event_manager, server_address, true),
       master_client_(master_client),
       bytes_read_(0),

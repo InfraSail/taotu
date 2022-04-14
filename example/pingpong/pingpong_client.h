@@ -24,8 +24,7 @@ class Session;
  * @brief  // TODO:
  *
  */
-class PingpongClient : taotu::NonCopyableMovable,
-                       std::enable_shared_from_this<PingpongClient> {
+class PingpongClient : taotu::NonCopyableMovable {
  public:
   PingpongClient(const taotu::NetAddress& server_address, size_t block_size,
                  size_t session_count, int timeout, size_t thread_count);
@@ -60,7 +59,7 @@ class Session : taotu::NonCopyableMovable {
  public:
   Session(taotu::EventManager* event_manager,
           const taotu::NetAddress& server_address,
-          std::shared_ptr<PingpongClient> master_client);
+          PingpongClient* master_client);
 
   void Start();
   void Stop();
@@ -74,7 +73,7 @@ class Session : taotu::NonCopyableMovable {
                          taotu::IoBuffer* io_buffer, taotu::TimePoint);
 
   taotu::Client client_;
-  std::shared_ptr<PingpongClient> master_client_;
+  PingpongClient* master_client_;
   int64_t bytes_read_;
   int64_t messages_read_;
 };
