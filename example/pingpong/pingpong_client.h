@@ -26,8 +26,8 @@ class Session;
  */
 class PingpongClient : taotu::NonCopyableMovable {
  public:
-  PingpongClient(const taotu::NetAddress& server_address, int block_size,
-                 int session_count, int timeout, int thread_count);
+  PingpongClient(const taotu::NetAddress& server_address, size_t block_size,
+                 size_t session_count, int timeout, size_t thread_count);
   ~PingpongClient();
 
   void Start();
@@ -43,7 +43,7 @@ class PingpongClient : taotu::NonCopyableMovable {
   void DoWithTimeout();
 
   EventManagers event_managers_;
-  int session_count_;
+  size_t session_count_;
   int timeout_;
   std::vector<std::unique_ptr<Session>> sessions_;
   std::string message_;
