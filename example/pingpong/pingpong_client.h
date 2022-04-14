@@ -58,7 +58,8 @@ class PingpongClient : taotu::NonCopyableMovable {
 class Session : taotu::NonCopyableMovable {
  public:
   Session(taotu::EventManager* event_manager,
-          const taotu::NetAddress& server_address, PingpongClient* client);
+          const taotu::NetAddress& server_address,
+          PingpongClient* master_client);
 
   void Start();
   void Stop();
