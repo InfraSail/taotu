@@ -23,7 +23,9 @@ int main(int argc, char* argv[]) {
     PingpongClient pingpong_client{
         taotu::NetAddress{std::string{argv[1]},
                           static_cast<uint16_t>(::atoi(argv[2]))},
-        ::atoi(argv[4]), ::atoi(argv[5]), ::atoi(argv[6]), ::atoi(argv[3])};
+        static_cast<size_t>(::atoi(argv[4])),
+        static_cast<size_t>(::atoi(argv[5])), ::atoi(argv[6]),
+        static_cast<size_t>(::atoi(argv[3]))};
     pingpong_client.Start();
   }
   return 0;
