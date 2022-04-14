@@ -8,7 +8,6 @@
  * @copyright Copyright (c) 2021 Sigma711
  *
  */
-
 #include "connector.h"
 
 #include <errno.h>
@@ -24,14 +23,11 @@
 #include "connecting.h"
 #include "logger.h"
 #include "time_point.h"
-
 using namespace taotu;
-
 enum {
   kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
   kInitRetryDelayMicroseconds = 500 * 1000,
 };
-
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
@@ -63,7 +59,6 @@ static int GetSocketError(int socket_fd) {
     return socket_option;
   }
 }
-
 Connector::Connector(EventManager* event_manager,
                      const NetAddress& server_address)
     : event_manager_(event_manager),
@@ -75,24 +70,21 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  event_manager_->RunSoon([this]() { this->Connect(); });
+  Connect();
 }
 void Connector::Restart() {
   SetState(kDisconnected);
+
   retry_dalay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
-  can_connect_ = true;
-  Connect();
+  Start();
 }
 void Connector::Stop() {
   can_connect_ = false;
-  event_manager_->RunSoon([this]() {
-    if (kConnecting == state_) {
-      this->SetState(kDisconnected);
-      this->DoRetrying(this->RemoveAndReset());
-    }
-  });
+  if (kConnecting == state_) {
+    SetState(kDisconnected);
+    DoRetrying(RemoveAndReset());
+  }
 }
-
 void Connector::Connect() {
   int sock_fd =
       ::socket(server_address_.GetFamily(),
@@ -161,7 +153,6 @@ void Connector::DoRetrying(int conn_fd) {
     //     conn_fd);
   }
 }
-
 void Connector::DoWriting() {
   LOG(logger::kDebug, "Connector fd(%d) is writing.", eventer_->Fd());
   if (kConnecting == state_) {
@@ -217,11 +208,10 @@ void Connector::DoWithError() {
     DoRetrying(conn_fd);
   }
 }
-
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
-  eventer_->RemoveMyself();
   int conn_fd = eventer_->Fd();
-  event_manager_->RunSoon([this]() { this->eventer_.reset(); });
+  eventer_->GetReadyDestroy();  // Set Eventer::is_handling_ flag off
+  eventer_.reset();
   return conn_fd;
 }
