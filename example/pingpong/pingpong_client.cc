@@ -23,21 +23,19 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
     : event_managers_(++thread_count),
       session_count_(session_count),
       timeout_(timeout) {
-  event_managers_[0] = new taotu::EventManager;
+  for (int i = 0; i < thread_count; ++i) {
+    event_managers_[i] = new taotu::EventManager;
+  }
   event_managers_[0]->RunAfter(timeout_ * 1000 * 1000,
                                [this]() { this->DoWithTimeout(); });
-  for (int i = 1; i < thread_count; ++i) {
-    event_managers_[i] = new taotu::EventManager;
-    event_managers_[i]->Loop();
-  }
   for (int i = 0; i < block_size; ++i) {
     message_.push_back(static_cast<char>(i % 128));
   }
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (int i = 0; i < session_count_; ++i) {
-    sessions_.push_back(std::make_unique<Session>(
+    sessions_.emplace_back(std::make_unique<Session>(
         balancer_->PickOneEventManager(), server_address, this));
-    sessions_.back()->Start();
+    sessions_[i]->Start();
   }
 }
 PingpongClient::~PingpongClient() {
@@ -48,6 +46,10 @@ PingpongClient::~PingpongClient() {
 
 void PingpongClient::Start() {
   if (!event_managers_.empty()) {
+    size_t thread_count = event_managers_.size();
+    for (size_t i = 1; i < thread_count; ++i) {
+      event_managers_[i]->Loop();
+    }
     event_managers_[0]->Work();
   }
 }
@@ -88,9 +90,9 @@ void PingpongClient::DoWithTimeout() {
 
 Session::Session(taotu::EventManager* event_manager,
                  const taotu::NetAddress& server_address,
-                 PingpongClient* client)
+                 PingpongClient* master_client)
     : client_(event_manager, server_address, true),
-      master_(client),
+      master_(master_client),
       bytes_read_(0),
       messages_read_(0) {
   client_.SetConnectionCallback([this](taotu::Connecting& connection) {
