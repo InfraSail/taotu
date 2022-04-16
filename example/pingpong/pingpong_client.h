@@ -47,7 +47,7 @@ class PingpongClient : taotu::NonCopyableMovable {
   int timeout_;
   std::vector<std::unique_ptr<Session>> sessions_;
   std::string message_;
-  std::atomic<size_t> conn_num_;
+  std::atomic_size_t conn_num_;
   std::unique_ptr<taotu::Balancer> balancer_;
 };
 

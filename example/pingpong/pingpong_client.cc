@@ -26,6 +26,7 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   event_managers_[0] = new taotu::EventManager;
   event_managers_[0]->RunAfter(timeout_ * 1000 * 1000,
                                [this]() { this->DoWithTimeout(); });
+  conn_num_.store(0);
   for (size_t i = 1; i < thread_count; ++i) {
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
@@ -53,13 +54,13 @@ void PingpongClient::Start() {
 }
 
 void PingpongClient::OnConnecting() {
-  if (conn_num_.load() == session_count_) {
+  if (conn_num_.fetch_add(1) + 1 == session_count_) {
     taotu::LOG(taotu::logger::kWarn, "All connected!");
   }
 }
 
 void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
-  if (conn_num_.load() == 0) {
+  if (conn_num_.fetch_sub(1) - 1 == 0) {
     int64_t total_bytes_read = 0;
     int64_t total_messages_read = 0;
     for (const auto& session : sessions_) {
@@ -68,7 +69,7 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
     }
     taotu::LOG(
         taotu::logger::kWarn,
-        "All disconnected: totally %llubytes read and %llumessages read, the "
+        "All disconnected: totally %ldbytes read and %ldmessages read, the "
         "average message size is %lf and the throughput is %lfMiB/s!",
         total_bytes_read, total_messages_read,
         static_cast<double>(total_bytes_read) /
