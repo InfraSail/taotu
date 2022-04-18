@@ -42,6 +42,11 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   }
 }
 PingpongClient::~PingpongClient() {
+  size_t thread_count = event_managers_.size();
+  for (size_t i = 1; i < thread_count; ++i) {
+    auto& event_manager = event_managers_[i];
+    event_manager->RunSoon([&event_manager]() { event_manager->Quit(); });
+  }
   for (auto& event_manager : event_managers_) {
     delete event_manager;
   }
@@ -75,8 +80,8 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
         static_cast<double>(total_bytes_read) /
             static_cast<double>(total_messages_read),
         static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
-    auto& master_event_manager = connection.GetEventManager();
-    master_event_manager.RunSoon([&]() { master_event_manager.Quit(); });
+    event_managers_[0]->Quit();
+    event_managers_[0]->WakeUp();
   }
 }
 
