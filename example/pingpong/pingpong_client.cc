@@ -50,6 +50,7 @@ PingpongClient::~PingpongClient() {
   for (auto& event_manager : event_managers_) {
     delete event_manager;
   }
+  taotu::END_LOG();
 }
 
 void PingpongClient::Start() {
@@ -72,10 +73,9 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
       total_bytes_read += session->GetBytesRead();
       total_messages_read += session->GetMessagesRead();
     }
-    taotu::LOG(
-        taotu::logger::kWarn,
-        "All disconnected: totally %ldbytes read and %ldmessages read, the "
-        "average message size is %lf and the throughput is %lfMiB/s!",
+    ::printf(
+        "Totally,\n%ldbytes read\nand %ldmessages read,\nthe average message "
+        "size is %lf,\nand the throughput is %lfMiB/s.\n",
         total_bytes_read, total_messages_read,
         static_cast<double>(total_bytes_read) /
             static_cast<double>(total_messages_read),
