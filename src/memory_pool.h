@@ -1,7 +1,8 @@
 /**
  * @file memory_pool.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration and Implementation of struct "MemeryBlockNode" and class
+ * "MemoryPool".
  * @date 2022-02-15
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -12,37 +13,101 @@
 #define TAOTU_SRC_MEMORY_POOL_H_
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #include "non_copyable_movable.h"
 
 namespace taotu {
 
 /**
- * @brief  // TODO:
+ * @brief "MemeryBlockNode" is the memory block node.
  *
  */
-struct MemeryBlock {
+struct MemeryBlockNode {
   union {
     char data_;
-    MemeryBlock* next_node_;
+    MemeryBlockNode* next_node_;
   };
 };
 
 /**
- * @brief  // TODO:
+ * @brief "MemoryPool" is the memory pool.
  *
- * @tparam Size
  */
-template <size_t Size>
+template <size_t ObjectSize>
 class MemoryPool : NonCopyableMovable {
  public:
-  MemoryPool();
-  ~MemoryPool();
+  MemoryPool()
+      : free_list_head_(nullptr), list_head_(nullptr), malloc_time_(0) {
+    if (ObjectSize < sizeof(MemeryBlockNode)) {
+      object_size_ = sizeof(MemeryBlockNode);
+    } else {
+      object_size_ = ObjectSize;
+    }
+  }
+  ~MemoryPool() {
+    while (list_head_ != nullptr) {
+      MemeryBlockNode* tmp_list_head = list_head_;
+      list_head_ = list_head_->next_node_;
+      ::free(reinterpret_cast<void*>(tmp_list_head));
+    }
+  }
 
-  void* Allocate1MemoryBlock();
-  void Free1MemoryBlock(void* memory_block_ptr);
+  // Allocate a memory block in this memory pool
+  void* Allocate() {
+    void* return_prt = nullptr;
+    if (nullptr == free_list_head_) {
+      size_t malloc_size =
+          MemoryPool<ObjectSize>::kInitialMallocSize + malloc_time_;
+      void* new_malloc_ptr =
+          ::malloc(malloc_size * object_size_ + sizeof(MemeryBlockNode));
+      MemeryBlockNode* new_malloc_node =
+          reinterpret_cast<MemeryBlockNode*>(new_malloc_ptr);
+      new_malloc_node->next_node_ = list_head_;
+      list_head_ = new_malloc_node;
+      new_malloc_ptr = reinterpret_cast<void*>(
+          reinterpret_cast<char*>(new_malloc_ptr) + sizeof(MemeryBlockNode));
+      for (size_t i = 0; i < malloc_size; ++i) {
+        MemeryBlockNode* new_node =
+            reinterpret_cast<MemeryBlockNode*>(new_malloc_ptr);
+        new_node->next_node_ = free_list_head_;
+        free_list_head_ = new_node;
+        new_malloc_ptr = reinterpret_cast<void*>(
+            reinterpret_cast<char*>(new_malloc_ptr) + object_size_);
+      }
+      ++malloc_time_;
+    }
+    return_prt = reinterpret_cast<void*>(&free_list_head_->data_);
+    free_list_head_ = free_list_head_->next_node_;
+    return return_prt;
+  }
+
+  // Free a memory block in this memory pool
+  void Deallocate(void* memory_block_ptr) {
+    if (nullptr == memory_block_ptr) {
+      return;
+    }
+    MemeryBlockNode* tmp_node =
+        reinterpret_cast<MemeryBlockNode*>(memory_block_ptr);
+    tmp_node->next_node_ = free_list_head_;
+    free_list_head_ = tmp_node;
+  }
 
  private:
+  // Initial malloc() size each time
+  static const size_t kInitialMallocSize = 40;
+
+  // Free linked list
+  MemeryBlockNode* free_list_head_;
+
+  // Linked list of allocation
+  MemeryBlockNode* list_head_;
+
+  // Time of calling malloc()
+  size_t malloc_time_;
+
+  // Size of each memory block
+  size_t object_size_;
 };
 
 }  // namespace taotu
