@@ -27,7 +27,11 @@
 
 using namespace taotu;
 
-EventManager::EventManager()
+EventManager::EventManager(
+    std::function<Connecting*(EventManager*, int, const NetAddress&,
+                              const NetAddress&)>
+        CreateConnectionCallback,
+    std::function<void(Connecting*)> DestroyConnectionCallback)
     : poller_(), wake_up_eventer_(&poller_, []() -> int {
         int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
         if (event_fd < 0) {
@@ -50,6 +54,10 @@ EventManager::EventManager()
     }
   });
   wake_up_eventer_.EnableReadEvents();
+  if (CreateConnectionCallback && DestroyConnectionCallback) {
+    CreateConnectionCallback_ = CreateConnectionCallback;
+    DestroyConnectionCallback_ = DestroyConnectionCallback;
+  }
 }
 EventManager::~EventManager() {
   wake_up_eventer_.DisableAllEvents();
@@ -90,8 +98,13 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   Connecting* ref_conn = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
-    connection_map_[socket_fd] =
-        new Connecting(this, socket_fd, local_address, peer_address);
+    if (CreateConnectionCallback_) {
+      connection_map_[socket_fd] = CreateConnectionCallback_(
+          this, socket_fd, local_address, peer_address);
+    } else {
+      connection_map_[socket_fd] =
+          new Connecting(this, socket_fd, local_address, peer_address);
+    }
     ref_conn = connection_map_[socket_fd];
   }
   // LOG(logger::kDebug,
@@ -205,7 +218,11 @@ void EventManager::DestroyClosedConnections() {
         connection_map_.erase(fd);
       }
     }
-    delete connection;
+    if (DestroyConnectionCallback_) {
+      DestroyConnectionCallback_(connection);
+    } else {
+      delete connection;
+    }
   }
   closed_fds_.clear();
 }
