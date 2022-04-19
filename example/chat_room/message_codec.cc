@@ -1,7 +1,8 @@
 /**
  * @file message_codec.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "Codec" which is a message codec (getting the
+ * length of each message by the header).
  * @date 2022-03-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -16,7 +17,7 @@
 #include "../../src/logger.h"
 
 enum {
-  kHeadLength = sizeof(int32_t),
+  kHeadLength = sizeof(int32_t),  // the header(the length of the message)
 };
 
 Codec::Codec(const MessageCallback& cb) : MessageCallback_(cb) {}

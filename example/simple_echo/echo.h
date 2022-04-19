@@ -1,7 +1,7 @@
 /**
  * @file echo.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "EchoServer" which is an simple echo server.
  * @date 2022-02-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -19,11 +19,13 @@ class EchoServer : taotu::NonCopyableMovable {
  public:
   EchoServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
-  ~EchoServer() { delete event_manager_; }
+  ~EchoServer();
 
+  // Start the server
   void Start();
 
  private:
+  // Called after messages arriving
   void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);

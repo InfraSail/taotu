@@ -1,7 +1,7 @@
 /**
  * @file echo.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "EchoServer" which is an simple echo server.
  * @date 2022-02-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -25,6 +25,10 @@ EchoServer::EchoServer(const taotu::NetAddress& listen_address,
                                      taotu::TimePoint time_point) {
     this->OnMessageCallback(connection, io_buffer, time_point);
   });
+}
+EchoServer::~EchoServer() {
+  delete event_manager_;
+  taotu::END_LOG();
 }
 
 void EchoServer::Start() {

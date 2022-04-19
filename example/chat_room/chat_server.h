@@ -1,7 +1,7 @@
 /**
  * @file chat_server.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "ChatServer" which is a chat server.
  * @date 2022-03-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -22,14 +22,18 @@ class ChatServer : taotu::NonCopyableMovable {
  public:
   ChatServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
-  ~ChatServer() { delete event_manager_; }
+  ~ChatServer();
 
+  // Start the server
   void Start();
 
  private:
   typedef std::set<taotu::Connecting*> ConnectionSet;
 
+  // Called after one connection creating and before one connection destroying
   void OnConnection(taotu::Connecting& connection);
+
+  // Called after messages arriving
   void OnCodecMessage(taotu::Connecting& connection, const std::string& message,
                       taotu::TimePoint);
 

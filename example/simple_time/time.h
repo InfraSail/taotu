@@ -1,7 +1,7 @@
 /**
  * @file time.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "TimeServer" which is a simple time server.
  * @date 2022-03-03
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -17,11 +17,13 @@ class TimeServer : taotu::NonCopyableMovable {
  public:
   TimeServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
-  ~TimeServer() { delete event_manager_; }
+  ~TimeServer();
 
+  // Start the server
   void Start();
 
  private:
+  // Called after messages arriving
   void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);

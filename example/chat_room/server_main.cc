@@ -1,7 +1,9 @@
 /**
  * @file server_main.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Main entrance of the chat server (the chat room means that when a
+ * client sends a message to the server this message will be sent to all other
+ * clients).
  * @date 2022-03-23
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -10,6 +12,9 @@
 
 #include "chat_server.h"
 
+// Call it by:
+// './chat_server [port [amount-of-I/O-threads
+// [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
   if (1 == argc) {
     ChatServer chat_server{taotu::NetAddress{4567}, false};

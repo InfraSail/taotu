@@ -1,7 +1,7 @@
 /**
  * @file time.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "TimeServer" which is a simple time server.
  * @date 2022-03-03
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -26,6 +26,10 @@ TimeServer::TimeServer(const taotu::NetAddress& listen_address,
                                      taotu::TimePoint time_point) {
     this->OnMessageCallback(connection, io_buffer, time_point);
   });
+}
+TimeServer::~TimeServer() {
+  delete event_manager_;
+  taotu::END_LOG();
 }
 
 void TimeServer::Start() {

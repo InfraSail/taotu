@@ -1,7 +1,7 @@
 /**
  * @file chat_server.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "ChatServer" which is a chat server.
  * @date 2022-03-21
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -32,6 +32,10 @@ ChatServer::ChatServer(const taotu::NetAddress& listen_address,
     this->codec_.OnMessage(connection, io_buffer, time_point);
   });
 }
+ChatServer::~ChatServer() {
+  delete event_manager_;
+  taotu::END_LOG();
+}
 
 void ChatServer::Start() {
   server_->Start();
@@ -59,6 +63,8 @@ void ChatServer::OnCodecMessage(taotu::Connecting& connection,
   ::printf("<<< %s\n", message.c_str());
   taotu::LockGuard lock_guard(connections_lock_);
   int conn_fd = connection.Fd();
+
+  // Send the message to all other clients
   for (ConnectionSet::iterator itr = connections_.begin();
        itr != connections_.end(); ++itr) {
     if (conn_fd != (*itr)->Fd()) {

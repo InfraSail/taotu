@@ -1,7 +1,7 @@
 /**
  * @file discard.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "DiscardServer" which is a simple discard server.
  * @date 2022-03-01
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -18,12 +18,13 @@ class DiscardServer : taotu::NonCopyableMovable {
   DiscardServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
                 size_t io_thread_amount = 3,
                 size_t calculation_thread_amount = 0);
-  ~DiscardServer() { delete event_manager_; }
+  ~DiscardServer();
 
+  // Start the server
   void Start();
 
  private:
-  void OnConnectionCallback(taotu::Connecting& connection);
+  // Called after messages arriving
   void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);
