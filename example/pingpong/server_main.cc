@@ -16,7 +16,7 @@
 #include "pingpong_server.h"
 
 // Call it by:
-// './chat_server [port [amount-of-I/O-threads
+// './pingpong_server [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
   if (1 == argc) {

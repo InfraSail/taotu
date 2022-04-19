@@ -15,7 +15,7 @@
 #include "pingpong_client.h"
 
 // Call it by:
-// './chat_client IP port amount-of-I/O-threads size-of-block-sent
+// './pingpong_client IP port amount-of-I/O-threads size-of-block-sent
 // amount-of-sessions time-for-waiting'
 int main(int argc, char* argv[]) {
   if (argc != 7) {
