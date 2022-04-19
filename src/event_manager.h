@@ -39,7 +39,13 @@ namespace taotu {
  */
 class EventManager : NonCopyableMovable {
  public:
-  EventManager();
+  EventManager(
+      std::function<Connecting*(EventManager*, int, const NetAddress&,
+                                const NetAddress&)>
+          CreateConnectionCallback = std::function<Connecting*(
+              EventManager*, int, const NetAddress&, const NetAddress&)>{},
+      std::function<void(Connecting*)> DestroyConnectionCallback =
+          std::function<void(Connecting*)>{});
   ~EventManager();
 
   // Run the loop in a new thread
@@ -123,6 +129,11 @@ class EventManager : NonCopyableMovable {
 
   // To wake up this I/O thread
   Eventer wake_up_eventer_;
+
+  std::function<Connecting*(EventManager*, int, const NetAddress&,
+                            const NetAddress&)>
+      CreateConnectionCallback_;
+  std::function<void(Connecting*)> DestroyConnectionCallback_;
 };
 
 }  // namespace taotu
