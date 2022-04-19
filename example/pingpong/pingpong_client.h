@@ -2,7 +2,7 @@
  * @file pingpong_client.h
  * @author Sigma711 (sigma711 at foxmail dot com)
  * @brief Declaration of class "PingpongClient" which is a pingpong total client
- * and "Session" which manage one connection to the server.
+ * and class "Session" which manage one connection to the server.
  * @date 2022-03-28
  *
  * @copyright Copyright (c) 2022 Sigma711
