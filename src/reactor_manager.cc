@@ -68,7 +68,16 @@ ServerReactorManager::ServerReactorManager(EventManager* event_manager,
   event_managers_[0] = event_manager;
   for (size_t i = 0; i < io_thread_amount; ++i) {
     // Initialize "Reactor"s
-    event_managers_.emplace_back(new EventManager);
+    event_managers_.emplace_back(new EventManager(
+        [this](EventManager* event_manager, int fd,
+               const NetAddress& server_address,
+               const NetAddress& peer_address) -> Connecting* {
+          return this->NewOneConnectingFromObjectPool(
+              event_manager, fd, server_address, peer_address);
+        },
+        [this](Connecting* connecting_ptr) {
+          this->DeleteOneConnectingFromObjectPool(connecting_ptr);
+        }));
   }
   balancer_ = std::make_unique<Balancer>(&event_managers_, 0);
 }
@@ -95,7 +104,8 @@ void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
       socket_fd, GetLocalAddress(socket_fd),
-      peer_address);  // Pick a "Reactor" with lowest load and insert the new
+      peer_address);  // Pick a "Reactor" with lowest load and
+                      // insert the new
                       // connection created just now into it
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
