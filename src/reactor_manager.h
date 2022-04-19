@@ -24,6 +24,7 @@
 #include "connector.h"
 #include "net_address.h"
 #include "non_copyable_movable.h"
+#include "object_pool.h"
 #include "spin_lock.h"
 
 namespace taotu {
@@ -62,6 +63,19 @@ class ServerReactorManager : NonCopyableMovable {
   // Drive the engine (push everything starting -- start all event loops)
   void Loop();
 
+  // Create a new connection from the object pool
+  template <class... Args>
+  Connecting* NewOneConnectingFromObjectPool(Args... args) {
+    LockGuard lock_guard(object_pool_lock_);
+    return object_pool_.New(args...);
+  }
+
+  // Delete a connection from the object pool
+  void DeleteOneConnectingFromObjectPool(Connecting* connecting_ptr) {
+    LockGuard lock_guard(object_pool_lock_);
+    object_pool_.Delete(connecting_ptr);
+  }
+
  private:
   typedef std::unique_ptr<Acceptor> AcceptorPtr;
   typedef std::unique_ptr<Balancer> BalancerPtr;
@@ -93,6 +107,12 @@ class ServerReactorManager : NonCopyableMovable {
   // Callback function which will be called when this TCP connection should be
   // closed
   NormalCallback CloseCallback_;
+
+  // Object pool for connections
+  ObjectPool<Connecting> object_pool_;
+
+  // Spin lock protecting the object pool
+  mutable MutexLock object_pool_lock_;
 };
 
 /**
