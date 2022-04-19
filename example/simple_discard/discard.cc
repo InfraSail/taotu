@@ -1,7 +1,8 @@
 /**
  * @file discard.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "DiscardServer" which is a simple discard
+ * server.
  * @date 2022-03-01
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -26,6 +27,10 @@ DiscardServer::DiscardServer(const taotu::NetAddress& listen_address,
                                      taotu::TimePoint time_point) {
     this->OnMessageCallback(connection, io_buffer, time_point);
   });
+}
+DiscardServer::~DiscardServer() {
+  delete event_manager_;
+  taotu::END_LOG();
 }
 
 void DiscardServer::Start() {

@@ -1,7 +1,8 @@
 /**
  * @file pingpong_client.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "PingpongClient" which is a pingpong total client
+ * and "Session" which manage one connection to the server.
  * @date 2022-03-28
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -20,21 +21,22 @@
 
 class Session;
 
-/**
- * @brief  // TODO:
- *
- */
 class PingpongClient : taotu::NonCopyableMovable {
  public:
   PingpongClient(const taotu::NetAddress& server_address, size_t block_size,
                  size_t session_count, int timeout, size_t thread_count);
   ~PingpongClient();
 
+  // Start the client
   void Start();
 
+  // Get the string for the I/O test
   const std::string& GetMessage() const { return message_; }
 
+  // Called after one connection creating
   void OnConnecting();
+
+  // Called before one connection destroying
   void OnDisconnecting(taotu::Connecting& connection);
 
  private:
@@ -51,24 +53,26 @@ class PingpongClient : taotu::NonCopyableMovable {
   std::unique_ptr<taotu::Balancer> balancer_;
 };
 
-/**
- * @brief  // TODO:
- *
- */
 class Session : taotu::NonCopyableMovable {
  public:
   Session(taotu::EventManager* event_manager,
           const taotu::NetAddress& server_address,
           PingpongClient* master_client);
 
+  // Start the session
   void Start();
+
+  // Stop the session
   void Stop();
 
   int64_t GetBytesRead() const { return bytes_read_; }
   int64_t GetMessagesRead() const { return messages_read_; }
 
  private:
+  // Called after the connection creating and before the connection destroying
   void OnConnectionCallback(taotu::Connecting& connection);
+
+  // Called after messages arriving
   void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer, taotu::TimePoint);
 

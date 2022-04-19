@@ -1,7 +1,7 @@
 /**
  * @file chat_client.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Implementation of class "ChatClient" which is a chat client.
  * @date 2022-03-21
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -30,6 +30,7 @@ ChatClient::ChatClient(const taotu::NetAddress& connect_address)
     this->codec_.OnMessage(connection, io_buffer, time_point);
   });
 }
+ChatClient::~ChatClient() { taotu::END_LOG(); }
 
 void ChatClient::Connect() { client_->Connect(); }
 void ChatClient::Disconnect() { client_->Disconnect(); }

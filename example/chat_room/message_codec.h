@@ -1,7 +1,8 @@
 /**
  * @file message_codec.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "Codec" which is a message codec (getting the
+ * length of each message by the header).
  * @date 2022-03-21
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -28,9 +29,11 @@ class Codec : taotu::NonCopyableMovable {
 
   explicit Codec(const MessageCallback& cb);
 
+  // Called after a complete message arriving
   void OnMessage(taotu::Connecting& connection, taotu::IoBuffer* io_buffer,
                  taotu::TimePoint time_point);
 
+  // Set the header(the length of the message) and "send" the message
   void Send(taotu::Connecting* connection, const std::string& message);
 
  private:

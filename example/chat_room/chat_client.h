@@ -1,7 +1,7 @@
 /**
  * @file chat_client.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Declaration of class "ChatClient" which is a chat client.
  * @date 2022-03-22
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -21,14 +21,22 @@
 class ChatClient : taotu::NonCopyableMovable {
  public:
   ChatClient(const taotu::NetAddress& connect_address);
+  ~ChatClient();
 
+  // Start connecting
   void Connect();
+
+  // Disconnect the connection
   void Disconnect();
 
+  // Write the message with the specific header to the server
   void Write(const std::string& message);
 
  private:
+  // Called after one connection creating and before one connection destroying
   void OnConnection(taotu::Connecting& connection);
+
+  // Called after messages arriving
   void OnCodecMessage(taotu::Connecting&, const std::string& message,
                       taotu::TimePoint);
 

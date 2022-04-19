@@ -1,7 +1,7 @@
 /**
  * @file server_main.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Main entrance of the pingpong server (stress test).
  * @date 2022-03-28
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -15,6 +15,9 @@
 
 #include "pingpong_server.h"
 
+// Call it by:
+// './chat_server [port [amount-of-I/O-threads
+// [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
   if (1 == argc) {
     PingpongServer pingpong_server{taotu::NetAddress{4567}, false};

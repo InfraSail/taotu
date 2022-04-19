@@ -1,7 +1,8 @@
 /**
  * @file main.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief  // TODO:
+ * @brief Main entrance of the simple time server (always sends the current
+ * time).
  * @date 2022-03-03
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -15,6 +16,9 @@
 
 #include "time.h"
 
+// Call it by:
+// './simple_time [port [amount-of-I/O-threads
+// [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
   if (1 == argc) {
     TimeServer time_server{taotu::NetAddress{4567}, false};
