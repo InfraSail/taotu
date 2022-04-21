@@ -7,7 +7,7 @@
 
 TEST(TimeTest, AddTimeTaskTest) {
   taotu::Timer timer;
-  EXPECT_EQ(timer.GetMinTimeDurationSet(), 10000);
+  EXPECT_EQ(timer.GetMinTimeDuration(), 10000);
   int flag1 = 0;
   int flag2 = 0;
   int flag3 = 0;
@@ -20,7 +20,7 @@ TEST(TimeTest, AddTimeTaskTest) {
   auto f3 = [&]() { flag3 = 3; };
   taotu::TimePoint time_point3;
   timer.AddTimeTask(time_point3, std::move(f3));
-  EXPECT_EQ(timer.GetMinTimeDurationSet(), 0);
+  EXPECT_EQ(timer.GetMinTimeDuration(), 0);
   ::sleep(4);
   auto time_task_pair_list = timer.GetExpiredTimeTasks();
   EXPECT_EQ(time_task_pair_list[0].first.GetMillisecond(),
@@ -35,5 +35,5 @@ TEST(TimeTest, AddTimeTaskTest) {
             time_point1.GetMillisecond());
   time_task_pair_list[2].second();
   EXPECT_EQ(flag1, 1);
-  EXPECT_EQ(timer.GetMinTimeDurationSet(), 10000);
+  EXPECT_EQ(timer.GetMinTimeDuration(), 10000);
 }
