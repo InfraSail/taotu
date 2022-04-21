@@ -77,7 +77,7 @@ void EventManager::Work() {
   //     ::pthread_self());
   while (!should_quit_) {
     auto return_time =
-        poller_.Poll(timer_.GetMinTimeDurationSet(),
+        poller_.Poll(timer_.GetMinTimeDuration(),
                      &active_events_);  // Return time is the time point of the
                                         // end of this polling
     DoWithActiveTasks(return_time);
@@ -120,7 +120,7 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
 void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
   TimePoint tmp_time_point = time_point;
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
-  if (timer_.GetMinTimeDurationSet() >=
+  if (timer_.GetMinTimeDuration() >=
       tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
     WakeUp();
   }
@@ -129,7 +129,7 @@ void EventManager::RunAfter(int64_t delay_microseconds,
                             Timer::TimeCallback TimeTask) {
   TimePoint tmp_time_point{delay_microseconds};
   timer_.AddTimeTask(tmp_time_point, std::move(TimeTask));
-  if (timer_.GetMinTimeDurationSet() >=
+  if (timer_.GetMinTimeDuration() >=
       tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
     WakeUp();
   }
@@ -146,7 +146,7 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
     time_point.SetTaskContinueCallback(std::move(IsContinue));
   }
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
-  if (timer_.GetMinTimeDurationSet() >=
+  if (timer_.GetMinTimeDuration() >=
       tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
     WakeUp();
   }
