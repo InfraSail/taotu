@@ -5,7 +5,7 @@
 #include "../src/time_point.h"
 #include "../src/timer.h"
 
-TEST(TimerTest, AddTimeTask) {
+TEST(TimerTest, AddTimeTaskTest) {
   taotu::Timer timer;
   EXPECT_EQ(timer.GetMinTimeDurationSet(), 10000);
   int flag1 = 0;
