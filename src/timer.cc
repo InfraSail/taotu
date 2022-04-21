@@ -20,7 +20,7 @@ void Timer::AddTimeTask(const TimePoint& time_point, TimeCallback TimeTask) {
   time_points_.insert({time_point, std::move(TimeTask)});
 }
 
-int Timer::GetMinTimeDurationSet() const {
+int Timer::GetMinTimeDuration() const {
   LockGuard lock_guard(mutex_lock_);
   if (time_points_.empty()) {
     return 10000;
