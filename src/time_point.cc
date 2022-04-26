@@ -11,6 +11,8 @@
 
 #include "time_point.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 using namespace taotu;
@@ -27,8 +29,8 @@ TimePoint::TimePoint(int64_t duration_microseconds,
 
 int64_t TimePoint::GetMicroseconds() const { return time_point_microseconds_; }
 
-int TimePoint::GetMillisecond() const {
-  return static_cast<int>(time_point_microseconds_ / 1000);
+int64_t TimePoint::GetMillisecond() const {
+  return time_point_microseconds_ / 1000;
 }
 
 void TimePoint::SetTaskContinueCallback(std::function<bool()> IsContinue) {
