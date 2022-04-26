@@ -41,7 +41,7 @@ class TimePoint {
   int64_t GetMicroseconds() const;
 
   // Get the time point in millisecond
-  int GetMillisecond() const;
+  int64_t GetMillisecond() const;
 
   bool operator<(const TimePoint& tp) const {
     return time_point_microseconds_ < tp.time_point_microseconds_;
