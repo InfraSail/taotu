@@ -86,8 +86,8 @@ void EventManager::Work() {
   }
   // LOG(logger::kDebug, "The event loop in thread(%lu) is stopping.",
   //     ::pthread_self());
-  for (auto& [_, connection] : connection_map_) {
-    delete connection;
+  for (auto& connection : connection_map_) {
+    delete connection.second;
   }
   connection_map_.clear();
 }
@@ -121,7 +121,8 @@ void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
   TimePoint tmp_time_point = time_point;
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
-      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+      static_cast<int>(tmp_time_point.GetMillisecond() -
+                       TimePoint().GetMillisecond())) {
     WakeUp();
   }
 }
@@ -130,7 +131,8 @@ void EventManager::RunAfter(int64_t delay_microseconds,
   TimePoint tmp_time_point{delay_microseconds};
   timer_.AddTimeTask(tmp_time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
-      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+      static_cast<int>(tmp_time_point.GetMillisecond() -
+                       TimePoint().GetMillisecond())) {
     WakeUp();
   }
 }
@@ -147,7 +149,8 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
   }
   timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
-      tmp_time_point.GetMillisecond() - TimePoint().GetMillisecond()) {
+      static_cast<int>(tmp_time_point.GetMillisecond() -
+                       TimePoint().GetMillisecond())) {
     WakeUp();
   }
 }
