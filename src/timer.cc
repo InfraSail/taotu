@@ -25,8 +25,8 @@ int Timer::GetMinTimeDuration() const {
   if (time_points_.empty()) {
     return 10000;
   }
-  int duration = time_points_.begin()->first.GetMillisecond() -
-                 TimePoint().GetMillisecond();
+  int duration = static_cast<int>(time_points_.begin()->first.GetMillisecond() -
+                                  TimePoint().GetMillisecond());
   return duration > 0 ? duration
                       : 0;  // Could not give a negtive value of the duration
 }
