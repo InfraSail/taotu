@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #include "../src/time_point.h"
