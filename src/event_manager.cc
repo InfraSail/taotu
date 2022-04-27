@@ -86,8 +86,8 @@ void EventManager::Work() {
   }
   // LOG(logger::kDebug, "The event loop in thread(%lu) is stopping.",
   //     ::pthread_self());
-  for (auto& connection : connection_map_) {
-    delete connection.second;
+  for (auto& [_, connection] : connection_map_) {
+    delete connection;
   }
   connection_map_.clear();
 }
