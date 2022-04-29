@@ -35,7 +35,10 @@ HttpServer::~HttpServer() {
   taotu::END_LOG();
 }
 
-void HttpServer::Start() { server_->Start(); }
+void HttpServer::Start() {
+  server_->Start();
+  event_manager_->Work();
+}
 
 void HttpServer::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
@@ -58,7 +61,10 @@ void HttpServer::OnMessageCallback(taotu::Connecting& connection,
 
 void HttpServer::OnRequest(taotu::Connecting& connection,
                            const HttpParser& http_parser) {
-  auto connection_info = http_parser.GetHeader("Connection").value();
+  auto connection_info_optional = http_parser.GetHeader("Connection");
+  auto connection_info = connection_info_optional.has_value()
+                             ? connection_info_optional.value()
+                             : std::string{};
   auto version_pair = http_parser.GetVersionPair();
   bool should_close = ("close" == connection_info ||
                        (1 == version_pair.first && 0 == version_pair.second &&
