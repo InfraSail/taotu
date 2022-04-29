@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 
+#include <any>
 #include <atomic>
 #include <functional>
 #include <string>
@@ -57,6 +58,10 @@ class Connecting : NonCopyableMovable {
   const NetAddress& GetPeerNetAddress() const { return peer_address_; }
 
   EventManager& GetEventManager() { return *event_manager_; }
+
+  void SetContext(const std::any& context) { context_ = context; }
+  const std::any& GetConstContext() const { return context_; }
+  std::any* GetMutableContext() { return &context_; }
 
   void RegisterOnConnectionCallback(const NormalCallback& cb) {
     OnConnectionCallback_ = cb;
@@ -198,6 +203,9 @@ class Connecting : NonCopyableMovable {
 
   // Connection state (atomic)
   std::atomic<ConnectionState> state_;
+
+  // Context for any object bound
+  std::any context_;
 };
 
 }  // namespace taotu
