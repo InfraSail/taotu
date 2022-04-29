@@ -22,7 +22,7 @@ ChatClient::ChatClient(const taotu::NetAddress& connect_address)
       }) {
   event_manager_->Loop();
   client_->SetConnectionCallback([this](taotu::Connecting& connection) {
-    this->OnConnection(connection);
+    this->OnConnectionCallback(connection);
   });
   client_->SetMessageCallback([this](taotu::Connecting& connection,
                                      taotu::IoBuffer* io_buffer,
@@ -42,7 +42,7 @@ void ChatClient::Write(const std::string& message) {
   }
 }
 
-void ChatClient::OnConnection(taotu::Connecting& connection) {
+void ChatClient::OnConnectionCallback(taotu::Connecting& connection) {
   taotu::LOG(
       taotu::logger::kDebug,
       "Create a new connection with fd(%d) between local net address (IP(%s), "

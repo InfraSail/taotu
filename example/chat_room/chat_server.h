@@ -31,7 +31,7 @@ class ChatServer : taotu::NonCopyableMovable {
   typedef std::set<taotu::Connecting*> ConnectionSet;
 
   // Called after one connection creating and before one connection destroying
-  void OnConnection(taotu::Connecting& connection);
+  void OnConnectionCallback(taotu::Connecting& connection);
 
   // Called after messages arriving
   void OnCodecMessage(taotu::Connecting& connection, const std::string& message,
