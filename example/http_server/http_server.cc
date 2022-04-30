@@ -57,6 +57,7 @@ void HttpServer::OnMessageCallback(taotu::Connecting& connection,
     connection.ShutDownWrite();
   }
   OnRequest(connection, *parser);
+  parser->Reset();
 }
 
 void HttpServer::OnRequest(taotu::Connecting& connection,
