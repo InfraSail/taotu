@@ -12,6 +12,7 @@
 #include "http_response.h"
 
 #include <stdio.h>
+#include <string.h>
 
 HttpResponse::HttpResponse(bool should_close)
     : major_version_(1),
@@ -43,7 +44,7 @@ void HttpResponse::AppendToIoBuffer(taotu::IoBuffer* io_buffer) {
   char buf[32];
   ::snprintf(buf, sizeof(buf), "HTTP/%u.%u %u ", major_version_, minor_version_,
              status_);
-  io_buffer->Append(buf, sizeof(buf));
+  io_buffer->Append(buf, ::strlen(buf));
   io_buffer->Append(status_message_.c_str(), status_message_.size());
   io_buffer->Append("\r\n", 2);
 
