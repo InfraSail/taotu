@@ -59,7 +59,10 @@ class Connecting : NonCopyableMovable {
 
   EventManager& GetEventManager() { return *event_manager_; }
 
-  void SetContext(const std::any& context) { context_ = context; }
+  template <class T, class... Args>
+  void SetContext(Args... args) {
+    context_ = std::make_any<T>(args...);
+  }
   const std::any& GetConstContext() const { return context_; }
   std::any& GetMutableContext() { return context_; }
 
