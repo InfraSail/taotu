@@ -49,14 +49,17 @@ void HttpServer::OnConnectionCallback(taotu::Connecting& connection) {
 void HttpServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
                                    taotu::TimePoint time_point) {
-  auto& parser = std::any_cast<HttpParser&>(connection.GetMutableContext());
-  std::string message{io_buffer->RetrieveAllAsString()};
-  if (!parser.Parse(message.c_str(), message.size())) {
-    connection.Send("HTTP/1.1 400 Bad Request\r\n\r\n");
-    connection.ShutDownWrite();
+  auto& parser_any = connection.GetMutableContext();
+  if (parser_any.has_value()) {
+    auto& parser = std::any_cast<HttpParser&>(parser_any);
+    std::string message{io_buffer->RetrieveAllAsString()};
+    if (!parser.Parse(message.c_str(), message.size())) {
+      connection.Send("HTTP/1.1 400 Bad Request\r\n\r\n");
+      connection.ShutDownWrite();
+    }
+    OnRequest(connection, parser);
+    parser.Reset();
   }
-  OnRequest(connection, parser);
-  parser.Reset();
 }
 
 void HttpServer::OnRequest(taotu::Connecting& connection,
