@@ -52,7 +52,7 @@ void HttpResponse::AppendToIoBuffer(taotu::IoBuffer* io_buffer) {
     io_buffer->Append("Connection: close\r\n", 19);
   } else {
     ::snprintf(buf, sizeof(buf), "Content-Length: %zd\r\n", body_.size());
-    io_buffer->Append(buf, sizeof(buf));
+    io_buffer->Append(buf, ::strlen(buf));
     io_buffer->Append("Connection: Keep-Alive\r\n", 24);
   }
 
