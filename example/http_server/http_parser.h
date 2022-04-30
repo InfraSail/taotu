@@ -21,7 +21,7 @@
 
 class HttpParser {
  public:
-  HttpParser(llhttp_type_t type);
+  explicit HttpParser(llhttp_type_t type);
 
   int OnMessageBegin(llhttp_t* parser);
   int OnStatus(llhttp_t* parser, const char* str, size_t str_length);
