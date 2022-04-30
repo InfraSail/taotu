@@ -42,8 +42,7 @@ void HttpServer::Start() {
 
 void HttpServer::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
-    connection.SetContext(
-        std::make_any<HttpParser>(llhttp_type_t::HTTP_REQUEST));
+    connection.SetContext<HttpParser>(llhttp_type_t::HTTP_REQUEST);
   }
 }
 
