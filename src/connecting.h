@@ -61,7 +61,7 @@ class Connecting : NonCopyableMovable {
 
   void SetContext(const std::any& context) { context_ = context; }
   const std::any& GetConstContext() const { return context_; }
-  std::any* GetMutableContext() { return &context_; }
+  std::any& GetMutableContext() { return context_; }
 
   void RegisterOnConnectionCallback(const NormalCallback& cb) {
     OnConnectionCallback_ = cb;
