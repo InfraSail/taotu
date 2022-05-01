@@ -22,13 +22,13 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
   if (http_parser.GetMethod() == "GET") {
     if (http_parser.GetUrl() == "/") {
       http_response->SetStatus(200, "OK");
-      http_response->SetContentType("text/html");
+      http_response->SetContentType("text/html; charset=utf-8");
       http_response->SetBody(
           "<html><head><title>taotu</title></head><body><h1>Hello</h1>Welcome "
           "to taotu!</body></html>");
     } else if (http_parser.GetUrl() == "/hello") {
       http_response->SetStatus(200, "OK");
-      http_response->SetContentType("text/html");
+      http_response->SetContentType("text/html; charset=utf-8");
       http_response->SetBody(
           "<html><head><title>taotu</title></head><body><h1>Hello</h1>Hello, "
           "taotu!</body></html>");
