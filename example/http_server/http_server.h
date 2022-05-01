@@ -33,9 +33,6 @@ class HttpServer : taotu::NonCopyableMovable {
   }
 
  private:
-  // Called after one connection creating and before one connection destroying
-  void OnConnectionCallback(taotu::Connecting& connection);
-
   // Called after messages arriving
   void OnMessageCallback(taotu::Connecting& connection,
                          taotu::IoBuffer* io_buffer,
