@@ -68,7 +68,9 @@ void HttpServer::OnRequest(taotu::Connecting& connection,
   HttpCallback_(http_parser, &http_response);
   taotu::IoBuffer io_buffer;
   http_response.AppendToIoBuffer(&io_buffer);
-  connection.Send(&io_buffer);
+  std::string message{io_buffer.RetrieveAllAsString()};
+  ::printf("%s\n", message.c_str());
+  connection.Send(message.c_str(), message.size());
   if (http_response.ShouldClose()) {
     connection.ShutDownWrite();
   }

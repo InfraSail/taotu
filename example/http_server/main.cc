@@ -19,7 +19,7 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
   ::strftime(buf, 100, "%a, %d %b %Y %T %Z", time_tm);
   http_response->AddHeaderField("Date", buf);
   http_response->AddHeaderField("Transfer-Encoding", "chunked");
-  // http_response->AddHeaderField("Server", "taotu-http-server");
+  http_response->AddHeaderField("Server", "taotu-http-server");
   if (http_parser.GetMethod() == "GET") {
     if (http_parser.GetUrl() == "/") {
       http_response->SetStatus(200, "OK");
