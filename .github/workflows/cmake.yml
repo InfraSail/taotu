@@ -27,7 +27,7 @@ jobs:
 
     - name: Install llhttp manually
       working-directory: ${{github.workspace}}/..
-      run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install && cd -
+      run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
