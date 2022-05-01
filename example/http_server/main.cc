@@ -11,18 +11,24 @@
 #include "http_server.h"
 
 void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
+  time_t time_now;
+  ::time(&time_now);
+  struct tm* time_tm = ::gmtime(&time_now);
+  char buf[100];
+  ::strftime(buf, 100, "%a, %d %b %Y %T %Z", time_tm);
+  http_response->AddHeaderField("Date", buf);
+  http_response->AddHeaderField("Transfer-Encoding", "chunked");
+  http_response->AddHeaderField("Server", "taotu-http-server");
   if (http_parser.GetMethod() == "GET") {
     if (http_parser.GetUrl() == "/") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html");
-      http_response->AddHeaderField("Server", "taotu-http-server");
       http_response->SetBody(
           "<html><head><title>taotu</title></head><body><h1>Hello</h1>Welcome "
           "to taotu!</body></html>");
     } else if (http_parser.GetUrl() == "/hello") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html");
-      http_response->AddHeaderField("Server", "taotu-http-server");
       http_response->SetBody(
           "<html><head><title>taotu</title></head><body><h1>Hello</h1>Hello, "
           "taotu!</body></html>");
