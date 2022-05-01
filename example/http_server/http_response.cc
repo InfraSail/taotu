@@ -57,9 +57,9 @@ void HttpResponse::AppendToIoBuffer(taotu::IoBuffer* io_buffer) {
   }
 
   for (const auto& header_field : header_fields_) {
-    io_buffer->Append(header_field.first.c_str(), sizeof(header_field.first));
+    io_buffer->Append(header_field.first.c_str(), header_field.first.size());
     io_buffer->Append(": ", 2);
-    io_buffer->Append(header_field.second.c_str(), sizeof(header_field.second));
+    io_buffer->Append(header_field.second.c_str(), header_field.second.size());
     io_buffer->Append("\r\n", 2);
   }
 
