@@ -63,14 +63,12 @@ void HttpServer::OnRequest(taotu::Connecting& connection,
   auto version_pair = http_parser.GetVersionPair();
   bool should_close = ("close" == connection_info ||
                        (1 == version_pair.first && 0 == version_pair.second &&
-                        connection_info != "Keep-Alive"));
+                        connection_info != "keep-alive"));
   HttpResponse http_response(should_close);
   HttpCallback_(http_parser, &http_response);
   taotu::IoBuffer io_buffer;
   http_response.AppendToIoBuffer(&io_buffer);
-  std::string message{io_buffer.RetrieveAllAsString()};
-  ::printf("%s\n", message.c_str());
-  connection.Send(message.c_str(), message.size());
+  connection.Send(&io_buffer);
   if (http_response.ShouldClose()) {
     connection.ShutDownWrite();
   }
