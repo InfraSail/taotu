@@ -133,7 +133,7 @@ class Logger : NonCopyableMovable {
 
   static constexpr int64_t kStandardLogFileByte = kLogFileMaxByte / 2;
 
-  alignas(256) volatile int64_t is_stopping_;
+  alignas(256) volatile bool is_stopping_;
   alignas(256) char filler1_;  // Only for solving "False Sharing"
 
   std::mutex log_mutex_;
@@ -166,7 +166,9 @@ class Logger : NonCopyableMovable {
   // A lock-free ring buffer of log-msg ("Disruptor")
   LogBuffer log_buffer_;
 };
+
 }  // namespace logger
+
 }  // namespace taotu
 
 #endif  // !TAOTU_SRC_LOGGER_H_
