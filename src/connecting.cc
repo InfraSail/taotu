@@ -125,8 +125,8 @@ void Connecting::OnEstablishing() {
   if (kConnecting ==
       state_.load()) {  // This TCP connection can only be create once
     SetState(kConnected);
-    // `StartReading()` will not be called here but called after calling
-    // `ConnectionCallback()`
+    OnConnectionCallback_(*this);
+    StartReading();
   }
 }
 
