@@ -112,8 +112,6 @@ void ServerReactorManager::AcceptNewConnectionCallback(
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
   new_connection->RegisterCloseCallback(CloseCallback_);
   new_connection->OnEstablishing();  // Set the status flag on and start reading
-  ConnectionCallback_(*new_connection);
-  new_connection->StartReading();
 }
 
 ClientReactorManager::ClientReactorManager(EventManager* event_manager,
@@ -191,6 +189,4 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
     connection_ = new_connection;
   }
   new_connection->OnEstablishing();  // Set the status flag on and start reading
-  ConnectionCallback_(*new_connection);
-  new_connection->StartReading();
 }
