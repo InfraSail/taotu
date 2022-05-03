@@ -60,8 +60,8 @@ void Server::Start() {
 }
 
 void Server::RemoveConnection(Connecting& connection) {
-  LOG(logger::kDebug, "The connection with fd(%d) is being removed.",
-      connection.Fd());
+  // LOG(logger::kDebug, "The connection with fd(%d) is being removed.",
+  //     connection.Fd());
   connection.ForceClose();
 }
 
