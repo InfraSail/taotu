@@ -20,6 +20,9 @@ HttpServer::HttpServer(const taotu::NetAddress& listen_address,
       server_(std::make_unique<taotu::Server>(
           event_manager_, listen_address, should_reuse_port, io_thread_amount,
           calculation_thread_amount)) {
+  server_->SetConnectionCallback([this](taotu::Connecting& connection) {
+    this->OnConnectionCallback(connection);
+  });
   server_->SetMessageCallback([this](taotu::Connecting& connection,
                                      taotu::IoBuffer* io_buffer,
                                      taotu::TimePoint time_point) {
@@ -37,12 +40,15 @@ void HttpServer::Start() {
   event_manager_->Work();
 }
 
+void HttpServer::OnConnectionCallback(taotu::Connecting& connection) {
+  if (connection.IsConnected()) {
+    connection.SetContext<HttpParser>(llhttp_type_t::HTTP_REQUEST);
+  }
+}
+
 void HttpServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
                                    taotu::TimePoint time_point) {
-  if (!connection.GetMutableContext().has_value()) {
-    connection.SetContext<HttpParser>(llhttp_type_t::HTTP_REQUEST);
-  }
   auto& parser_any = connection.GetMutableContext();
   auto& parser = std::any_cast<HttpParser&>(parser_any);
   std::string message{io_buffer->RetrieveAllAsString()};
