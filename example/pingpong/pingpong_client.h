@@ -14,7 +14,6 @@
 
 #include <atomic>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "../../src/client.h"
@@ -31,7 +30,7 @@ class PingpongClient : taotu::NonCopyableMovable {
   void Start();
 
   // Get the string for the I/O test
-  const std::string& GetMessage() const { return message_; }
+  const std::vector<char>& GetMessage() const { return message_; }
 
   // Called after one connection creating
   void OnConnecting();
@@ -48,7 +47,7 @@ class PingpongClient : taotu::NonCopyableMovable {
   size_t session_count_;
   int timeout_;
   std::vector<std::unique_ptr<Session>> sessions_;
-  std::string message_;
+  std::vector<char> message_;
   std::atomic_size_t conn_num_;
   std::unique_ptr<taotu::Balancer> balancer_;
 };
