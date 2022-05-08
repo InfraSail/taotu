@@ -92,7 +92,6 @@ void Connector::Connect() {
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
   if (sock_fd < 0) {
     LOG(logger::kError, "Fail to initialize for connector!!!");
-    ::exit(-1);
   }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
                          static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
