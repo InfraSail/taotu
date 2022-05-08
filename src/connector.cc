@@ -12,17 +12,18 @@
 
 #include <errno.h>
 #include <netinet/in.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <algorithm>
-#include <cstdio>
 #include <string>
 
 #include "connecting.h"
 #include "logger.h"
 #include "time_point.h"
+
 using namespace taotu;
 enum {
   kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
