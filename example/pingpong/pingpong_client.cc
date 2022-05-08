@@ -23,7 +23,8 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
                                int timeout, size_t thread_count)
     : event_managers_(++thread_count),
       session_count_(session_count),
-      timeout_(timeout) {
+      timeout_(timeout),
+      message_() {
   event_managers_[0] = new taotu::EventManager;
   event_managers_[0]->RunAfter(timeout_ * 1000 * 1000,
                                [this]() { this->DoWithTimeout(); });
@@ -32,8 +33,8 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
   }
-  for (size_t i = 0; i < block_size; ++i) {
-    message_.push_back(static_cast<char>(i % 128));
+  for (size_t i = 1; i <= block_size; ++i) {
+    message_.emplace_back(static_cast<char>(i % 128));
   }
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (size_t i = 0; i < session_count_; ++i) {
@@ -117,7 +118,8 @@ void Session::Stop() { client_.Disconnect(); }
 void Session::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
     connection.SetTcpNoDelay(true);
-    connection.Send(master_client_->GetMessage());
+    const auto& message = master_client_->GetMessage();
+    connection.Send(&(*(message.begin())), message.size());
     master_client_->OnConnecting();
   } else {
     master_client_->OnDisconnecting(connection);
