@@ -118,7 +118,6 @@ class Eventer : NonCopyableMovable {
   // For poll()
   int index_ = -1;
 #endif
-
 };
 
 }  // namespace taotu
