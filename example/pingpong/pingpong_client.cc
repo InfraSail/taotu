@@ -36,7 +36,6 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   for (size_t i = 1; i <= block_size; ++i) {
     message_.emplace_back(static_cast<char>(i % 128));
   }
-  ::printf("%lu\n", message_.size());
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (size_t i = 0; i < session_count_; ++i) {
     sessions_.emplace_back(std::make_unique<Session>(
@@ -119,7 +118,6 @@ void Session::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
     connection.SetTcpNoDelay(true);
     const auto& message = master_client_->GetMessage();
-    ::printf("%p\n", &(*(message.begin())));
     connection.Send(&(*(message.begin())), message.size());
     master_client_->OnConnecting();
   } else {
