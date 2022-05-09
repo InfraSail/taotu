@@ -14,7 +14,7 @@
 #include <errno.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
-#ifndef _linux_
+#ifndef __linux__
 #include <fcntl.h>
 #endif
 
@@ -46,7 +46,7 @@ int Socketer::Accept(NetAddress* peer_address) const {
   struct sockaddr_in6 socket_address6;
   ::memset(&socket_address6, 0, sizeof(socket_address6));
   auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
-#ifndef _linux_
+#ifndef __linux__
   int conn_fd = ::accept(
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
