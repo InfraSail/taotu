@@ -169,21 +169,19 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
-  new_connection->RegisterCloseCallback(std::bind(
-      [this](Connecting& connection) {
-        {
-          LockGuard lock_guard(connection_mutex_);
-          connection_ = nullptr;
-        }
-        connection.ForceClose();
-        if (this->should_retry_ && this->can_connect_) {
-          LOG(logger::kDebug, "Reconnect to [ Ip(%s), Port(%u) ].",
-              this->connector_.GetServerAddress().GetIp().c_str(),
-              this->connector_.GetServerAddress().GetPort());
-          this->connector_.Restart();
-        }
-      },
-      std::placeholders::_1));
+  new_connection->RegisterCloseCallback([this](Connecting& connection) {
+    {
+      LockGuard lock_guard(connection_mutex_);
+      connection_ = nullptr;
+    }
+    connection.ForceClose();
+    if (this->should_retry_ && this->can_connect_) {
+      LOG(logger::kDebug, "Reconnect to [ Ip(%s), Port(%u) ].",
+          this->connector_.GetServerAddress().GetIp().c_str(),
+          this->connector_.GetServerAddress().GetPort());
+      this->connector_.Restart();
+    }
+  });
   {
     LockGuard lock_guard(connection_mutex_);
     connection_ = new_connection;
