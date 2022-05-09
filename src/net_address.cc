@@ -65,6 +65,4 @@ std::string NetAddress::GetIp() const {
   }
   return std::string{ip};
 }
-uint16_t NetAddress::GetPort() const {
-  return htons(socket_address_.sin_port);
-}
+uint16_t NetAddress::GetPort() const { return htons(socket_address_.sin_port); }
