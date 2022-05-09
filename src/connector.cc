@@ -90,6 +90,14 @@ void Connector::Connect() {
   int sock_fd =
       ::socket(server_address_.GetFamily(),
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+#ifndef __linux__
+  int flags = ::fcntl(sock_fd, F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  ::fcntl(sock_fd, F_SETFL, flags);
+  flags = ::fcntl(sock_fd, F_GETFD, 0);
+  flags |= FD_CLOEXEC;
+  ::fcntl(sock_fd, F_SETFD, flags);
+#endif
   if (sock_fd < 0) {
     LOG(logger::kError, "Fail to initialize for connector!!!");
   }
