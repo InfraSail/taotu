@@ -53,10 +53,10 @@ int Socketer::Accept(NetAddress* peer_address) const {
       &addr_len);
   int flags = ::fcntl(conn_fd, F_GETFL, 0);
   flags |= O_NONBLOCK;
-  int ret = ::fcntl(conn_fd, F_SETFL, flags);
+  ::fcntl(conn_fd, F_SETFL, flags);
   flags = ::fcntl(conn_fd, F_GETFD, 0);
   flags |= FD_CLOEXEC;
-  ret = ::fcntl(conn_fd, F_SETFD, flags);
+  ::fcntl(conn_fd, F_SETFD, flags);
 #else
   int conn_fd = ::accept4(
       socket_fd_,
