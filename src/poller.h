@@ -12,6 +12,8 @@
 #ifndef TAOTU_SRC_POLLER_H_
 #define TAOTU_SRC_POLLER_H_
 
+#ifdef __linux__
+
 #include <stdint.h>
 #include <sys/epoll.h>
 
@@ -37,7 +39,7 @@ class Poller : NonCopyableMovable {
   Poller();
   ~Poller();
 
-  // Polling (calls the native poll() (poll, epoll or kqueue))
+  // Polling (calls the native poll() (epoll))
   TimePoint Poll(int timeout, EventerList* active_eventers);
 
   void AddEventer(Eventer* eventer);
@@ -51,14 +53,65 @@ class Poller : NonCopyableMovable {
 
   bool IsPollFdEffective() const;
 
-  // File descriptor of the native poll() (poll, epoll or kqueue)
+  // File descriptor of the native poll() (epoll)
   int poll_fd_;
 
-  // The buffer for active event struct of the native poll() (poll, epoll or
-  // kqueue)
+  // The buffer for active event struct of the native poll() (epoll)
   PollEventList poll_events_;
 };
 
 }  // namespace taotu
+
+#else
+
+#include <poll.h>
+#include <stdint.h>
+
+#include <map>
+#include <unordered_map>
+#include <vector>
+
+#include "non_copyable_movable.h"
+#include "time_point.h"
+
+namespace taotu {
+
+class Eventer;
+
+/**
+ * @brief "Poller" waits for triggered events and transmits them to "Eventer"
+ * (they will be handled by its member function "Loop()").
+ *
+ */
+class Poller : NonCopyableMovable {
+ public:
+  typedef std::vector<Eventer*> EventerList;
+
+  Poller();
+  ~Poller();
+
+  // Polling (calls the native poll() (poll))
+  TimePoint Poll(int timeout, EventerList* active_eventers);
+
+  void AddEventer(Eventer* eventer);
+  void ModifyEventer(Eventer* eventer);
+  void RemoveEventer(Eventer* eventer);
+
+ private:
+  typedef std::map<int, Eventer*> EventerMap;
+  typedef std::vector<struct pollfd> PollEventList;
+
+  void GetActiveEventer(int event_amount, EventerList* active_eventers) const;
+
+  // Map for all file descriptors mapping to their corresponding "Eventer"s
+  EventerMap eventers_;
+
+  // Buffer for active event struct of the native poll() (poll)
+  PollEventList poll_events_;
+};
+
+}  // namespace taotu
+
+#endif
 
 #endif  // !TAOTU_SRC_POLLER_H_
