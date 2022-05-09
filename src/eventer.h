@@ -72,6 +72,12 @@ class Eventer : NonCopyableMovable {
 
   void RemoveMyself();
 
+#ifndef __linux__
+  // For poll()
+  void SetIndex(int index) { index_ = index; }
+  int GetIndex() const { return index_; }
+#endif
+
  private:
   void UpdateEvents();
 
@@ -107,6 +113,12 @@ class Eventer : NonCopyableMovable {
 
   // Callback function which will be called when error happens
   NormalCallback ErrorCallback_;
+
+#ifndef __linux__
+  // For poll()
+  int index_ = -1;
+#endif
+
 };
 
 }  // namespace taotu
