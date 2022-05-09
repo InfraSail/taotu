@@ -23,13 +23,13 @@ NetAddress::NetAddress(uint16_t port, bool loop_back, bool use_ipv6) {
     ::memset(&socket_address6_, 0, sizeof(socket_address6_));
     socket_address6_.sin6_family = AF_INET6;
     socket_address6_.sin6_addr = loop_back ? in6addr_loopback : in6addr_any;
-    socket_address6_.sin6_port = ::htons(port);
+    socket_address6_.sin6_port = htons(port);
   } else {
     ::memset(&socket_address_, 0, sizeof(socket_address_));
     socket_address_.sin_family = AF_INET;
     socket_address_.sin_addr.s_addr =
-        ::htonl(loop_back ? INADDR_LOOPBACK : INADDR_ANY);
-    socket_address_.sin_port = ::htons(port);
+        htonl(loop_back ? INADDR_LOOPBACK : INADDR_ANY);
+    socket_address_.sin_port = htons(port);
   }
 }
 NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
@@ -42,7 +42,7 @@ NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
           "format!!!",
           ip.c_str());
     }
-    socket_address6_.sin6_port = ::htons(port);
+    socket_address6_.sin6_port = htons(port);
   } else {
     ::memset(&socket_address_, 0, sizeof(socket_address_));
     socket_address_.sin_family = AF_INET;
@@ -52,7 +52,7 @@ NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
           "format!!!",
           ip.c_str());
     }
-    socket_address_.sin_port = ::htons(port);
+    socket_address_.sin_port = htons(port);
   }
 }
 
@@ -66,5 +66,5 @@ std::string NetAddress::GetIp() const {
   return std::string{ip};
 }
 uint16_t NetAddress::GetPort() const {
-  return ::htons(socket_address_.sin_port);
+  return htons(socket_address_.sin_port);
 }
