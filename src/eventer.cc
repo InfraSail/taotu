@@ -10,6 +10,8 @@
 
 #include "eventer.h"
 
+#include <utility>
+
 #include "logger.h"
 #include "poller.h"
 
@@ -65,7 +67,7 @@ void Eventer::Work(TimePoint tp) {
       // LOG(logger::kDebug,
       //     "An I/O multiplexing event is triggered now: fd(%d) is readable.",
       //     fd_);
-      ReadCallback_(tp);
+      ReadCallback_(std::move(tp));
     }
   }
   // Writable
