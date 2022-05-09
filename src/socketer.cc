@@ -13,8 +13,10 @@
 
 #include <errno.h>
 #include <netinet/tcp.h>
-#include <sys/socket.h>
 #include <unistd.h>
+#ifndef _linux_
+#include <fcntl.h>
+#endif
 
 #include <string>
 
@@ -44,10 +46,23 @@ int Socketer::Accept(NetAddress* peer_address) const {
   struct sockaddr_in6 socket_address6;
   ::memset(&socket_address6, 0, sizeof(socket_address6));
   auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
+#ifndef _linux_
+  int conn_fd = ::accept(
+      socket_fd_,
+      static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
+      &addr_len);
+  int flags = ::fcntl(conn_fd, F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  int ret = ::fcntl(conn_fd, F_SETFL, flags);
+  flags = ::fcntl(conn_fd, F_GETFD, 0);
+  flags |= FD_CLOEXEC;
+  ret = ::fcntl(conn_fd, F_SETFD, flags);
+#else
   int conn_fd = ::accept4(
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
+#endif
   if (conn_fd < 0) {  // Error occurs
     int saved_errno = errno;
     switch (saved_errno) {

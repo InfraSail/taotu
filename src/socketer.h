@@ -12,8 +12,18 @@
 #ifndef TAOTU_SRC_SOCKETER_H_
 #define TAOTU_SRC_SOCKETER_H_
 
+#include <sys/socket.h>
+
 #include "net_address.h"
 #include "non_copyable_movable.h"
+
+#ifndef SOCK_NONBLOCK
+#define SOCK_NONBLOCK 0
+#endif
+
+#ifndef SOCK_CLOEXEC
+#define SOCK_CLOEXEC 0
+#endif
 
 namespace taotu {
 
