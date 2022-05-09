@@ -14,9 +14,6 @@
 #include <errno.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
-#ifndef __linux__
-#include <fcntl.h>
-#endif
 
 #include <string>
 
