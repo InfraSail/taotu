@@ -37,16 +37,18 @@ EventManager::EventManager(
     : poller_()
 #ifdef __linux__
       ,
-      wake_up_eventer_(&poller_, []() -> int {
-        int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-        if (event_fd < 0) {
-          LOG(logger::kError,
-              "Creating wake_up_eventer fails in I/O thread(%lu)",
-              ::pthread_self());
-          ::exit(-1);
-        }
-        return event_fd;
-      }())
+      wake_up_eventer_(
+          &poller_,
+          []() -> int {
+            int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+            if (event_fd < 0) {
+              LOG(logger::kError,
+                  "Creating wake_up_eventer fails in I/O thread(%lu)",
+                  ::pthread_self());
+              ::exit(-1);
+            }
+            return event_fd;
+          }())
 #else
       ,
       wake_up_eventer_(nullptr)
@@ -72,8 +74,8 @@ EventManager::EventManager(
   wake_up_eventer_ = new Eventer(&poller_, wake_up_pipe_[0]);
   wake_up_eventer_->RegisterReadCallback([this](const TimePoint&) {
     uint64_t msg = 1;
-    ssize_t n = ::read(this->wake_up_pipe_[0],
-                       reinterpret_cast<void*>(&msg), sizeof(msg));
+    ssize_t n = ::read(this->wake_up_pipe_[0], reinterpret_cast<void*>(&msg),
+                       sizeof(msg));
     if (n != sizeof(msg)) {
       LOG(logger::kError,
           "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
@@ -154,7 +156,8 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   return ref_conn;
 }
 
-void EventManager::RunAt(const TimePoint& time_point, Timer::TimeCallback TimeTask) {
+void EventManager::RunAt(const TimePoint& time_point,
+                         Timer::TimeCallback TimeTask) {
   const TimePoint& tmp_time_point = time_point;
   timer_.AddTimeTask(time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
@@ -215,8 +218,8 @@ void EventManager::WakeUp() {
   }
 #else
   uint64_t msg = 1;
-  ssize_t n = ::write(wake_up_pipe_[1], reinterpret_cast<void*>(&msg),
-                      sizeof(msg));
+  ssize_t n =
+      ::write(wake_up_pipe_[1], reinterpret_cast<void*>(&msg), sizeof(msg));
   if (n != sizeof(msg)) {
     LOG(logger::kError,
         "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
