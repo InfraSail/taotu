@@ -72,7 +72,7 @@ void Poller::AddEventer(Eventer* eventer) {
   // LOG(logger::kDebug,
   //     "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
   //     ::pthread_self(), eventer->Fd(), eventer->Events());
-  struct epoll_event poll_event{};
+  struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
@@ -92,7 +92,7 @@ void Poller::ModifyEventer(Eventer* eventer) {
   //     "In thread(%lu), modify fd(%d) with events(%lu) from the native "
   //     "poll().",
   //     ::pthread_self(), eventer->Fd(), eventer->Events());
-  struct epoll_event poll_event{};
+  struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
@@ -111,7 +111,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
   // LOG(logger::kDebug, "In thread(%lu), remove fd(%d) from the native "
   //     "poll().",
   //     ::pthread_self(), eventer->Fd());
-  struct epoll_event poll_event{};
+  struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
@@ -144,8 +144,6 @@ bool Poller::IsPollFdEffective() const {
 
 #else
 
-#include "poller.h"
-
 #include <errno.h>
 #include <pthread.h>
 #include <string.h>
@@ -155,6 +153,7 @@ bool Poller::IsPollFdEffective() const {
 
 #include "eventer.h"
 #include "logger.h"
+#include "poller.h"
 #include "time_point.h"
 
 using namespace taotu;
@@ -165,7 +164,8 @@ Poller::Poller() = default;
 Poller::~Poller() = default;
 
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
-  int event_amount = ::poll(&(*poll_events_.begin()), static_cast<nfds_t>(poll_events_.size()), timeout);
+  int event_amount = ::poll(&(*poll_events_.begin()),
+                            static_cast<nfds_t>(poll_events_.size()), timeout);
   int saved_errno = errno;
   TimePoint return_time;
   if (event_amount > 0) {
@@ -188,7 +188,7 @@ void Poller::AddEventer(Eventer* eventer) {
   // LOG(logger::kDebug,
   //     "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
   //     ::pthread_self(), eventer->Fd(), eventer->Events());
-  struct pollfd poll_event{};
+  struct pollfd poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.fd = eventer->Fd();
   poll_event.events = static_cast<short>(eventer->Events());
@@ -228,8 +228,10 @@ void Poller::RemoveEventer(Eventer* eventer) {
   poll_events_.pop_back();
 }
 
-void Poller::GetActiveEventer(int event_amount, EventerList* active_eventers) const {
-  for (auto itr = poll_events_.cbegin(); itr != poll_events_.end() && event_amount > 0; ++itr) {
+void Poller::GetActiveEventer(int event_amount,
+                              EventerList* active_eventers) const {
+  for (auto itr = poll_events_.cbegin();
+       itr != poll_events_.end() && event_amount > 0; ++itr) {
     if (itr->revents > 0) {
       --event_amount;
       auto evt = eventers_.find(itr->fd);
