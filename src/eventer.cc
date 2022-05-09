@@ -13,6 +13,10 @@
 #include "logger.h"
 #include "poller.h"
 
+#ifndef POLLRDHUP
+#define POLLRDHUP 0x0000
+#endif
+
 using namespace taotu;
 
 Eventer::Eventer(Poller* poller, int fd)
