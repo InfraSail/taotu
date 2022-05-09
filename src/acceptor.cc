@@ -42,6 +42,14 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
     LOG(logger::kError, "Fail to initialize for acceptor!!!");
     ::exit(-1);
   }
+#ifndef __linux__
+  int flags = ::fcntl(accept_soketer_.Fd(), F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  ::fcntl(accept_soketer_.Fd(), F_SETFL, flags);
+  flags = ::fcntl(accept_soketer_.Fd(), F_GETFD, 0);
+  flags |= FD_CLOEXEC;
+  ::fcntl(accept_soketer_.Fd(), F_SETFD, flags);
+#endif
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
