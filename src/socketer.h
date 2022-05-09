@@ -20,11 +20,8 @@
 #include "net_address.h"
 #include "non_copyable_movable.h"
 
-#ifndef SOCK_NONBLOCK
+#ifndef __linux__
 #define SOCK_NONBLOCK 0
-#endif
-
-#ifndef SOCK_CLOEXEC
 #define SOCK_CLOEXEC 0
 #endif
 
