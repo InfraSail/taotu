@@ -13,7 +13,9 @@
 
 #include <pthread.h>
 #include <stdlib.h>
+#ifdef __linux__
 #include <sys/eventfd.h>
+#endif
 #include <unistd.h>
 
 #include <string>
@@ -32,7 +34,10 @@ EventManager::EventManager(
                               const NetAddress&)>
         CreateConnectionCallback,
     std::function<void(Connecting*)> DestroyConnectionCallback)
-    : poller_(), wake_up_eventer_(&poller_, []() -> int {
+    : poller_()
+#ifdef __linux__
+      ,
+      wake_up_eventer_(&poller_, []() -> int {
         int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
         if (event_fd < 0) {
           LOG(logger::kError,
@@ -41,8 +46,14 @@ EventManager::EventManager(
           ::exit(-1);
         }
         return event_fd;
-      }()) {
-  wake_up_eventer_.RegisterReadCallback([this](TimePoint) {
+      }())
+#else
+      ,
+      wake_up_eventer_(nullptr)
+#endif
+{
+#ifdef __linux__
+  wake_up_eventer_.RegisterReadCallback([this](const TimePoint&) {
     uint64_t msg = 1;
     ssize_t n = ::read(this->wake_up_eventer_.Fd(),
                        reinterpret_cast<void*>(&msg), sizeof(msg));
@@ -54,15 +65,41 @@ EventManager::EventManager(
     }
   });
   wake_up_eventer_.EnableReadEvents();
+#else
+  if (::socketpair(AF_UNIX, SOCK_STREAM, 0, wake_up_pipe_) < 0) {
+    LOG(logger::kError, "Fail in socketpair!!!");
+  }
+  wake_up_eventer_ = new Eventer(&poller_, wake_up_pipe_[0]);
+  wake_up_eventer_->RegisterReadCallback([this](const TimePoint&) {
+    uint64_t msg = 1;
+    ssize_t n = ::read(this->wake_up_pipe_[0],
+                       reinterpret_cast<void*>(&msg), sizeof(msg));
+    if (n != sizeof(msg)) {
+      LOG(logger::kError,
+          "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
+          "bytes.",
+          ::pthread_self(), msg);
+    }
+  });
+  wake_up_eventer_->EnableReadEvents();
+#endif
   if (CreateConnectionCallback && DestroyConnectionCallback) {
     CreateConnectionCallback_ = CreateConnectionCallback;
     DestroyConnectionCallback_ = DestroyConnectionCallback;
   }
 }
 EventManager::~EventManager() {
+#ifdef __linux__
   wake_up_eventer_.DisableAllEvents();
   wake_up_eventer_.RemoveMyself();
   ::close(wake_up_eventer_.Fd());
+#else
+  wake_up_eventer_->DisableAllEvents();
+  wake_up_eventer_->RemoveMyself();
+  ::close(wake_up_pipe_[0]);
+  ::close(wake_up_pipe_[1]);
+  delete wake_up_eventer_;
+#endif
   if (thread_.joinable()) {
     thread_.join();
   }
@@ -117,9 +154,9 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   return ref_conn;
 }
 
-void EventManager::RunAt(TimePoint time_point, Timer::TimeCallback TimeTask) {
-  TimePoint tmp_time_point = time_point;
-  timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
+void EventManager::RunAt(const TimePoint& time_point, Timer::TimeCallback TimeTask) {
+  const TimePoint& tmp_time_point = time_point;
+  timer_.AddTimeTask(time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
       static_cast<int>(tmp_time_point.GetMillisecond() -
                        TimePoint().GetMillisecond())) {
@@ -138,7 +175,7 @@ void EventManager::RunAfter(int64_t delay_microseconds,
 }
 void EventManager::RunEveryUntil(int64_t interval_microseconds,
                                  Timer::TimeCallback TimeTask,
-                                 TimePoint start_time_point,
+                                 const TimePoint& start_time_point,
                                  std::function<bool()> IsContinue) {
   TimePoint time_point{interval_microseconds, start_time_point, true};
   TimePoint tmp_time_point = time_point;
@@ -147,7 +184,7 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
   if (IsContinue) {
     time_point.SetTaskContinueCallback(std::move(IsContinue));
   }
-  timer_.AddTimeTask(std::move(time_point), std::move(TimeTask));
+  timer_.AddTimeTask(time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
       static_cast<int>(tmp_time_point.GetMillisecond() -
                        TimePoint().GetMillisecond())) {
@@ -166,6 +203,7 @@ void EventManager::DeleteConnection(int fd) {
 }
 
 void EventManager::WakeUp() {
+#ifdef __linux__
   uint64_t msg = 1;
   ssize_t n = ::write(wake_up_eventer_.Fd(), reinterpret_cast<void*>(&msg),
                       sizeof(msg));
@@ -175,17 +213,28 @@ void EventManager::WakeUp() {
         "bytes.",
         ::pthread_self(), msg);
   }
+#else
+  uint64_t msg = 1;
+  ssize_t n = ::write(wake_up_pipe_[1], reinterpret_cast<void*>(&msg),
+                      sizeof(msg));
+  if (n != sizeof(msg)) {
+    LOG(logger::kError,
+        "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
+        "bytes.",
+        ::pthread_self(), msg);
+  }
+#endif
 }
 
 void EventManager::Quit() { should_quit_ = true; }
 
-void EventManager::DoWithActiveTasks(TimePoint return_time) {
+void EventManager::DoWithActiveTasks(const TimePoint& return_time) {
   for (auto active_event : active_events_) {
     active_event->Work(return_time);
   }
   active_events_.clear();
 }
-void EventManager::DoExpiredTimeTasks(TimePoint return_time) {
+void EventManager::DoExpiredTimeTasks(const TimePoint& return_time) {
   Timer::ExpiredTimeTasks expired_time_tasks = timer_.GetExpiredTimeTasks();
   for (auto& expired_time_task : expired_time_tasks) {
     auto ExpiredTimeCallback = expired_time_task.second;

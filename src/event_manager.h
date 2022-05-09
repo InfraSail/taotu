@@ -67,13 +67,13 @@ class EventManager : NonCopyableMovable {
   }
 
   // Register a time task which should be done in a future time point
-  void RunAt(TimePoint time_point, Timer::TimeCallback TimeTask);
+  void RunAt(const TimePoint& time_point, Timer::TimeCallback TimeTask);
   // Register a time task which should be done after a certain duration
   void RunAfter(int64_t delay_microseconds, Timer::TimeCallback TimeTask);
   // Register a time task which should be done at certain intervals
   void RunEveryUntil(
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
-      TimePoint start_time_point = TimePoint::FNow(),
+      const TimePoint& start_time_point = TimePoint::FNow(),
       std::function<bool()> IsContinue = std::function<bool()>{});
 
   // Register a time task which should be done as soon as possible
@@ -94,9 +94,9 @@ class EventManager : NonCopyableMovable {
   typedef std::unordered_set<int> Fds;
 
   // Handle I/O events
-  void DoWithActiveTasks(TimePoint return_time);
+  void DoWithActiveTasks(const TimePoint& return_time);
   // Do time tasks
-  void DoExpiredTimeTasks(TimePoint return_time);
+  void DoExpiredTimeTasks(const TimePoint& return_time);
   // Destroy connections which should be destroyed
   void DestroyClosedConnections();
 
@@ -127,8 +127,14 @@ class EventManager : NonCopyableMovable {
   // should be destroyed
   mutable MutexLock closed_fds_lock_;
 
+#ifdef __linux__
   // To wake up this I/O thread
   Eventer wake_up_eventer_;
+#else
+  // To wake up this I/O thread
+  int wake_up_pipe_[2];
+  Eventer* wake_up_eventer_;
+#endif
 
   std::function<Connecting*(EventManager*, int, const NetAddress&,
                             const NetAddress&)>
