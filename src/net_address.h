@@ -28,7 +28,7 @@ class NetAddress {
  public:
   explicit NetAddress(uint16_t port = 0, bool loop_back = false,
                       bool use_ipv6 = false);
-  NetAddress(std::string ip, uint16_t port, bool use_ipv6 = false);
+  NetAddress(const std::string& ip, uint16_t port, bool use_ipv6 = false);
   explicit NetAddress(const struct sockaddr_in& socket_address)
       : socket_address_(socket_address) {}
   explicit NetAddress(const struct sockaddr_in6& socket_address6)
