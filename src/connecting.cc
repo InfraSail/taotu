@@ -109,7 +109,7 @@ void Connecting::DoClosing() {
 void Connecting::DoWithError() const {
   int opt_val;
   auto opt_len = static_cast<socklen_t>(sizeof(opt_val));
-  int saved_errno = 0;
+  int saved_errno;
   if (::getsockopt(Fd(), SOL_SOCKET, SO_ERROR,
                    reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
     saved_errno = errno;
