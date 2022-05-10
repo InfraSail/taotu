@@ -39,7 +39,8 @@ class NetAddress {
   uint16_t GetPort() const;
 
   size_t GetSize() const {
-    return (GetFamily() == AF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+    return (GetFamily() == AF_INET ? sizeof(struct sockaddr_in)
+                                   : sizeof(struct sockaddr_in6));
   }
 
   const struct sockaddr* GetNetAddress() const {
