@@ -45,6 +45,9 @@ class NetAddress {
   const struct sockaddr* GetNetAddress() const {
     return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
   };
+  void SetNetAddress(const struct sockaddr_in& socket_address) {
+    socket_address_ = socket_address;
+  }
   void SetNetAddress6(const struct sockaddr_in6& socket_address6) {
     socket_address6_ = socket_address6;
   }
