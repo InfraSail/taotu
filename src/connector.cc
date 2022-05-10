@@ -102,7 +102,7 @@ void Connector::Connect() {
     LOG(logger::kError, "Fail to initialize for connector!!!");
   }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
-                         static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
+                         server_address_.GetSize());
   int saved_errno = (0 == status) ? 0 : errno;
   switch (saved_errno) {
     case 0:
