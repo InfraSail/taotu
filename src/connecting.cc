@@ -123,7 +123,7 @@ void Connecting::DoWithError() const {
 
 void Connecting::OnEstablishing() {
   if (kConnecting ==
-      state_.load()) {  // This TCP connection can only be create once
+      state_.load()) {  // This TCP connection can only be created once
     SetState(kConnected);
     OnConnectionCallback_(*this);
     StartReading();
