@@ -30,9 +30,9 @@ enum {
   kInitRetryDelayMicroseconds = 500 * 1000,
 };
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
-  struct sockaddr_in6 local_addr;
+  struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
@@ -40,9 +40,9 @@ static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   return local_addr;
 }
 static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
-  struct sockaddr_in6 local_addr;
+  struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
     LOG(logger::kError, "Fail to get local network info when accepting!!!");
@@ -51,7 +51,7 @@ static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
 }
 static int GetSocketError(int socket_fd) {
   int socket_option;
-  socklen_t socket_option_length =
+  auto socket_option_length =
       static_cast<socklen_t>(sizeof(socket_option));
   if (::getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &socket_option,
                    &socket_option_length) < 0) {
