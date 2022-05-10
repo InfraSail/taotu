@@ -51,8 +51,7 @@ static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
 }
 static int GetSocketError(int socket_fd) {
   int socket_option;
-  auto socket_option_length =
-      static_cast<socklen_t>(sizeof(socket_option));
+  auto socket_option_length = static_cast<socklen_t>(sizeof(socket_option));
   if (::getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &socket_option,
                    &socket_option_length) < 0) {
     return errno;
