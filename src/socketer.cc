@@ -40,7 +40,7 @@ void Socketer::Listen() const {
 }
 int Socketer::Accept(NetAddress* peer_address) const {
   // Ignore whether IP address specification of client-end is IPv4 or IPv6
-  struct sockaddr_in6 socket_address6;
+  struct sockaddr_in6 socket_address6 {};
   ::memset(&socket_address6, 0, sizeof(socket_address6));
   auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
 #ifndef __linux__
