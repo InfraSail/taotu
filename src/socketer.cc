@@ -50,9 +50,7 @@ int Socketer::Accept(NetAddress* peer_address) const {
     sockaddr_ptr = reinterpret_cast<void*>(&socket_address);
   }
   int conn_fd = ::accept(
-      socket_fd_,
-      static_cast<struct sockaddr*>(sockaddr_ptr),
-      &addr_len);
+      socket_fd_, static_cast<struct sockaddr*>(sockaddr_ptr), &addr_len);
   int flags = ::fcntl(conn_fd, F_GETFL, 0);
   flags |= O_NONBLOCK;
   ::fcntl(conn_fd, F_SETFL, flags);
