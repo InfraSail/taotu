@@ -26,7 +26,7 @@ Socketer::~Socketer() { Close(); }
 
 void Socketer::BindAddress(const NetAddress& local_address) const {
   int ret = ::bind(socket_fd_, local_address.GetNetAddress(),
-                   static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
+                   static_cast<socklen_t>(local_address.GetSize()));
   if (ret < 0) {
     LOG(logger::kError, "SocketFd(%d) failed to bind an address!!!",
         socket_fd_);
