@@ -39,14 +39,19 @@ void Socketer::Listen() const {
   }
 }
 int Socketer::Accept(NetAddress* peer_address) const {
-  // Ignore whether IP address specification of client-end is IPv4 or IPv6
-  struct sockaddr_in6 socket_address6 {};
-  ::memset(&socket_address6, 0, sizeof(socket_address6));
-  auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
 #ifndef __linux__
+  struct sockaddr_in6 socket_address6 {};
+  struct sockaddr_in socket_address {};
+  auto addr_len = static_cast<socklen_t>(peer_address->GetSize());
+  void* sockaddr_ptr = nullptr;
+  if (peer_address->GetFamily() == AF_INET6) {
+    sockaddr_ptr = reinterpret_cast<void*>(&socket_address6);
+  } else {
+    sockaddr_ptr = reinterpret_cast<void*>(&socket_address);
+  }
   int conn_fd = ::accept(
       socket_fd_,
-      static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
+      static_cast<struct sockaddr*>(sockaddr_ptr),
       &addr_len);
   int flags = ::fcntl(conn_fd, F_GETFL, 0);
   flags |= O_NONBLOCK;
@@ -55,6 +60,10 @@ int Socketer::Accept(NetAddress* peer_address) const {
   flags |= FD_CLOEXEC;
   ::fcntl(conn_fd, F_SETFD, flags);
 #else
+  // Ignore whether IP address specification of client-end is IPv4 or IPv6
+  struct sockaddr_in6 socket_address6 {};
+  ::memset(&socket_address6, 0, sizeof(socket_address6));
+  auto addr_len = static_cast<socklen_t>(sizeof(socket_address6));
   int conn_fd = ::accept4(
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
@@ -89,7 +98,15 @@ int Socketer::Accept(NetAddress* peer_address) const {
         break;
     }
   } else {
+#ifndef __linux__
+    if (peer_address->GetFamily() == AF_INET6) {
+      peer_address->SetNetAddress6(socket_address6);
+    } else {
+      peer_address->SetNetAddress(socket_address);
+    }
+#else
     peer_address->SetNetAddress6(socket_address6);
+#endif
   }
   return conn_fd;
 }
