@@ -58,9 +58,9 @@ NetAddress::NetAddress(std::string ip, uint16_t port, bool use_ipv6) {
 
 std::string NetAddress::GetIp() const {
   char ip[64]{""};
-  if (socket_address_.sin_family == AF_INET6) {
+  if (GetFamily() == AF_INET6) {
     ::inet_ntop(AF_INET6, &socket_address6_, ip, sizeof(ip));
-  } else if (socket_address_.sin_family == AF_INET) {
+  } else if (GetFamily() == AF_INET) {
     ::inet_ntop(AF_INET, &socket_address_, ip, sizeof(ip));
   }
   return std::string{ip};
