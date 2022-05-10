@@ -38,6 +38,10 @@ class NetAddress {
   std::string GetIp() const;
   uint16_t GetPort() const;
 
+  size_t GetSize() const {
+    return (GetFamily() == AF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+  }
+
   const struct sockaddr* GetNetAddress() const {
     return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
   };
