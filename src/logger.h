@@ -40,7 +40,13 @@ namespace taotu {
 
 // The unique API for recording logs
 #define LOG(...) logger::Logger::GetLogger()->RecordLogs(__VA_ARGS__)
+
+#ifdef TAOTU_DEBUG  // Flag for debug build, set in CMakeLists.txt
 #define LOG_DEBUG(...) LOG(taotu::logger::kDebug, __VA_ARGS__)
+#else  // release build
+#define LOG_DEBUG(...)
+#endif  // TAOTU_DEBUG
+
 #define LOG_INFO(...) LOG(taotu::logger::kInfo, __VA_ARGS__)
 #define LOG_NOTICE(...) LOG(taotu::logger::kNotice, __VA_ARGS__)
 #define LOG_WARN(...) LOG(taotu::logger::kWarn, __VA_ARGS__)
