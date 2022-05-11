@@ -18,6 +18,7 @@
 // './pingpong_client IP port amount-of-I/O-threads size-of-block-sent
 // amount-of-sessions time-for-waiting'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("pingpong_client_log.txt");
   if (argc != 7) {
     ::fprintf(stderr,
               "Usage: client <host_ip> <port> <threads> <blocksize> <sessions> "
