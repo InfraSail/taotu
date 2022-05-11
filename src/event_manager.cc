@@ -131,7 +131,7 @@ void EventManager::Work() {
 Connecting* EventManager::InsertNewConnection(int socket_fd,
                                               const NetAddress& local_address,
                                               const NetAddress& peer_address) {
-  Connecting* ref_conn = nullptr;
+  Connecting* ref_conn;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
     if (CreateConnectionCallback_) {
