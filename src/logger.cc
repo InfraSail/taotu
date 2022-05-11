@@ -16,12 +16,14 @@
 
 using namespace taotu::logger;
 
-bool Logger::is_initialized = false;
+bool Logger::is_initialized{false};
 
-Logger* Logger::GetLogger() {
+Logger* Logger::GetLogger(bool should_start) {
   // The unique actual "Logger" object
   static Logger logger;
-  logger.StartLogger(kLogName);
+  if (should_start) {
+    logger.StartLogger(kLogName);
+  }
   return &logger;
 }
 
