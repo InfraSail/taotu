@@ -44,7 +44,7 @@ namespace taotu {
 #ifdef TAOTU_DEBUG  // Flag for debug build, set in CMakeLists.txt
 #define LOG_DEBUG(...) LOG(taotu::logger::kDebug, __VA_ARGS__)
 #else  // release build
-#define LOG_DEBUG(...)
+#define LOG_DEBUG(...) TrivialFunc()
 #endif  // TAOTU_DEBUG
 
 #define LOG_INFO(...) LOG(taotu::logger::kInfo, __VA_ARGS__)
@@ -56,6 +56,8 @@ namespace taotu {
 #define LOG_EMERG(...) LOG(taotu::logger::kEmerg, __VA_ARGS__)
 
 /********************************************************************/
+
+inline void TrivialFunc() {}
 
 namespace logger {
 
