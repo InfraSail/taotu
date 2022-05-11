@@ -52,7 +52,7 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
       poll_events_.resize(poll_events_.size() * 2);
     }
   } else if (0 == event_amount) {
-    LOG_WARN("In thread(%lu), there is nothing happened!", ::pthread_self());
+    LOG_DEBUG("In thread(%lu), there is nothing happened.", ::pthread_self());
   } else {
     if (EINTR != saved_errno) {
       errno = saved_errno;
@@ -171,7 +171,7 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   if (event_amount > 0) {
     GetActiveEventer(event_amount, active_eventers);
   } else if (0 == event_amount) {
-    LOG_WARN("In thread(%lu), there is nothing happened!", ::pthread_self());
+    LOG_DEBUG("In thread(%lu), there is nothing happened.", ::pthread_self());
   } else {
     if (EINTR != saved_errno) {
       errno = saved_errno;
