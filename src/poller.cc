@@ -235,13 +235,13 @@ void Poller::GetActiveEventer(int event_amount,
                               EventerList* active_eventers) const {
   LockGuard lock_guard(event_lock_);
   for (auto itr = poll_events_.cbegin();
-       itr != poll_events_.end() && event_amount > 0; ++itr) {
+       itr != poll_events_.cend() && event_amount > 0; ++itr) {
     if (itr->revents > 0) {
       --event_amount;
       auto evt = eventers_.find(itr->fd);
-      Eventer* eventer = evt->second;
+      auto& eventer = evt->second;
       eventer->ReceiveEvents(itr->revents);
-      active_eventers->emplace_back(eventer);
+      active_eventers->push_back(eventer);
     }
   }
 }
