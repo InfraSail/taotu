@@ -20,6 +20,7 @@
 // './simple_echo [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("simple_echo_log.txt");
   if (1 == argc) {
     EchoServer echo_server{taotu::NetAddress{4567}, false};
     echo_server.Start();
