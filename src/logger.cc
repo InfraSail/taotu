@@ -119,7 +119,7 @@ void Logger::WriteDownLogs() {
       size_t tmp_buf_len = tmp_buf.size();
       ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
       cur_log_file_byte_ += static_cast<int64_t>(tmp_buf_len);
-      tmp_buf.resize(0);
+      tmp_buf.clear();
       // Update the index which was read last time
       read_index_ = cur_read_index;
     }
