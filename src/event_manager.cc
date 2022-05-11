@@ -122,6 +122,7 @@ void EventManager::Work() {
     DestroyClosedConnections();
   }
   LOG_DEBUG("The event loop in thread(%lu) is stopping.", ::pthread_self());
+  LockGuard lock_guard(connection_map_mutex_lock_);
   for (auto& [_, connection] : connection_map_) {
     delete connection;
   }
@@ -198,7 +199,7 @@ void EventManager::RunSoon(Timer::TimeCallback TimeTask) {
 }
 
 void EventManager::DeleteConnection(int fd) {
-  LockGuard lock_guard_cf(closed_fds_lock_);
+  LockGuard lock_guard(closed_fds_lock_);
   closed_fds_.insert(fd);
 }
 
@@ -260,11 +261,11 @@ void EventManager::DoExpiredTimeTasks(const TimePoint& return_time) {
   }
 }
 void EventManager::DestroyClosedConnections() {
-  LockGuard lock_guard(closed_fds_lock_);
+  LockGuard lock_guard_cf(closed_fds_lock_);
   for (auto fd : closed_fds_) {
     Connecting* connection = nullptr;
     {
-      LockGuard lock_guard(connection_map_mutex_lock_);
+      LockGuard lock_guard_cm(connection_map_mutex_lock_);
       if (connection_map_.count(fd) && connection_map_[fd]->IsDisconnected()) {
         connection = connection_map_[fd];
         connection_map_.erase(fd);
