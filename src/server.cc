@@ -13,7 +13,7 @@
 
 #include <string>
 
-// #include "logger.h"
+#include "logger.h"
 #include "reactor_manager.h"
 
 using namespace taotu;
@@ -60,13 +60,12 @@ void Server::Start() {
 }
 
 void Server::RemoveConnection(Connecting& connection) {
-  // LOG(logger::kDebug, "The connection with fd(%d) is being removed.",
-  //     connection.Fd());
+  LOG_DEBUG("The connection with fd(%d) is being removed.", connection.Fd());
   connection.ForceClose();
 }
 
 void Server::DefaultOnConnectionCallback(Connecting& connection) {
-  LOG(logger::kDebug,
+  LOG_DEBUG(
       "A new connection with fd(%d) on local IP(%s) Port(%u) and peer IP(%s) "
       "Port(%u) is %s now.",
       connection.Fd(), connection.GetLocalNetAddress().GetIp().c_str(),

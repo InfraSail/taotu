@@ -36,11 +36,10 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
   eventer_.RegisterWriteCallback([this] { this->DoWriting(); });
   eventer_.RegisterCloseCallback([this] { this->DoClosing(); });
   eventer_.RegisterErrorCallback([this] { this->DoWithError(); });
-  // LOG(logger::kDebug, "The TCP connection with fd(%d) is being created.",
-  //     socket_fd);
+  LOG_DEBUG("The TCP connection with fd(%d) is being created.", socket_fd);
 }
 Connecting::~Connecting() {
-  // LOG(logger::kDebug, "The TCP connection with fd(%d) is closing.", Fd());
+  LOG_DEBUG("The TCP connection with fd(%d) is closing.", Fd());
 }
 
 void Connecting::DoReading(TimePoint receive_time) {
@@ -56,7 +55,7 @@ void Connecting::DoReading(TimePoint receive_time) {
     DoClosing();
   } else {  // Handle the error
     errno = saved_errno;
-    LOG(logger::kError, "Fd(%d) reading failed!!!", Fd());
+    LOG_ERROR("Fd(%d) reading failed!!!", Fd());
     DoWithError();
   }
   if (!IsConnected()) {  // If not connected, stop reading and writing
@@ -83,17 +82,16 @@ void Connecting::DoWriting() {
         }
       }
     } else {
-      LOG(logger::kError, "Fd(%d) writing failed!!!", Fd());
+      LOG_ERROR("Fd(%d) writing failed!!!", Fd());
     }
   } else {
-    LOG(logger::kWarn,
-        "Fd(%d) should not be retried anymore because it is down!", Fd());
+    LOG_WARN("Fd(%d) should not be retried anymore because it is down!", Fd());
   }
 }
 void Connecting::DoClosing() {
   if (state_.load() != kDisconnected) {
-    // LOG(logger::kDebug, "Fd(%d) with state(\"%s\") is closing.", Fd(),
-    //     GetConnectionStateInfo(state_).c_str());
+    LOG_DEBUG("Fd(%d) with state(\"%s\") is closing.", Fd(),
+              GetConnectionStateInfo(state_).c_str());
     SetState(kDisconnected);
     StopReadingWriting();
     if (OnConnectionCallback_) {
@@ -118,7 +116,7 @@ void Connecting::DoWithError() const {
   }
   char errno_info[512];
   auto tmp_ptr = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
-  LOG(logger::kError, "Fd(%d) gets an error -- %s!!!", Fd(), tmp_ptr);
+  LOG_ERROR("Fd(%d) gets an error -- %s!!!", Fd(), tmp_ptr);
 }
 
 void Connecting::OnEstablishing() {
@@ -132,8 +130,8 @@ void Connecting::OnEstablishing() {
 
 void Connecting::Send(const void* message, size_t msg_len) {
   if (kDisconnected == state_.load()) {
-    LOG(logger::kError,
-        "Fd(%d) is disconnected, so give up sending the message!!!", Fd());
+    LOG_ERROR("Fd(%d) is disconnected, so give up sending the message!!!",
+              Fd());
     return;
   }
   if (kConnected == state_.load()) {
@@ -154,8 +152,7 @@ void Connecting::Send(const void* message, size_t msg_len) {
       } else {
         sent_bytes = 0;
         if (EWOULDBLOCK != errno) {
-          LOG(logger::kWarn, "Cannot send the message to fd(%d) directly now!",
-              Fd());
+          LOG_WARN("Cannot send the message to fd(%d) directly now!", Fd());
           if (EPIPE == errno || ECONNRESET == errno) {
             fault = true;
           }

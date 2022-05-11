@@ -52,12 +52,11 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
       poll_events_.resize(poll_events_.size() * 2);
     }
   } else if (0 == event_amount) {
-    // LOG(logger::kWarn, "In thread(%lu), there is nothing happened!",
-    //     ::pthread_self());
+    LOG_WARN("In thread(%lu), there is nothing happened!", ::pthread_self());
   } else {
     if (EINTR != saved_errno) {
       errno = saved_errno;
-      LOG(logger::kError,
+      LOG_ERROR(
           "In thread(%lu), errors occurred when the native poll() executing!!!",
           ::pthread_self());
     }
@@ -69,16 +68,16 @@ void Poller::AddEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  // LOG(logger::kDebug,
-  //     "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
-  //     ::pthread_self(), eventer->Fd(), eventer->Events());
+  LOG_DEBUG(
+      "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
+      ::pthread_self(), eventer->Fd(), eventer->Events());
   struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
   int event_fd = eventer->Fd();
   if (::epoll_ctl(poll_fd_, EPOLL_CTL_ADD, event_fd, &poll_event) < 0) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "In thread(%lu), adding fd(%d) with events(%lu) into the native"
         " poll() failed!!!",
         ::pthread_self(), eventer->Fd(), eventer->Events());
@@ -88,17 +87,17 @@ void Poller::ModifyEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  // LOG(logger::kDebug,
-  //     "In thread(%lu), modify fd(%d) with events(%lu) from the native "
-  //     "poll().",
-  //     ::pthread_self(), eventer->Fd(), eventer->Events());
+  LOG_DEBUG(
+      "In thread(%lu), modify fd(%d) with events(%lu) from the native "
+      "poll().",
+      ::pthread_self(), eventer->Fd(), eventer->Events());
   struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
   int event_fd = eventer->Fd();
   if (::epoll_ctl(poll_fd_, EPOLL_CTL_MOD, event_fd, &poll_event) < 0) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "In thread(%lu), modifying fd(%d) with events(%lu) from the native "
         "poll() failed!!!",
         ::pthread_self(), eventer->Fd(), eventer->Events());
@@ -108,16 +107,17 @@ void Poller::RemoveEventer(Eventer* eventer) {
   if (!IsPollFdEffective()) {
     return;
   }
-  // LOG(logger::kDebug, "In thread(%lu), remove fd(%d) from the native "
-  //     "poll().",
-  //     ::pthread_self(), eventer->Fd());
+  LOG_DEBUG(
+      "In thread(%lu), remove fd(%d) from the native "
+      "poll().",
+      ::pthread_self(), eventer->Fd());
   struct epoll_event poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.events = eventer->Events();
   poll_event.data.ptr = eventer;
   int event_fd = eventer->Fd();
   if (::epoll_ctl(poll_fd_, EPOLL_CTL_DEL, event_fd, &poll_event) < 0) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "In thread(%lu), removing fd(%d) from the native poll() failed!!!",
         ::pthread_self(), eventer->Fd());
   }
@@ -134,7 +134,7 @@ void Poller::GetActiveEventer(int event_amount,
 
 bool Poller::IsPollFdEffective() const {
   if (poll_fd_ < 0) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "In thread(%lu), file descriptor the native poll() is not effective!!!",
         ::pthread_self());
     return false;
@@ -171,12 +171,11 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   if (event_amount > 0) {
     GetActiveEventer(event_amount, active_eventers);
   } else if (0 == event_amount) {
-    // LOG(logger::kWarn, "In thread(%lu), there is nothing happened!",
-    //     ::pthread_self());
+    LOG_WARN("In thread(%lu), there is nothing happened!", ::pthread_self());
   } else {
     if (EINTR != saved_errno) {
       errno = saved_errno;
-      LOG(logger::kError,
+      LOG_ERROR(
           "In thread(%lu), errors occurred when the native poll() executing!!!",
           ::pthread_self());
     }
@@ -185,9 +184,9 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
 }
 
 void Poller::AddEventer(Eventer* eventer) {
-  // LOG(logger::kDebug,
-  //     "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
-  //     ::pthread_self(), eventer->Fd(), eventer->Events());
+  LOG_DEBUG(
+      "In thread(%lu), add fd(%d) with events(%lu) into the native poll().",
+      ::pthread_self(), eventer->Fd(), eventer->Events());
   struct pollfd poll_event {};
   ::memset(static_cast<void*>(&poll_event), 0, sizeof(poll_event));
   poll_event.fd = eventer->Fd();
@@ -198,10 +197,10 @@ void Poller::AddEventer(Eventer* eventer) {
   eventers_[poll_event.fd] = eventer;
 }
 void Poller::ModifyEventer(Eventer* eventer) {
-  // LOG(logger::kDebug,
-  //     "In thread(%lu), modify fd(%d) with events(%lu) from the native "
-  //     "poll().",
-  //     ::pthread_self(), eventer->Fd(), eventer->Events());
+  LOG_DEBUG(
+      "In thread(%lu), modify fd(%d) with events(%lu) from the native "
+      "poll().",
+      ::pthread_self(), eventer->Fd(), eventer->Events());
   struct pollfd& poll_event = poll_events_[eventer->GetIndex()];
   poll_event.fd = eventer->Fd();
   poll_event.events = static_cast<short>(eventer->Events());
@@ -212,9 +211,10 @@ void Poller::ModifyEventer(Eventer* eventer) {
   }
 }
 void Poller::RemoveEventer(Eventer* eventer) {
-  // LOG(logger::kDebug, "In thread(%lu), remove fd(%d) from the native "
-  //     "poll().",
-  //     ::pthread_self(), eventer->Fd());
+  LOG_DEBUG(
+      "In thread(%lu), remove fd(%d) from the native "
+      "poll().",
+      ::pthread_self(), eventer->Fd());
   int index = eventer->GetIndex();
   eventers_.erase(eventer->Fd());
   if (static_cast<size_t>(index) != poll_events_.size() - 1) {
