@@ -40,16 +40,38 @@ namespace taotu {
 
 // The unique API for recording logs
 #define LOG(...) logger::Logger::GetLogger()->RecordLogs(__VA_ARGS__)
+
+#ifdef TAOTU_DEBUG  // Flag for debug build, set in CMakeLists.txt
+#define LOG_DEBUG(...) LOG(taotu::logger::kDebug, __VA_ARGS__)
+#else  // release build
+#define LOG_DEBUG(...)
+#endif  // TAOTU_DEBUG
+
+#define LOG_INFO(...) LOG(taotu::logger::kInfo, __VA_ARGS__)
+#define LOG_NOTICE(...) LOG(taotu::logger::kNotice, __VA_ARGS__)
+#define LOG_WARN(...) LOG(taotu::logger::kWarn, __VA_ARGS__)
+#define LOG_ERROR(...) LOG(taotu::logger::kError, __VA_ARGS__)
+#define LOG_CRIT(...) LOG(taotu::logger::kCrit, __VA_ARGS__)
+#define LOG_ALERT(...) LOG(taotu::logger::kAlert, __VA_ARGS__)
+#define LOG_EMERG(...) LOG(taotu::logger::kEmerg, __VA_ARGS__)
+
 /********************************************************************/
 
 namespace logger {
 
 // Relevant to Log_level_info_prefix
+// Levels are taken from <syslog.h>
 enum LogLevel {
-  kDebug = 0,
-  kWarn,
+  kEmerg = 0,
+  kAlert,
+  kCrit,
   kError,
+  kWarn,
+  kNotice,
+  kInfo,
+  kDebug,
 };
+
 namespace {
 
 enum {
@@ -67,8 +89,16 @@ enum {
 static const std::string kLogName{"log.txt"};
 
 // Relevant to LogLevel
-static const std::string Log_level_info_prefix[3]{
-    "Log(Debug): ", "Log(Warn): ", "Log(Error): "};
+static const std::string Log_level_info_prefix[]{
+    "Log(Emergency): ",
+    "Log(Alert): ",
+    "Log(Critical): ",
+    "Log(Error): ",
+    "Log(Warn): ",
+    "Log(Notice): ",
+    "Log(Info): ",
+    "Log(Debug): ",
+};
 
 /**
  * @brief "Logger" uses a special ring buffer called "Disruptor": the index of
