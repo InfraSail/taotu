@@ -43,8 +43,7 @@ void ChatClient::Write(const std::string& message) {
 }
 
 void ChatClient::OnConnectionCallback(taotu::Connecting& connection) {
-  taotu::LOG(
-      taotu::logger::kDebug,
+  taotu::LOG_DEBUG(
       "Create a new connection with fd(%d) between local net address (IP(%s), "
       "Port(%s)) and peer net address (IP(%s), Port(%s)).",
       connection.Fd(), connection.GetLocalNetAddress().GetIp().c_str(),
