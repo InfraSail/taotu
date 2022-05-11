@@ -192,6 +192,7 @@ void Poller::AddEventer(Eventer* eventer) {
   poll_event.fd = eventer->Fd();
   poll_event.events = static_cast<short>(eventer->Events());
   poll_event.revents = 0;
+  LockGuard lock_guard(event_lock_);
   poll_events_.push_back(poll_event);
   eventer->SetIndex(static_cast<int>(poll_events_.size()) - 1);
   eventers_[poll_event.fd] = eventer;
@@ -201,6 +202,7 @@ void Poller::ModifyEventer(Eventer* eventer) {
       "In thread(%lu), modify fd(%d) with events(%lu) from the native "
       "poll().",
       ::pthread_self(), eventer->Fd(), eventer->Events());
+  LockGuard lock_guard(event_lock_);
   struct pollfd& poll_event = poll_events_[eventer->GetIndex()];
   poll_event.fd = eventer->Fd();
   poll_event.events = static_cast<short>(eventer->Events());
@@ -216,6 +218,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
       "poll().",
       ::pthread_self(), eventer->Fd());
   int index = eventer->GetIndex();
+  LockGuard lock_guard(event_lock_);
   eventers_.erase(eventer->Fd());
   if (static_cast<size_t>(index) != poll_events_.size() - 1) {
     int last_eventer_fd = poll_events_.back().fd;
@@ -230,6 +233,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
 
 void Poller::GetActiveEventer(int event_amount,
                               EventerList* active_eventers) const {
+  LockGuard lock_guard(event_lock_);
   for (auto itr = poll_events_.cbegin();
        itr != poll_events_.end() && event_amount > 0; ++itr) {
     if (itr->revents > 0) {

@@ -72,6 +72,7 @@ class Poller : NonCopyableMovable {
 #include <vector>
 
 #include "non_copyable_movable.h"
+#include "spin_lock.h"
 #include "time_point.h"
 
 namespace taotu {
@@ -106,8 +107,11 @@ class Poller : NonCopyableMovable {
   // Map for all file descriptors mapping to their corresponding "Eventer"s
   EventerMap eventers_;
 
-  // Buffer for active event struct of the native poll() (poll)
+  // Buffer for event struct of the native poll() (poll)
   PollEventList poll_events_;
+
+  // Spin lock protecting `CRUD` an event
+  mutable MutexLock event_lock_;
 };
 
 }  // namespace taotu
