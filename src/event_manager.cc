@@ -42,9 +42,8 @@ EventManager::EventManager(
           []() -> int {
             int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
             if (event_fd < 0) {
-              LOG(logger::kError,
-                  "Creating wake_up_eventer fails in I/O thread(%lu)",
-                  ::pthread_self());
+              LOG_ERROR("Creating wake_up_eventer fails in I/O thread(%lu)!!!",
+                        ::pthread_self());
               ::exit(-1);
             }
             return event_fd;
@@ -60,16 +59,16 @@ EventManager::EventManager(
     ssize_t n = ::read(this->wake_up_eventer_.Fd(),
                        reinterpret_cast<void*>(&msg), sizeof(msg));
     if (n != sizeof(msg)) {
-      LOG(logger::kError,
+      LOG_ERROR(
           "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
-          "bytes.",
+          "bytes!!!",
           ::pthread_self(), msg);
     }
   });
   wake_up_eventer_.EnableReadEvents();
 #else
   if (::socketpair(AF_UNIX, SOCK_STREAM, 0, wake_up_pipe_) < 0) {
-    LOG(logger::kError, "Fail in socketpair!!!");
+    LOG_ERROR("Fail in socketpair!!!");
   }
   wake_up_eventer_ = new Eventer(&poller_, wake_up_pipe_[0]);
   wake_up_eventer_->RegisterReadCallback([this](const TimePoint&) {
@@ -77,9 +76,9 @@ EventManager::EventManager(
     ssize_t n = ::read(this->wake_up_pipe_[0], reinterpret_cast<void*>(&msg),
                        sizeof(msg));
     if (n != sizeof(msg)) {
-      LOG(logger::kError,
+      LOG_ERROR(
           "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
-          "bytes.",
+          "bytes!!!",
           ::pthread_self(), msg);
     }
   });
@@ -112,8 +111,7 @@ void EventManager::Loop() {
 }
 void EventManager::Work() {
   should_quit_ = false;
-  // LOG(logger::kDebug, "The event loop in thread(%lu) is starting.",
-  //     ::pthread_self());
+  LOG_DEBUG("The event loop in thread(%lu) is starting.", ::pthread_self());
   while (!should_quit_) {
     auto return_time =
         poller_.Poll(timer_.GetMinTimeDuration(),
@@ -123,8 +121,7 @@ void EventManager::Work() {
     DoExpiredTimeTasks(return_time);
     DestroyClosedConnections();
   }
-  // LOG(logger::kDebug, "The event loop in thread(%lu) is stopping.",
-  //     ::pthread_self());
+  LOG_DEBUG("The event loop in thread(%lu) is stopping.", ::pthread_self());
   for (auto& [_, connection] : connection_map_) {
     delete connection;
   }
@@ -146,13 +143,13 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
     }
     ref_conn = connection_map_[socket_fd];
   }
-  // LOG(logger::kDebug,
-  //     "Create a new connection with fd(%d) between local net address "
-  //     "(IP(%s), Port(%s)) and peer net address (IP(%s), Port(%s)).",
-  //     socket_fd, local_address.GetIp().c_str(),
-  //     std::to_string(local_address.GetPort()).c_str(),
-  //     peer_address.GetIp().c_str(),
-  //     std::to_string(peer_address.GetPort()).c_str());
+  LOG_DEBUG(
+      "Create a new connection with fd(%d) between local net address "
+      "(IP(%s), Port(%s)) and peer net address (IP(%s), Port(%s)).",
+      socket_fd, local_address.GetIp().c_str(),
+      std::to_string(local_address.GetPort()).c_str(),
+      peer_address.GetIp().c_str(),
+      std::to_string(peer_address.GetPort()).c_str());
   return ref_conn;
 }
 
@@ -211,9 +208,9 @@ void EventManager::WakeUp() {
   ssize_t n = ::write(wake_up_eventer_.Fd(), reinterpret_cast<void*>(&msg),
                       sizeof(msg));
   if (n != sizeof(msg)) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
-        "bytes.",
+        "bytes!!!",
         ::pthread_self(), msg);
   }
 #else
@@ -221,9 +218,9 @@ void EventManager::WakeUp() {
   ssize_t n =
       ::write(wake_up_pipe_[1], reinterpret_cast<void*>(&msg), sizeof(msg));
   if (n != sizeof(msg)) {
-    LOG(logger::kError,
+    LOG_ERROR(
         "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
-        "bytes.",
+        "bytes!!!",
         ::pthread_self(), msg);
   }
 #endif

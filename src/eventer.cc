@@ -40,21 +40,20 @@ void Eventer::Work(TimePoint tp) {
   // Hung up and no data to read
   if ((in_events_ & POLLHUP) && !(in_events_ & POLLIN)) {
     if (CloseCallback_) {
-      // LOG(logger::kDebug,
-      //     "An I/O multiplexing event is triggered now: fd(%d) is closed.",
-      //     fd_);
+      LOG_DEBUG("An I/O multiplexing event is triggered now: fd(%d) is closed.",
+                fd_);
       CloseCallback_();
     }
   }
   // Invalid request
   if (in_events_ & POLLNVAL) {
-    LOG(logger::kWarn,
-        "An I/O multiplexing event is triggered now: fd(%d) is not open!", fd_);
+    LOG_WARN("An I/O multiplexing event is triggered now: fd(%d) is not open!",
+             fd_);
   }
   // Invalid request and error condition
   if (in_events_ & (POLLNVAL | POLLERR)) {
     if (ErrorCallback_) {
-      LOG(logger::kError,
+      LOG_ERROR(
           "An I/O multiplexing event is triggered now: fd(%d) occurs an "
           "error!!!",
           fd_);
@@ -64,18 +63,18 @@ void Eventer::Work(TimePoint tp) {
   // Readable, urgent (read) and half-closed
   if (in_events_ & (POLLIN | POLLPRI | POLLRDHUP)) {
     if (ReadCallback_) {
-      // LOG(logger::kDebug,
-      //     "An I/O multiplexing event is triggered now: fd(%d) is readable.",
-      //     fd_);
+      LOG_DEBUG(
+          "An I/O multiplexing event is triggered now: fd(%d) is readable.",
+          fd_);
       ReadCallback_(std::move(tp));
     }
   }
   // Writable
   if (in_events_ & POLLOUT) {
     if (WriteCallback_) {
-      // LOG(logger::kDebug,
-      //     "An I/O multiplexing event is triggered now: fd(%d) is writable.",
-      //     fd_);
+      LOG_DEBUG(
+          "An I/O multiplexing event is triggered now: fd(%d) is writable.",
+          fd_);
       WriteCallback_();
     }
   }

@@ -33,7 +33,7 @@ static NetAddress GetLocalAddress(int socket_fd) {
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
-    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+    LOG_ERROR("Fail to get local network info when accepting!!!");
   }
   return NetAddress(local_addr);
 }
@@ -43,7 +43,7 @@ static NetAddress GetPeerAddress(int socket_fd) {
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
-    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+    LOG_ERROR("Fail to get local network info when accepting!!!");
   }
   return NetAddress(local_addr);
 }
@@ -62,7 +62,7 @@ ServerReactorManager::ServerReactorManager(EventManager* event_manager,
           this->AcceptNewConnectionCallback(socket_fd, peer_address);
         });
   } else {
-    LOG(logger::kError, "Fail to init the acceptor!!!");
+    LOG_ERROR("Fail to init the acceptor!!!");
     ::exit(-1);
   }
   event_managers_[0] = event_manager;
@@ -96,7 +96,7 @@ void ServerReactorManager::Loop() {
   }
   // Do not start an event loop in main thread (mainly for accepting)
   // Like this:
-  // event_managers_[0]->Work();
+  // `event_managers_[0]->Work();`
   // Let user do it by themselves
 }
 
@@ -125,7 +125,7 @@ ClientReactorManager::ClientReactorManager(EventManager* event_manager,
       [this](int socket_fd) { this->LaunchNewConnectionCallback(socket_fd); });
 }
 ClientReactorManager::~ClientReactorManager() {
-  LOG(logger::kDebug, "Client is destroying.");
+  LOG_DEBUG("Client is destroying.");
   Connecting* connection;
   {
     LockGuard lock_guard(connection_mutex_);
@@ -141,9 +141,9 @@ ClientReactorManager::~ClientReactorManager() {
 }
 
 void ClientReactorManager::Connect() {
-  LOG(logger::kDebug, "Connect to IP(%s) Port(%u)",
-      connector_.GetServerAddress().GetIp().c_str(),
-      connector_.GetServerAddress().GetPort());
+  LOG_DEBUG("Connect to IP(%s) Port(%u)",
+            connector_.GetServerAddress().GetIp().c_str(),
+            connector_.GetServerAddress().GetPort());
   can_connect_ = true;
   connector_.Start();
 }
@@ -176,9 +176,9 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
     }
     connection.ForceClose();
     if (this->should_retry_ && this->can_connect_) {
-      LOG(logger::kDebug, "Reconnect to [ Ip(%s), Port(%u) ].",
-          this->connector_.GetServerAddress().GetIp().c_str(),
-          this->connector_.GetServerAddress().GetPort());
+      LOG_DEBUG("Reconnect to [ Ip(%s), Port(%u) ].",
+                this->connector_.GetServerAddress().GetIp().c_str(),
+                this->connector_.GetServerAddress().GetPort());
       this->connector_.Restart();
     }
   });
