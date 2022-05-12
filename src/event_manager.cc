@@ -146,7 +146,7 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   }
   LOG_DEBUG(
       "Create a new connection with fd(%d) between local net address "
-      "(IP(%s), Port(%s)) and peer net address (IP(%s), Port(%s)).",
+      "[ IP(%s), Port(%s) ] and peer net address [ IP(%s), Port(%s) ].",
       socket_fd, local_address.GetIp().c_str(),
       std::to_string(local_address.GetPort()).c_str(),
       peer_address.GetIp().c_str(),

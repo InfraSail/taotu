@@ -44,8 +44,8 @@ void ChatServer::Start() {
 
 void ChatServer::OnConnectionCallback(taotu::Connecting& connection) {
   taotu::LOG_DEBUG(
-      "Create a new connection with fd(%d) between local net address (IP(%s), "
-      "Port(%s)) and peer net address (IP(%s), Port(%s)).",
+      "Create a new connection with fd(%d) between local net address [ IP(%s), "
+      "Port(%s) ] and peer net address [ IP(%s), Port(%s) ].",
       connection.Fd(), connection.GetLocalNetAddress().GetIp().c_str(),
       std::to_string(connection.GetLocalNetAddress().GetPort()).c_str(),
       connection.GetPeerNetAddress().GetIp().c_str(),

@@ -66,8 +66,8 @@ void Server::RemoveConnection(Connecting& connection) {
 
 void Server::DefaultOnConnectionCallback(Connecting& connection) {
   LOG_DEBUG(
-      "A new connection with fd(%d) on local IP(%s) Port(%u) and peer IP(%s) "
-      "Port(%u) is %s now.",
+      "A new connection with fd(%d) on local [ IP(%s) Port(%u) ] and peer [ "
+      "IP(%s) Port(%u) ] is %s now.",
       connection.Fd(), connection.GetLocalNetAddress().GetIp().c_str(),
       connection.GetLocalNetAddress().GetPort(),
       connection.GetPeerNetAddress().GetIp().c_str(),
