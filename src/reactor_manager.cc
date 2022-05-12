@@ -141,7 +141,7 @@ ClientReactorManager::~ClientReactorManager() {
 }
 
 void ClientReactorManager::Connect() {
-  LOG_DEBUG("Connect to IP(%s) Port(%u)",
+  LOG_DEBUG("Connect to [ IP(%s) Port(%u) ].",
             connector_.GetServerAddress().GetIp().c_str(),
             connector_.GetServerAddress().GetPort());
   can_connect_ = true;
@@ -176,7 +176,7 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
     }
     connection.ForceClose();
     if (this->should_retry_ && this->can_connect_) {
-      LOG_DEBUG("Reconnect to [ Ip(%s), Port(%u) ].",
+      LOG_DEBUG("Reconnect to [ IP(%s), Port(%u) ].",
                 this->connector_.GetServerAddress().GetIp().c_str(),
                 this->connector_.GetServerAddress().GetPort());
       this->connector_.Restart();
