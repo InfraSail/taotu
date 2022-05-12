@@ -16,7 +16,7 @@
 // './chat_server [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
-  taotu::START_LOG("server_server_log.txt");
+  taotu::START_LOG("server_main_log.txt");
   if (1 == argc) {
     ChatServer chat_server{taotu::NetAddress{4567}, false};
     chat_server.Start();
