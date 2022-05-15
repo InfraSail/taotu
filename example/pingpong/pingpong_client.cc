@@ -128,6 +128,6 @@ void Session::OnConnectionCallback(taotu::Connecting& connection) {
 void Session::OnMessageCallback(taotu::Connecting& connection,
                                 taotu::IoBuffer* io_buffer, taotu::TimePoint) {
   ++messages_read_;
-  bytes_read_ += io_buffer->GetReadableBytes();
+  bytes_read_ += static_cast<int64_t>(io_buffer->GetReadableBytes());
   connection.Send(io_buffer);
 }
