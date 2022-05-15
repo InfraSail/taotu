@@ -16,12 +16,14 @@
 
 using namespace taotu::logger;
 
-bool Logger::is_initialized = false;
+bool Logger::is_initialized{false};
 
-Logger* Logger::GetLogger() {
+Logger* Logger::GetLogger(bool should_start) {
   // The unique actual "Logger" object
   static Logger logger;
-  logger.StartLogger(kLogName);
+  if (should_start) {
+    logger.StartLogger(kLogName);
+  }
   return &logger;
 }
 
@@ -114,9 +116,9 @@ void Logger::WriteDownLogs() {
       }
       // Copy the content of one bucket of ring buffer to io buffer
       std::string& tmp_buf = log_buffer_[cur_read_index & (kLogBufferSize - 1)];
-      int tmp_buf_len = tmp_buf.size();
+      size_t tmp_buf_len = tmp_buf.size();
       ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
-      cur_log_file_byte_ += tmp_buf_len;
+      cur_log_file_byte_ += static_cast<int64_t>(tmp_buf_len);
       tmp_buf.clear();
       // Update the index which was read last time
       read_index_ = cur_read_index;

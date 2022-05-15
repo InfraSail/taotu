@@ -70,7 +70,7 @@ void IoBuffer::Refresh(size_t len) {
 
 std::string IoBuffer::RetrieveAString(size_t len) {
   if (len > GetReadableBytes()) {
-    LOG(logger::kError, "Read too many bytes from the buffer!!!");
+    LOG_ERROR("Read too many bytes from the buffer!!!");
     return std::string{};
   }
   std::string ret(GetReadablePosition(), len);
@@ -105,7 +105,7 @@ int64_t IoBuffer::RetrieveInt64() {
 int8_t IoBuffer::GetReadableInt8() const {
   auto result = static_cast<int8_t>(0);
   if (sizeof(int8_t) > GetReadableBytes()) {
-    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    LOG_ERROR("Reading the Integer number in Head content failed!!!");
     return result;
   }
   result = static_cast<int8_t>(*GetReadablePosition());
@@ -115,7 +115,7 @@ int8_t IoBuffer::GetReadableInt8() const {
 int16_t IoBuffer::GetReadableInt16() const {
   auto result = static_cast<int16_t>(0);
   if (sizeof(int16_t) > GetReadableBytes()) {
-    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    LOG_ERROR("Reading the Integer number in Head content failed!!!");
     return result;
   }
   ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int16_t));
@@ -125,7 +125,7 @@ int16_t IoBuffer::GetReadableInt16() const {
 int32_t IoBuffer::GetReadableInt32() const {
   auto result = static_cast<int32_t>(0);
   if (sizeof(int32_t) > GetReadableBytes()) {
-    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    LOG_ERROR("Reading the Integer number in Head content failed!!!");
     return result;
   }
   ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int32_t));
@@ -135,7 +135,7 @@ int32_t IoBuffer::GetReadableInt32() const {
 int64_t IoBuffer::GetReadableInt64() const {
   auto result = static_cast<int64_t>(0);
   if (sizeof(int64_t) > GetReadableBytes()) {
-    LOG(logger::kError, "Reading the Integer number in Head content failed!!!");
+    LOG_ERROR("Reading the Integer number in Head content failed!!!");
     return result;
   }
   ::memcpy(static_cast<void*>(&result), GetReadablePosition(), sizeof(int64_t));
@@ -144,7 +144,7 @@ int64_t IoBuffer::GetReadableInt64() const {
 
 void IoBuffer::SetHeadContent(const void* str, size_t len) {
   if (len > GetReservedBytes()) {
-    LOG(logger::kError, "Reserved head space is not enough!!!");
+    LOG_ERROR("Reserved head space is not enough!!!");
     return;
   }
   reading_index_ -= len;
@@ -207,7 +207,7 @@ void IoBuffer::ShrinkWritableSpace(size_t len) {
   // We do not use the member function of vector<> -- shrink_to_fit() because it
   // is a non-binding request
   if (len <= 32) {  // Reserving too little writable space is meaningless
-    LOG(logger::kWarn, "Shrinking buffer to %ubytes failed!", len);
+    LOG_WARN("Shrinking buffer to %ubytes failed!", len);
     return;
   }
   IoBuffer buffer;
@@ -232,7 +232,7 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
       ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
   if (n < 0) {
     *tmp_errno = errno;
-    LOG(logger::kError, "Discrete reading in Fd(%d) failed!!!", fd);
+    LOG_ERROR("Discrete reading in Fd(%d) failed!!!", fd);
   } else if (static_cast<size_t>(n) <= static_cast<size_t>(writable_bytes)) {
     writing_index_ += n;
   } else {

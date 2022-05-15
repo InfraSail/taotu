@@ -19,6 +19,7 @@
 // './chat_client [IP] port'
 // It get messages which users type into the screen by the keyboard.
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("chat_client_log.txt");
   if (1 == argc) {
     ::fprintf(stderr, "Usage: client [host_ip] <port>\n");
     return 0;

@@ -19,6 +19,7 @@
 // './pingpong_server [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("pingpong_server_log.txt");
   if (1 == argc) {
     PingpongServer pingpong_server{taotu::NetAddress{4567}, false};
     pingpong_server.Start();

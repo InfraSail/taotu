@@ -20,6 +20,7 @@
 // './simple_discard [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("simple_discard_log.txt");
   if (1 == argc) {
     DiscardServer discard_server{taotu::NetAddress{4567}, false};
     discard_server.Start();

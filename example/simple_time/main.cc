@@ -20,6 +20,7 @@
 // './simple_time [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("simple_time_log.txt");
   if (1 == argc) {
     TimeServer time_server{taotu::NetAddress{4567}, false};
     time_server.Start();

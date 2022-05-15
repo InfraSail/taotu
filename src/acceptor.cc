@@ -39,9 +39,17 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
       is_listening_(false),
       idle_fd_(::open("/dev/null", O_RDONLY | O_CLOEXEC)) {
   if (accept_soketer_.Fd() < 0) {
-    LOG(logger::kError, "Fail to initialize for acceptor!!!");
+    LOG_ERROR("Fail to initialize for acceptor!!!");
     ::exit(-1);
   }
+#ifndef __linux__
+  int flags = ::fcntl(accept_soketer_.Fd(), F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  ::fcntl(accept_soketer_.Fd(), F_SETFL, flags);
+  flags = ::fcntl(accept_soketer_.Fd(), F_GETFD, 0);
+  flags |= FD_CLOEXEC;
+  ::fcntl(accept_soketer_.Fd(), F_SETFD, flags);
+#endif
   accept_soketer_.SetReuseAddress(true);
   accept_soketer_.SetReusePort(should_reuse_port);
   accept_soketer_.BindAddress(listen_address);
@@ -50,7 +58,7 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   });  // Register the accepting action as an reading event handler
 }
 Acceptor::~Acceptor() {
-  LOG(logger::kDebug, "Acceptor with fd(%d) is closing.", accept_soketer_.Fd());
+  LOG_DEBUG("Acceptor with fd(%d) is closing.", accept_soketer_.Fd());
   is_listening_ = false;
   ::close(idle_fd_);
 }
@@ -59,8 +67,7 @@ void Acceptor::Listen() {
   is_listening_ = true;
   accept_soketer_.Listen();
   accept_eventer_.EnableReadEvents();
-  LOG(logger::kDebug, "Acceptor with fd(%d) is listening.",
-      accept_soketer_.Fd());
+  LOG_DEBUG("Acceptor with fd(%d) is listening.", accept_soketer_.Fd());
 }
 
 void Acceptor::DoReading() {
@@ -70,14 +77,12 @@ void Acceptor::DoReading() {
     if (NewConnectionCallback_) {
       NewConnectionCallback_(conn_fd, peer_address);
     } else {
-      LOG(logger::kError, "Acceptor with fd(%d) is closing!!!",
-          accept_soketer_.Fd());
+      LOG_ERROR("Acceptor with fd(%d) is closing!!!", accept_soketer_.Fd());
       ::close(conn_fd);
     }
   } else {
-    LOG(logger::kError,
-        "Acceptor with Fd(%d) failed to accept a new TCP connection!!!",
-        accept_soketer_.Fd());
+    LOG_ERROR("Acceptor with Fd(%d) failed to accept a new TCP connection!!!",
+              accept_soketer_.Fd());
     if (errno == EMFILE) {  // If it fails to connect, clear the waiting list of
                             // listening
       ::close(idle_fd_);

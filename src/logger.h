@@ -33,18 +33,18 @@ namespace taotu {
 /************************Open Logger APIs***************************/
 // Start the unique logger
 #define START_LOG(log_file_name) \
-  logger::Logger::GetLogger()->StartLogger(log_file_name)
+  logger::Logger::GetLogger(false)->StartLogger(log_file_name)
 
 // End the unique logger
-#define END_LOG() logger::Logger::GetLogger()->EndLogger()
+#define END_LOG() logger::Logger::GetLogger(true)->EndLogger()
 
 // The unique API for recording logs
-#define LOG(...) logger::Logger::GetLogger()->RecordLogs(__VA_ARGS__)
+#define LOG(...) logger::Logger::GetLogger(true)->RecordLogs(__VA_ARGS__)
 
 #ifdef TAOTU_DEBUG  // Flag for debug build, set in CMakeLists.txt
 #define LOG_DEBUG(...) LOG(taotu::logger::kDebug, __VA_ARGS__)
 #else  // release build
-#define LOG_DEBUG(...)
+#define LOG_DEBUG(...) TrivialFunc()
 #endif  // TAOTU_DEBUG
 
 #define LOG_INFO(...) LOG(taotu::logger::kInfo, __VA_ARGS__)
@@ -56,6 +56,8 @@ namespace taotu {
 #define LOG_EMERG(...) LOG(taotu::logger::kEmerg, __VA_ARGS__)
 
 /********************************************************************/
+
+inline void TrivialFunc() {}
 
 namespace logger {
 
@@ -90,14 +92,8 @@ static const std::string kLogName{"log.txt"};
 
 // Relevant to LogLevel
 static const std::string Log_level_info_prefix[]{
-    "Log(Emergency): ",
-    "Log(Alert): ",
-    "Log(Critical): ",
-    "Log(Error): ",
-    "Log(Warn): ",
-    "Log(Notice): ",
-    "Log(Info): ",
-    "Log(Debug): ",
+    "Log(Emergency): ", "Log(Alert): ",  "Log(Critical): ", "Log(Error): ",
+    "Log(Warn): ",      "Log(Notice): ", "Log(Info): ",     "Log(Debug): ",
 };
 
 /**
@@ -112,7 +108,7 @@ class Logger : NonCopyableMovable {
 
   // The unique method to creat the unique actual "Logger" object ("Singleton"
   // pattern)
-  static Logger* GetLogger();
+  static Logger* GetLogger(bool should_start);
 
   void EndLogger();
 

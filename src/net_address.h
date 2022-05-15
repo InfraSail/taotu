@@ -28,7 +28,7 @@ class NetAddress {
  public:
   explicit NetAddress(uint16_t port = 0, bool loop_back = false,
                       bool use_ipv6 = false);
-  NetAddress(std::string ip, uint16_t port, bool use_ipv6 = false);
+  NetAddress(const std::string& ip, uint16_t port, bool use_ipv6 = false);
   explicit NetAddress(const struct sockaddr_in& socket_address)
       : socket_address_(socket_address) {}
   explicit NetAddress(const struct sockaddr_in6& socket_address6)
@@ -38,9 +38,17 @@ class NetAddress {
   std::string GetIp() const;
   uint16_t GetPort() const;
 
+  size_t GetSize() const {
+    return (GetFamily() == AF_INET ? sizeof(struct sockaddr_in)
+                                   : sizeof(struct sockaddr_in6));
+  }
+
   const struct sockaddr* GetNetAddress() const {
     return reinterpret_cast<const struct sockaddr*>(&socket_address6_);
   };
+  void SetNetAddress(const struct sockaddr_in& socket_address) {
+    socket_address_ = socket_address;
+  }
   void SetNetAddress6(const struct sockaddr_in6& socket_address6) {
     socket_address6_ = socket_address6;
   }

@@ -27,7 +27,7 @@ void Codec::OnMessage(taotu::Connecting& connection, taotu::IoBuffer* io_buffer,
   while (io_buffer->GetReadableBytes() >= kHeadLength) {
     auto msg_len = io_buffer->GetReadableInt32();
     if (msg_len > 65536 || msg_len < 0) {  // Handle the error
-      taotu::LOG(taotu::logger::kError, "Invalid length!!!");
+      taotu::LOG_ERROR("Invalid length!!!");
       connection.ShutDownWrite();
       break;
     } else if (static_cast<int32_t>(io_buffer->GetReadableBytes()) >=

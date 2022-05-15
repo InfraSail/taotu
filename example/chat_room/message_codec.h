@@ -12,7 +12,9 @@
 #ifndef TAOTU_EXAMPLE_CHAT_ROOM_MESSAGE_CODEC_H_
 #define TAOTU_EXAMPLE_CHAT_ROOM_MESSAGE_CODEC_H_
 
+#ifdef __linux__
 #include <endian.h>
+#endif
 
 #include <functional>
 #include <string>

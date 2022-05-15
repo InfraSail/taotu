@@ -63,7 +63,7 @@ void PingpongClient::Start() {
 
 void PingpongClient::OnConnecting() {
   if (conn_num_.fetch_add(1) + 1 == session_count_) {
-    taotu::LOG(taotu::logger::kWarn, "All connected!");
+    taotu::LOG_WARN("All connected!");
   }
 }
 
@@ -87,7 +87,7 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
 }
 
 void PingpongClient::DoWithTimeout() {
-  taotu::LOG(taotu::logger::kWarn, "All stopped!");
+  taotu::LOG_WARN("All stopped!");
   for (auto& session : sessions_) {
     session->Stop();
   }
@@ -128,6 +128,6 @@ void Session::OnConnectionCallback(taotu::Connecting& connection) {
 void Session::OnMessageCallback(taotu::Connecting& connection,
                                 taotu::IoBuffer* io_buffer, taotu::TimePoint) {
   ++messages_read_;
-  bytes_read_ += io_buffer->GetReadableBytes();
+  bytes_read_ += static_cast<int64_t>(io_buffer->GetReadableBytes());
   connection.Send(io_buffer);
 }

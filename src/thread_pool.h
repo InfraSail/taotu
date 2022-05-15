@@ -46,8 +46,7 @@ class ThreadPool : NonCopyableMovable {
   auto AddTask(std::function<Function>&& task)
       -> std::future<typename std::invoke_result<Function>::type> {
     if (should_stop_) {
-      LOG(logger::kWarn,
-          "Fail to add a task into the calculation thread pool!");
+      LOG_WARN("Fail to add a task into the calculation thread pool!");
       return std::nullopt;
     } else {
       auto task_future_pkg = std::make_shared<std::packaged_task<Function>>(

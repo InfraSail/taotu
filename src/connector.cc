@@ -30,29 +30,28 @@ enum {
   kInitRetryDelayMicroseconds = 500 * 1000,
 };
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
-  struct sockaddr_in6 local_addr;
+  struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getsockname(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
-    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+    LOG_ERROR("Fail to get local network info when accepting!!!");
   }
   return local_addr;
 }
 static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
-  struct sockaddr_in6 local_addr;
+  struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
-  socklen_t addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
   if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
                     &addr_len) < 0) {
-    LOG(logger::kError, "Fail to get local network info when accepting!!!");
+    LOG_ERROR("Fail to get local network info when accepting!!!");
   }
   return local_addr;
 }
 static int GetSocketError(int socket_fd) {
   int socket_option;
-  socklen_t socket_option_length =
-      static_cast<socklen_t>(sizeof(socket_option));
+  auto socket_option_length = static_cast<socklen_t>(sizeof(socket_option));
   if (::getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &socket_option,
                    &socket_option_length) < 0) {
     return errno;
@@ -90,11 +89,19 @@ void Connector::Connect() {
   int sock_fd =
       ::socket(server_address_.GetFamily(),
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+#ifndef __linux__
+  int flags = ::fcntl(sock_fd, F_GETFL, 0);
+  flags |= O_NONBLOCK;
+  ::fcntl(sock_fd, F_SETFL, flags);
+  flags = ::fcntl(sock_fd, F_GETFD, 0);
+  flags |= FD_CLOEXEC;
+  ::fcntl(sock_fd, F_SETFD, flags);
+#endif
   if (sock_fd < 0) {
-    LOG(logger::kError, "Fail to initialize for connector!!!");
+    LOG_ERROR("Fail to initialize for connector!!!");
   }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
-                         static_cast<socklen_t>(sizeof(struct sockaddr_in6)));
+                         server_address_.GetSize());
   int saved_errno = (0 == status) ? 0 : errno;
   switch (saved_errno) {
     case 0:
@@ -117,14 +124,12 @@ void Connector::Connect() {
     case EBADF:
     case EFAULT:
     case ENOTSOCK:
-      LOG(logger::kError, "Connector fd(%d) is closing because of an error!!!",
-          sock_fd);
+      LOG_ERROR("Connector fd(%d) is closing because of an error!!!", sock_fd);
       ::close(sock_fd);
       break;
     default:
-      LOG(logger::kError,
-          "Connector fd(%d) is closing because of an unkown error(%d)!!!",
-          sock_fd, saved_errno);
+      LOG_ERROR("Connector fd(%d) is closing because of an unkown error(%d)!!!",
+                sock_fd, saved_errno);
       ::close(sock_fd);
       break;
   }
@@ -137,31 +142,29 @@ void Connector::DoConnecting(int conn_fd) {
   eventer_->EnableWriteEvents();
 }
 void Connector::DoRetrying(int conn_fd) {
-  LOG(logger::kWarn, "Connector fd(%d) is closing for retrying!", conn_fd);
+  LOG_WARN("Connector fd(%d) is closing for retrying!", conn_fd);
   ::close(conn_fd);
   SetState(kDisconnected);
   if (can_connect_) {
-    // LOG(logger::kDebug, "Connector fd(%d) is retrying to connect.",
-    // conn_fd);
+    LOG_DEBUG("Connector fd(%d) is retrying to connect.", conn_fd);
     event_manager_->RunAfter(retry_dalay_microseconds_,
                              [this]() { this->Start(); });
     retry_dalay_microseconds_ =
         std::min(retry_dalay_microseconds_ * 2,
                  static_cast<int>(kMaxRetryDelayMicroseconds));
   } else {
-    // LOG(logger::kDebug, "Connector fd(%d) is not retrying to connect.",
-    //     conn_fd);
+    LOG_DEBUG("Connector fd(%d) is not retrying to connect.", conn_fd);
   }
 }
 void Connector::DoWriting() {
-  LOG(logger::kDebug, "Connector fd(%d) is writing.", eventer_->Fd());
+  LOG_DEBUG("Connector fd(%d) is writing.", eventer_->Fd());
   if (kConnecting == state_) {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     if (error) {
       char errno_info[512];
-      LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", conn_fd,
-          ::strerror_r(error, errno_info, sizeof(errno_info)));
+      LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
+               ::strerror_r(error, errno_info, sizeof(errno_info)));
       DoRetrying(conn_fd);
     } else if ([](int conn_fd) -> bool {
                  struct sockaddr_in6 local_address =
@@ -184,7 +187,7 @@ void Connector::DoWriting() {
                    return false;
                  }
                }(conn_fd)) {  // Check whether it is self-connected
-      // LOG(logger::kDebug, "Connector fd(%d) is self-connected.", conn_fd);
+      LOG_DEBUG("Connector fd(%d) is self-connected.", conn_fd);
       DoRetrying(conn_fd);
     } else {
       SetState(kConnected);
@@ -197,14 +200,14 @@ void Connector::DoWriting() {
   }
 }
 void Connector::DoWithError() {
-  LOG(logger::kError, "Connector fd(%d) has the error with the state(%d).",
-      eventer_->Fd(), state_);
+  LOG_ERROR("Connector fd(%d) has the error with the state(%d).",
+            eventer_->Fd(), state_);
   if (kConnecting == state_) {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     char errno_info[512];
-    LOG(logger::kWarn, "Connector fd(%d) has the error(%s)!", conn_fd,
-        ::strerror_r(error, errno_info, sizeof(errno_info)));
+    LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
+             ::strerror_r(error, errno_info, sizeof(errno_info)));
     DoRetrying(conn_fd);
   }
 }

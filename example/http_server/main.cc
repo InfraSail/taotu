@@ -42,6 +42,7 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
 // './http_server [port [amount-of-I/O-threads
 // [amount-of-calculation-threads]]]'
 int main(int argc, char* argv[]) {
+  taotu::START_LOG("http_server_log.txt");
   if (1 == argc) {
     HttpServer http_server{taotu::NetAddress{4567}, false};
     http_server.SetHttpCallback(

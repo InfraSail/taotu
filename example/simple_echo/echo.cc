@@ -40,7 +40,7 @@ void EchoServer::OnMessageCallback(taotu::Connecting& connection,
                                    taotu::IoBuffer* io_buffer,
                                    taotu::TimePoint time_point) {
   std::string message{io_buffer->RetrieveAllAsString()};
-  taotu::LOG(taotu::logger::kDebug, "Fd(%d) is receiving %u bytes at %lld.",
-             connection.Fd(), message.size(), time_point.GetMicroseconds());
+  taotu::LOG_DEBUG("Fd(%d) is receiving %u bytes at %lld.", connection.Fd(),
+                   message.size(), time_point.GetMicroseconds());
   connection.Send(message);
 }
