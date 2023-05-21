@@ -143,6 +143,17 @@ llhttp_settings_t HttpParser::parsing_settings_{
       return reinterpret_cast<HttpParser*>(parser->data)
           ->OnHeaderValue(parser, str, str_length);
     },
+    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+      return 0;
+    },
+    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+      return 0;
+    },[](llhttp_t* parser, const char* str, size_t str_length) -> int {
+      return 0;
+    },
+    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+      return 0;
+    },
     [](llhttp_t* parser) -> int {
       return reinterpret_cast<HttpParser*>(parser->data)
           ->OnHeadersComplete(parser);
