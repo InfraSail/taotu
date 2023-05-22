@@ -15,6 +15,44 @@
 #include <time.h>
 
 HttpParser::HttpParser(llhttp_type_t type) {
+  HttpParser::parsing_settings_.on_message_begin = [](llhttp_t* parser) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)->OnMessageBegin(parser);
+  };
+  HttpParser::parsing_settings_.on_url = [](llhttp_t* parser, const char* str,
+                                            size_t str_length) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnUrl(parser, str, str_length);
+  };
+  HttpParser::parsing_settings_.on_status =
+      [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnStatus(parser, str, str_length);
+  };
+  HttpParser::parsing_settings_.on_header_field =
+      [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnHeaderField(parser, str, str_length);
+  };
+  HttpParser::parsing_settings_.on_header_value =
+      [](llhttp_t* parser, const char* str, size_t str_length) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnHeaderValue(parser, str, str_length);
+  };
+  HttpParser::parsing_settings_.on_headers_complete =
+      [](llhttp_t* parser) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnHeadersComplete(parser);
+  };
+  HttpParser::parsing_settings_.on_body = [](llhttp_t* parser, const char* str,
+                                             size_t str_length) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnBody(parser, str, str_length);
+  };
+  HttpParser::parsing_settings_.on_message_complete =
+      [](llhttp_t* parser) -> int {
+    return reinterpret_cast<HttpParser*>(parser->data)
+        ->OnMessageComplete(parser);
+  };
   llhttp_init(&parser_, type, &HttpParser::parsing_settings_);
   parser_.data = this;
 }
@@ -122,47 +160,4 @@ void HttpParser::Reset() {
   start_parsing_time_ = ::time(NULL);
 }
 
-llhttp_settings_t HttpParser::parsing_settings_{
-    [](llhttp_t* parser) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnMessageBegin(parser);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnUrl(parser, str, str_length);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnStatus(parser, str, str_length);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnHeaderField(parser, str, str_length);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnHeaderValue(parser, str, str_length);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return 0;
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return 0;
-    },[](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return 0;
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return 0;
-    },
-    [](llhttp_t* parser) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnHeadersComplete(parser);
-    },
-    [](llhttp_t* parser, const char* str, size_t str_length) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnBody(parser, str, str_length);
-    },
-    [](llhttp_t* parser) -> int {
-      return reinterpret_cast<HttpParser*>(parser->data)
-          ->OnMessageComplete(parser);
-    }};
+llhttp_settings_t HttpParser::parsing_settings_;
