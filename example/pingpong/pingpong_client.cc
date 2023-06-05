@@ -21,11 +21,11 @@
 PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
                                size_t block_size, size_t session_count,
                                int timeout, size_t thread_count)
-    : event_managers_(++thread_count),
+    : event_managers_(thread_count + 1),
       session_count_(session_count),
       timeout_(timeout),
       message_() {
-  ++thread_count;
+  thread_count += 2;
   event_managers_.push_back(nullptr);
   event_managers_[0] = nullptr;
   event_managers_[1] = new taotu::EventManager;
@@ -42,7 +42,7 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
   for (size_t i = 0; i < session_count_; ++i) {
     sessions_.emplace_back(std::make_unique<Session>(
-        balancer_->PickOneEventManager(), server_address, this));
+        balancer_->PickOneEventManager(), server_address, shared_from_this()));
     sessions_[i]->Start();
   }
 }
@@ -59,7 +59,7 @@ PingpongClient::~PingpongClient() {
 }
 
 void PingpongClient::Start() {
-  if (!event_managers_.empty()) {
+  if (event_managers_.size() > 1) {
     event_managers_[1]->Work();
   }
 }
@@ -85,7 +85,7 @@ void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
         static_cast<double>(total_bytes_read) /
             static_cast<double>(total_messages_read),
         static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
-    event_managers_[0]->RunSoon([this] { this->event_managers_[0]->Quit(); });
+    event_managers_[1]->RunSoon([this] { this->event_managers_[1]->Quit(); });
   }
 }
 
@@ -98,7 +98,7 @@ void PingpongClient::DoWithTimeout() {
 
 Session::Session(taotu::EventManager* event_manager,
                  const taotu::NetAddress& server_address,
-                 PingpongClient* master_client)
+                 std::shared_ptr<PingpongClient> master_client)
     : client_(event_manager, server_address, true),
       master_client_(master_client),
       bytes_read_(0),
@@ -120,11 +120,17 @@ void Session::Stop() { client_.Disconnect(); }
 void Session::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
     connection.SetTcpNoDelay(true);
-    const auto& message = master_client_->GetMessage();
-    connection.Send(&(*(message.begin())), message.size());
-    master_client_->OnConnecting();
+    std::shared_ptr<PingpongClient> master_client(master_client_.lock());
+    if (master_client) {
+      const auto& message = master_client->GetMessage();
+      connection.Send(&(*(message.begin())), message.size());
+      master_client->OnConnecting();
+    }
   } else {
-    master_client_->OnDisconnecting(connection);
+    std::shared_ptr<PingpongClient> master_client(master_client_.lock());
+    if (master_client) {
+      master_client->OnDisconnecting(connection);
+    }
   }
 }
 
