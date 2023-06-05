@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "../../src/client.h"
+#include "../../src/net_address.h"
 
 class Session;
 
@@ -45,6 +46,7 @@ class PingpongClient : public std::enable_shared_from_this<PingpongClient>,
   void DoWithTimeout();
 
   EventManagers event_managers_;
+  taotu::NetAddress server_address_;
   size_t session_count_;
   int timeout_;
   std::vector<std::unique_ptr<Session>> sessions_;
