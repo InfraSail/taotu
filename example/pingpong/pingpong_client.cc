@@ -25,11 +25,14 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
       session_count_(session_count),
       timeout_(timeout),
       message_() {
-  event_managers_[0] = new taotu::EventManager;
-  event_managers_[0]->RunAfter(timeout_ * 1000 * 1000,
+  ++thread_count;
+  event_managers_.push_back(nullptr);
+  event_managers_[0] = nullptr;
+  event_managers_[1] = new taotu::EventManager;
+  event_managers_[1]->RunAfter(timeout_ * 1000 * 1000,
                                [this]() { this->DoWithTimeout(); });
   conn_num_.store(0);
-  for (size_t i = 1; i < thread_count; ++i) {
+  for (size_t i = 2; i < thread_count; ++i) {
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
   }
@@ -49,15 +52,15 @@ PingpongClient::~PingpongClient() {
     auto& event_manager = event_managers_[i];
     event_manager->RunSoon([&event_manager]() { event_manager->Quit(); });
   }
-  for (auto& event_manager : event_managers_) {
-    delete event_manager;
+  for (size_t i = thread_count - 1; i > 0; --i) {
+    delete event_managers_[i];
   }
   taotu::END_LOG();
 }
 
 void PingpongClient::Start() {
   if (!event_managers_.empty()) {
-    event_managers_[0]->Work();
+    event_managers_[1]->Work();
   }
 }
 
