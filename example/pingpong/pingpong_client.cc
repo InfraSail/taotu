@@ -35,8 +35,6 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
     event_managers_[i] = new taotu::EventManager;
     event_managers_[i]->Loop();
   }
-  event_managers_[1]->RunAfter(timeout_ * 1000 * 1000,
-                               [this]() { this->DoWithTimeout(); });
   for (size_t i = 1; i <= block_size; ++i) {
     message_.emplace_back(static_cast<char>(i % 128));
   }
@@ -55,6 +53,8 @@ PingpongClient::~PingpongClient() {
 }
 
 void PingpongClient::Start() {
+  event_managers_[1]->RunAfter(timeout_ * 1000 * 1000,
+                               [this]() { this->DoWithTimeout(); });
   for (size_t i = 0; i < session_count_; ++i) {
     sessions_.emplace_back(std::make_unique<Session>(
         balancer_->PickOneEventManager(), server_address_, shared_from_this()));
