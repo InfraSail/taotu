@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include <memory>
 #include <string>
 
 #include "pingpong_client.h"
@@ -24,13 +25,14 @@ int main(int argc, char* argv[]) {
               "Usage: client <host_ip> <port> <threads> <blocksize> <sessions> "
               "<time>\n");
   } else {
-    PingpongClient pingpong_client{
-        taotu::NetAddress{std::string{argv[1]},
-                          static_cast<uint16_t>(::atoi(argv[2]))},
-        static_cast<size_t>(::atoi(argv[4])),
-        static_cast<size_t>(::atoi(argv[5])), ::atoi(argv[6]),
-        static_cast<size_t>(::atoi(argv[3]))};
-    pingpong_client.Start();
+    std::shared_ptr<PingpongClient> pingpong_client =
+        std::make_shared<PingpongClient>(
+            taotu::NetAddress{std::string{argv[1]},
+                              static_cast<uint16_t>(::atoi(argv[2]))},
+            static_cast<size_t>(::atoi(argv[4])),
+            static_cast<size_t>(::atoi(argv[5])), ::atoi(argv[6]),
+            static_cast<size_t>(::atoi(argv[3])));
+    pingpong_client->Start();
   }
   return 0;
 }
