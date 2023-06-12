@@ -59,7 +59,7 @@ class Session : taotu::NonCopyableMovable {
  public:
   Session(taotu::EventManager* event_manager,
           const taotu::NetAddress& server_address,
-          std::shared_ptr<PingpongClient> master_client);
+          const std::shared_ptr<PingpongClient>& master_client);
 
   // Start the session
   void Start();
