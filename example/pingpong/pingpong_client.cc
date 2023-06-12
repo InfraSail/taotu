@@ -48,6 +48,7 @@ PingpongClient::~PingpongClient() {
   }
   for (size_t i = thread_count - 1; i > 0; --i) {
     delete event_managers_[i];
+    event_managers_[i] = nullptr;
   }
   taotu::END_LOG();
 }
