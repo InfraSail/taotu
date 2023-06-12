@@ -100,7 +100,7 @@ void PingpongClient::DoWithTimeout() {
 
 Session::Session(taotu::EventManager* event_manager,
                  const taotu::NetAddress& server_address,
-                 std::shared_ptr<PingpongClient> master_client)
+                 const std::shared_ptr<PingpongClient>& master_client)
     : client_(event_manager, server_address, true),
       master_client_(master_client),
       bytes_read_(0),
