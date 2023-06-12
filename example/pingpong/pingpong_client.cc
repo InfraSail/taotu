@@ -21,12 +21,12 @@
 PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
                                size_t block_size, size_t session_count,
                                int timeout, size_t thread_count)
-    : event_managers_(thread_count + 1),
+    : event_managers_(thread_count),
       server_address_(server_address),
       session_count_(session_count),
       timeout_(timeout),
       message_() {
-  thread_count += 2;
+  thread_count += 1;
   event_managers_.push_back(nullptr);
   event_managers_[0] = nullptr;
   event_managers_[1] = new taotu::EventManager;
