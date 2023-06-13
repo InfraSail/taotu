@@ -213,8 +213,10 @@ void Connector::DoWithError() {
 }
 int Connector::RemoveAndReset() {
   eventer_->DisableAllEvents();
+  eventer_->RemoveMyself();
   int conn_fd = eventer_->Fd();
-  eventer_->GetReadyDestroy();  // Set Eventer::is_handling_ flag off
-  eventer_.reset();
+  // eventer_->SetReadyDestroy();  // Set Eventer::is_handling_ flag off
+  event_manager_->RunSoon([this]() { this->eventer_.reset(); });
+  // eventer_.reset();  // Invalid
   return conn_fd;
 }
