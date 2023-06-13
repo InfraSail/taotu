@@ -68,7 +68,7 @@ class Eventer : NonCopyableMovable {
   void DisableAllEvents();
 
   // Only used in Connector::RemoveAndReset() (prepare for EventerPtr::reset())
-  void GetReadyDestroy() { is_handling_ = false; }
+  void SetReadyDestroy() { is_handling_ = false; }
 
   void RemoveMyself();
 
