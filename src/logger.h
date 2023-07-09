@@ -144,7 +144,7 @@ class Logger : NonCopyableMovable {
   ~Logger();
 
  private:
-  void UpdateLoggerTime();
+  std::string UpdateLoggerTime();
 
   // Called to write down logs
   void WriteDownLogs();
