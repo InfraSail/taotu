@@ -102,7 +102,7 @@ class Poller : NonCopyableMovable {
   typedef std::map<int, Eventer*> EventerMap;
   typedef std::vector<struct pollfd> PollEventList;
 
-  void GetActiveEventer(int event_amount, const PollEventList active_events,
+  void GetActiveEventer(int event_amount, const PollEventList& active_events,
                         EventerList* active_eventers) const;
 
   // Map for all file descriptors mapping to their corresponding "Eventer"s

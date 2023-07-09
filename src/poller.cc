@@ -245,7 +245,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
 }
 
 void Poller::GetActiveEventer(int event_amount,
-                              const PollEventList active_events,
+                              const PollEventList& active_events,
                               EventerList* active_eventers) const {
   LockGuard lock_guard(event_lock_);
   for (auto itr = active_events.cbegin();
