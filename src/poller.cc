@@ -149,6 +149,7 @@ bool Poller::IsPollFdEffective() const {
 #include <string.h>
 #include <unistd.h>
 
+#include <memory>
 #include <string>
 
 #include "eventer.h"
@@ -164,12 +165,24 @@ Poller::Poller() = default;
 Poller::~Poller() = default;
 
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
-  int event_amount = ::poll(&(*poll_events_.begin()),
-                            static_cast<nfds_t>(poll_events_.size()), timeout);
+  int event_amount = 0;
+  PollEventList poll_events;
+  {
+    LockGuard lock_guard(event_lock_);
+    nfds_t poll_events_size = static_cast<nfds_t>(poll_events_.size());
+    poll_events.resize(poll_events_.size());
+    for (size_t i = 0; i < static_cast<size_t>(poll_events_size); ++i) {
+      poll_events[i].fd = poll_events_[i].fd;
+      poll_events[i].events = poll_events_[i].events;
+      poll_events[i].revents = poll_events_[i].revents;
+    }
+  }
+  event_amount = ::poll(&(*poll_events.begin()),
+                        static_cast<nfds_t>(poll_events.size()), timeout);
   int saved_errno = errno;
   TimePoint return_time;
   if (event_amount > 0) {
-    GetActiveEventer(event_amount, active_eventers);
+    GetActiveEventer(event_amount, poll_events, active_eventers);
   } else if (0 == event_amount) {
     LOG_DEBUG("In thread(%lu), there is nothing happened.", ::pthread_self());
   } else {
@@ -231,11 +244,11 @@ void Poller::RemoveEventer(Eventer* eventer) {
   poll_events_.pop_back();
 }
 
-void Poller::GetActiveEventer(int event_amount,
+void Poller::GetActiveEventer(int event_amount, const PollEventList active_events,
                               EventerList* active_eventers) const {
   LockGuard lock_guard(event_lock_);
-  for (auto itr = poll_events_.cbegin();
-       itr != poll_events_.cend() && event_amount > 0; ++itr) {
+  for (auto itr = active_events.cbegin();
+       itr != active_events.cend() && event_amount > 0; ++itr) {
     if (itr->revents > 0) {
       --event_amount;
       auto evt = eventers_.find(itr->fd);
