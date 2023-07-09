@@ -73,21 +73,19 @@ void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
   RecordLogs(Log_level_info_prefix[log_type] + log_info);
 }
 
-void Logger::UpdateLoggerTime() {
+std::string Logger::UpdateLoggerTime() {
   time_t tmp_time;
   ::time(&tmp_time);
+  std::lock_guard<std::mutex> lock(time_mutex_);
   if (tmp_time > time_now_sec_) {
-    std::lock_guard<std::mutex> lock(time_mutex_);
-    ::time(&tmp_time);
-    if (tmp_time > time_now_sec_) {
-      time_now_sec_ = tmp_time;
-      // In consideration of time zone
-      struct tm* tmp_tm = ::localtime(&tmp_time);
-      std::string tmp_time_now_str(::asctime(tmp_tm));
-      tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
-      time_now_str_ = "[ " + tmp_time_now_str + " ]";
-    }
+    time_now_sec_ = tmp_time;
+    // In consideration of time zone
+    struct tm* tmp_tm = ::localtime(&tmp_time);
+    std::string tmp_time_now_str(::asctime(tmp_tm));
+    tmp_time_now_str.resize(tmp_time_now_str.size() - 1);
+    time_now_str_ = "[ " + tmp_time_now_str + " ]";
   }
+  return time_now_str_;
 }
 
 void Logger::WriteDownLogs() {
@@ -151,9 +149,8 @@ void Logger::RecordLogs(std::string&& log_info) {
   }
   // Update the index which can be written next time and get the previous value
   const int64_t write_index = write_index_.fetch_add(1);
-  UpdateLoggerTime();
   // Splice this log record
-  std::string time_now_str{time_now_str_};
+  std::string time_now_str{UpdateLoggerTime()};
   std::string log_data(time_now_str.size() + log_info.size() + 2, ' ');
   ::memcpy(reinterpret_cast<void*>(const_cast<char*>(log_data.c_str())),
            time_now_str.c_str(), time_now_str.size());
