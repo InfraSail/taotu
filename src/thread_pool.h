@@ -1,7 +1,8 @@
 /**
  * @file thread_pool.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "ThreadPool" which is the caculation thread pool.
+ * @brief Declaration of class "ThreadPool" which is the calculation thread
+ * pool.
  * @date 2022-02-13
  *
  * @copyright Copyright (c) 2022 Sigma711
@@ -40,7 +41,7 @@ class ThreadPool : NonCopyableMovable {
   explicit ThreadPool(size_t thread_amount = 4);
   ~ThreadPool();
 
-  // Order the thread pool to execute a function and reture a "std::future"
+  // Order the thread pool to execute a function and return a "std::future"
   // object for retrieving the return value
   template <class Function>
   auto AddTask(std::function<Function>&& task)

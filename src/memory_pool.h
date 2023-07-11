@@ -1,7 +1,7 @@
 /**
  * @file memory_pool.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration and Implementation of struct "MemeryBlockNode" and class
+ * @brief Declaration and Implementation of struct "MemoryBlockNode" and class
  * "MemoryPool".
  * @date 2022-02-15
  *
@@ -20,13 +20,13 @@
 namespace taotu {
 
 /**
- * @brief "MemeryBlockNode" is the memory block node.
+ * @brief "MemoryBlockNode" is the memory block node.
  *
  */
-struct MemeryBlockNode {
+struct MemoryBlockNode {
   union {
     char data_;
-    MemeryBlockNode* next_node_;
+    MemoryBlockNode* next_node_;
   };
 };
 
@@ -39,15 +39,15 @@ class MemoryPool : NonCopyableMovable {
  public:
   MemoryPool()
       : free_list_head_(nullptr), list_head_(nullptr), malloc_time_(0) {
-    if (ObjectSize < sizeof(MemeryBlockNode)) {
-      object_size_ = sizeof(MemeryBlockNode);
+    if (ObjectSize < sizeof(MemoryBlockNode)) {
+      object_size_ = sizeof(MemoryBlockNode);
     } else {
       object_size_ = ObjectSize;
     }
   }
   ~MemoryPool() {
     while (list_head_ != nullptr) {
-      MemeryBlockNode* tmp_list_head = list_head_;
+      MemoryBlockNode* tmp_list_head = list_head_;
       list_head_ = list_head_->next_node_;
       ::free(reinterpret_cast<void*>(tmp_list_head));
     }
@@ -60,16 +60,16 @@ class MemoryPool : NonCopyableMovable {
       size_t malloc_size =
           MemoryPool<ObjectSize>::kInitialMallocSize + malloc_time_;
       void* new_malloc_ptr =
-          ::malloc(malloc_size * object_size_ + sizeof(MemeryBlockNode));
-      MemeryBlockNode* new_malloc_node =
-          reinterpret_cast<MemeryBlockNode*>(new_malloc_ptr);
+          ::malloc(malloc_size * object_size_ + sizeof(MemoryBlockNode));
+      MemoryBlockNode* new_malloc_node =
+          reinterpret_cast<MemoryBlockNode*>(new_malloc_ptr);
       new_malloc_node->next_node_ = list_head_;
       list_head_ = new_malloc_node;
       new_malloc_ptr = reinterpret_cast<void*>(
-          reinterpret_cast<char*>(new_malloc_ptr) + sizeof(MemeryBlockNode));
+          reinterpret_cast<char*>(new_malloc_ptr) + sizeof(MemoryBlockNode));
       for (size_t i = 0; i < malloc_size; ++i) {
-        MemeryBlockNode* new_node =
-            reinterpret_cast<MemeryBlockNode*>(new_malloc_ptr);
+        MemoryBlockNode* new_node =
+            reinterpret_cast<MemoryBlockNode*>(new_malloc_ptr);
         new_node->next_node_ = free_list_head_;
         free_list_head_ = new_node;
         new_malloc_ptr = reinterpret_cast<void*>(
@@ -87,8 +87,8 @@ class MemoryPool : NonCopyableMovable {
     if (nullptr == memory_block_ptr) {
       return;
     }
-    MemeryBlockNode* tmp_node =
-        reinterpret_cast<MemeryBlockNode*>(memory_block_ptr);
+    MemoryBlockNode* tmp_node =
+        reinterpret_cast<MemoryBlockNode*>(memory_block_ptr);
     tmp_node->next_node_ = free_list_head_;
     free_list_head_ = tmp_node;
   }
@@ -98,10 +98,10 @@ class MemoryPool : NonCopyableMovable {
   static const size_t kInitialMallocSize = 40;
 
   // Free linked list
-  MemeryBlockNode* free_list_head_;
+  MemoryBlockNode* free_list_head_;
 
   // Linked list of allocation
-  MemeryBlockNode* list_head_;
+  MemoryBlockNode* list_head_;
 
   // Time of calling malloc()
   size_t malloc_time_;

@@ -20,7 +20,7 @@ namespace taotu {
 
 /**
  * @brief "MutexLock" is a mutex lock which improves the performance of the
- * program when locking time is short by using lock-free programing.
+ * program when locking time is short by using lock-free programming.
  */
 class MutexLock : NonCopyableMovable {
  public:

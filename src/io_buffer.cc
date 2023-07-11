@@ -259,7 +259,7 @@ void IoBuffer::ReserveWritableSpace(size_t len) {
   } else {
     // Move forward to-read contents if too much space are reserved in the
     // front of the buffer, and then the writable space will be enough without
-    // dilatating
+    // dilatation
     ::memcpy(static_cast<void*>(
                  const_cast<char*>(GetBufferBegin() + kReservedCapacity)),
              static_cast<const void*>(GetBufferBegin() + reading_index_),
