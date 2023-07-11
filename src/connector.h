@@ -59,7 +59,7 @@ class Connector : NonCopyableMovable {
 
   const NetAddress& GetServerAddress() { return server_address_; }
 
-  // Execute when create a new TCP conncetion
+  // Execute when create a new TCP connection
   void DoWriting();
 
   // Execute when error happens
@@ -70,7 +70,7 @@ class Connector : NonCopyableMovable {
   enum State { kDisconnected, kConnecting, kConnected };
 
   // After successful connecting, call it to reset because the TCP connection's
-  // file descriptot is disposable
+  // file descriptor is disposable
   int RemoveAndReset();
 
   void SetState(State state) { state_ = state; }
@@ -81,7 +81,7 @@ class Connector : NonCopyableMovable {
   NetAddress server_address_;
   State state_;
   bool can_connect_;
-  int retry_dalay_microseconds_;
+  int retry_delay_microseconds_;
 
   // Be called when a new TCP connection should be created
   NewConnectionCallback NewConnectionCallback_;

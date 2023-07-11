@@ -1,7 +1,7 @@
 /**
  * @file acceptor.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declaration of class "Acceptor" which is the accetor of new TCP
+ * @brief Declaration of class "Acceptor" which is the acceptor of new TCP
  * connection requests from clients and create the connections.
  * @date 2021-12-03
  *
@@ -39,7 +39,7 @@ class Acceptor : NonCopyableMovable {
   ~Acceptor();
 
   // Get the file descriptor of this accepting socket
-  int Fd() const { return accept_soketer_.Fd(); }
+  int Fd() const { return accept_socketer_.Fd(); }
 
   // Listen to the port of the IP address
   void Listen();
@@ -56,7 +56,7 @@ class Acceptor : NonCopyableMovable {
 
  private:
   // Socketer which is about configurations of the socket
-  Socketer accept_soketer_;
+  Socketer accept_socketer_;
 
   // Eventer which is about event's setting
   Eventer accept_eventer_;

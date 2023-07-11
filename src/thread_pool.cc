@@ -1,7 +1,7 @@
 /**
  * @file thread_pool.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Implementation of class "ThreadPool" which is the caculation thread
+ * @brief Implementation of class "ThreadPool" which is the calculation thread
  * pool.
  * @date 2022-02-13
  *
@@ -40,7 +40,7 @@ ThreadPool::ThreadPool(size_t thread_amount)
           }
           size_t que_csm_idx = !(this->que_pdt_idx_);
           if (this->task_queues_[que_csm_idx]
-                  .empty()) {  // If there is no task for cunsuming, make the
+                  .empty()) {  // If there is no task for consuming, make the
                                // index of the task queue for producers as the
                                // index of the task queue for consumers
             std::lock_guard<std::mutex> csm_lock(this->que_csm_mutex_);

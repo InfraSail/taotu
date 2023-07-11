@@ -28,7 +28,7 @@ int Timer::GetMinTimeDuration() const {
   int duration = static_cast<int>(time_points_.begin()->first.GetMillisecond() -
                                   TimePoint().GetMillisecond());
   return duration > 0 ? duration
-                      : 0;  // Could not give a negtive value of the duration
+                      : 0;  // Could not give a negative value of the duration
 }
 
 Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {

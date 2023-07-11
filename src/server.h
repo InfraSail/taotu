@@ -57,7 +57,7 @@ class Server : NonCopyableMovable {
   // Reactor manager (the "engine")
   ServerReactorManager reactor_manager_;
 
-  // Thread pool for caculation
+  // Thread pool for calculation
   ThreadPool thread_pool_;
 
   std::atomic_bool is_started_;

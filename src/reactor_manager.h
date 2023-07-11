@@ -34,7 +34,7 @@ class Balancer;
 /**
  * @brief "ServerReactorManager" is the engine of the server which manages
  * almost everything including new TCP connections' creation and concurrent I/O.
- * It allows users to difine what to do by some flags and different callback
+ * It allows users to define what to do by some flags and different callback
  * functions.
  *
  */
@@ -88,7 +88,7 @@ class ServerReactorManager : NonCopyableMovable {
   // I/O threads
   EventManagers event_managers_;
 
-  // Acceptor for accpecting new connections in the main thread
+  // Acceptor for accepting new connections in the main thread
   AcceptorPtr acceptor_;
 
   // Load balancer for dispatching new connections into I/O threads

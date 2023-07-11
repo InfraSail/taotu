@@ -65,7 +65,7 @@ Connector::Connector(EventManager* event_manager,
       server_address_(server_address),
       state_(kDisconnected),
       can_connect_(false),
-      retry_dalay_microseconds_(static_cast<int>(kInitRetryDelayMicroseconds)) {
+      retry_delay_microseconds_(static_cast<int>(kInitRetryDelayMicroseconds)) {
 }
 
 void Connector::Start() {
@@ -75,7 +75,7 @@ void Connector::Start() {
 void Connector::Restart() {
   SetState(kDisconnected);
 
-  retry_dalay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
+  retry_delay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
   Start();
 }
 void Connector::Stop() {
@@ -147,10 +147,10 @@ void Connector::DoRetrying(int conn_fd) {
   SetState(kDisconnected);
   if (can_connect_) {
     LOG_DEBUG("Connector fd(%d) is retrying to connect.", conn_fd);
-    event_manager_->RunAfter(retry_dalay_microseconds_,
+    event_manager_->RunAfter(retry_delay_microseconds_,
                              [this]() { this->Start(); });
-    retry_dalay_microseconds_ =
-        std::min(retry_dalay_microseconds_ * 2,
+    retry_delay_microseconds_ =
+        std::min(retry_delay_microseconds_ * 2,
                  static_cast<int>(kMaxRetryDelayMicroseconds));
   } else {
     LOG_DEBUG("Connector fd(%d) is not retrying to connect.", conn_fd);
