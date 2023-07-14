@@ -208,7 +208,7 @@ void Connecting::ForceClose() {
 // FIXME: Make it be effective in the condition that the connection has been
 // destroyed.
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
-  if (kDisconnected != state_) {
+  if (kDisconnected != state_.load()) {
     event_manager_->RunAfter(delay_microseconds,
                              [this]() { this->ForceClose(); });
   }
