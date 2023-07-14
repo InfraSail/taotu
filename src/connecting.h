@@ -126,13 +126,13 @@ class Connecting : NonCopyableMovable {
   // Be called when this connection establishing
   void OnEstablishing();
 
-  // Send the message (asynchronously at most of time)
+  // Send the message (asynchronously at most time)
   void Send(const void* message, size_t msg_len);
 
-  // Send the message (asynchronously at most of time)
+  // Send the message (asynchronously at most time)
   void Send(const std::string& message);
 
-  // Send the message (asynchronously at most of time)
+  // Send the message (asynchronously at most time)
   void Send(IoBuffer* io_buffer);
 
   // Shut down the writing end (close half == stop writing indeed)
@@ -145,7 +145,8 @@ class Connecting : NonCopyableMovable {
 
   // Close this TCP connection directly (at the end of this loop)
   void ForceClose();
-  // FIXME: void ForceCloseAfter(int64_t delay_microseconds);
+
+  void ForceCloseAfter(int64_t delay_microseconds);
 
  private:
   enum ConnectionState {

@@ -128,7 +128,7 @@ void Connector::Connect() {
       ::close(sock_fd);
       break;
     default:
-      LOG_ERROR("Connector fd(%d) is closing because of an unkown error(%d)!!!",
+      LOG_ERROR("Connector fd(%d) is closing because of an unknow error(%d)!!!",
                 sock_fd, saved_errno);
       ::close(sock_fd);
       break;
