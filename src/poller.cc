@@ -125,7 +125,7 @@ void Poller::RemoveEventer(Eventer* eventer) {
 
 void Poller::GetActiveEventer(int event_amount,
                               EventerList* active_eventers) const {
-  for (size_t i = 0; i < event_amount; ++i) {
+  for (size_t i = 0; i < static_cast<size_t>(event_amount); ++i) {
     auto eventer = static_cast<Eventer*>(poll_events_[i].data.ptr);
     eventer->ReceiveEvents(poll_events_[i].events);
     active_eventers->emplace_back(eventer);
