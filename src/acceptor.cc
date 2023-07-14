@@ -55,7 +55,7 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   accept_socketer_.BindAddress(listen_address);
   accept_eventer_.RegisterReadCallback([this](const TimePoint& time_point) {
     this->DoReading();
-  });  // Register the accepting action as an reading event handler
+  });  // Register the accepting action as a reading event handler
 }
 Acceptor::~Acceptor() {
   LOG_DEBUG("Acceptor with fd(%d) is closing.", accept_socketer_.Fd());

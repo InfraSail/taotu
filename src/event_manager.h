@@ -60,7 +60,7 @@ class EventManager : NonCopyableMovable {
 
   Poller* GetPoller() { return &poller_; }
 
-  // For the Balancer to pick a EventManager with lowest load
+  // For the Balancer to pick a EventManager with the lowest load
   uint32_t GetEventerAmount() const {
     LockGuard lock_guard(connection_map_mutex_lock_);
     return connection_map_.size();

@@ -104,9 +104,8 @@ void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
       socket_fd, GetLocalAddress(socket_fd),
-      peer_address);  // Pick a "Reactor" with lowest load and
-                      // insert the new
-                      // connection created just now into it
+      peer_address);  // Pick a "Reactor" with the lowest load and insert the
+                      // new connection created just now into it
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);
