@@ -99,6 +99,14 @@ class IoBuffer {
     return RetrieveAString(GetReadableBytes());
   }
 
+  // Read content as a byte array that has a specific length
+  std::vector<char> RetrieveAByteArray(size_t len);
+
+  // Read all content as a byte array
+  std::vector<char> RetrieveAllAsByteArray() {
+    return RetrieveAByteArray(GetReadableBytes());
+  }
+
   // Read content as an 8-bit integer (refresh the indexes)
   int8_t RetrieveInt8();
 

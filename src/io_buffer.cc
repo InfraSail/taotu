@@ -78,6 +78,18 @@ std::string IoBuffer::RetrieveAString(size_t len) {
   return ret;
 }
 
+std::vector<char> IoBuffer::RetrieveAByteArray(size_t len) {
+  if (len > GetReadableBytes()) {
+    LOG_ERROR("Read too many bytes from the buffer!!!");
+    return std::vector<char>{};
+  }
+  std::vector<char> ret(len);
+  std::copy(GetReadablePosition(), GetReadablePosition() + len,
+            &(*ret.begin()));
+  Refresh(len);
+  return ret;
+}
+
 int8_t IoBuffer::RetrieveInt8() {
   auto result = GetReadableInt8();
   Refresh(sizeof(int8_t));
