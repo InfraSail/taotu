@@ -107,26 +107,12 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  thread_ = std::thread([this] { this->Work(); });
+  std::call_once(start_once_flag_, [this]() {
+    thread_ = std::thread([this] { this->Start(); });
+  });
 }
 void EventManager::Work() {
-  should_quit_ = false;
-  LOG_DEBUG("The event loop in thread(%lu) is starting.", ::pthread_self());
-  while (!should_quit_) {
-    auto return_time =
-        poller_.Poll(timer_.GetMinTimeDuration(),
-                     &active_events_);  // Return time is the time point of the
-                                        // end of this polling
-    DoWithActiveTasks(return_time);
-    DoExpiredTimeTasks(return_time);
-    DestroyClosedConnections();
-  }
-  LOG_DEBUG("The event loop in thread(%lu) is stopping.", ::pthread_self());
-  LockGuard lock_guard(connection_map_mutex_lock_);
-  for (auto& [_, connection] : connection_map_) {
-    delete connection;
-  }
-  connection_map_.clear();
+  std::call_once(start_once_flag_, [this]() { this->Start(); });
 }
 
 Connecting* EventManager::InsertNewConnection(int socket_fd,
@@ -228,6 +214,26 @@ void EventManager::WakeUp() {
 }
 
 void EventManager::Quit() { should_quit_ = true; }
+
+void EventManager::Start() {
+  should_quit_ = false;
+  LOG_DEBUG("The event loop in thread(%lu) is starting.", ::pthread_self());
+  while (!should_quit_) {
+    auto return_time =
+        poller_.Poll(timer_.GetMinTimeDuration(),
+                     &active_events_);  // Return time is the time point of
+                                        // the end of this polling
+    DoWithActiveTasks(return_time);
+    DoExpiredTimeTasks(return_time);
+    DestroyClosedConnections();
+  }
+  LOG_DEBUG("The event loop in thread(%lu) is stopping.", ::pthread_self());
+  LockGuard lock_guard(connection_map_mutex_lock_);
+  for (auto& [_, connection] : connection_map_) {
+    delete connection;
+  }
+  connection_map_.clear();
+}
 
 void EventManager::DoWithActiveTasks(const TimePoint& return_time) {
   for (auto active_event : active_events_) {
