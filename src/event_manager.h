@@ -16,6 +16,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
@@ -48,9 +49,9 @@ class EventManager : NonCopyableMovable {
           std::function<void(Connecting*)>{});
   ~EventManager();
 
-  // Run the loop in a new thread
+  // Run the loop in a new thread (called once guarantee)
   void Loop();
-  // Run the loop in this thread
+  // Run the loop in this thread (called once guarantee)
   void Work();
 
   // Insert a new connection into current I/O thread
@@ -93,6 +94,9 @@ class EventManager : NonCopyableMovable {
   typedef std::unordered_map<int, Connecting*> ConnectionMap;
   typedef std::unordered_set<int> Fds;
 
+  // Only called by Work() or Loop()
+  void Start();
+
   // Handle I/O events
   void DoWithActiveTasks(const TimePoint& return_time);
   // Do time tasks
@@ -126,6 +130,9 @@ class EventManager : NonCopyableMovable {
   // Spin lock protecting the set of file descriptors of connections which
   // should be destroyed
   mutable MutexLock closed_fds_lock_;
+
+  // Guaranteed to only start myself once
+  std::once_flag start_once_flag_;
 
 #ifdef __linux__
   // To wake up this I/O thread
