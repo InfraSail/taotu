@@ -15,9 +15,9 @@
 ChatServer::ChatServer(const taotu::NetAddress& listen_address,
                        bool should_reuse_port, size_t io_thread_amount,
                        size_t calculation_thread_amount)
-    : event_manager_(new taotu::EventManager),
+    : event_managers_(io_thread_amount, new taotu::EventManager),
       server_(std::make_unique<taotu::Server>(
-          event_manager_, listen_address, should_reuse_port, io_thread_amount,
+          &event_managers_, listen_address, should_reuse_port, io_thread_amount,
           calculation_thread_amount)),
       codec_([this](taotu::Connecting& connection, const std::string& message,
                     taotu::TimePoint time_point) {
@@ -33,14 +33,14 @@ ChatServer::ChatServer(const taotu::NetAddress& listen_address,
   });
 }
 ChatServer::~ChatServer() {
-  delete event_manager_;
+  size_t event_managers_size = event_managers_.size();
+  for (size_t i = 0; i < event_managers_size; ++i) {
+    delete event_managers_[i];
+  }
   taotu::END_LOG();
 }
 
-void ChatServer::Start() {
-  server_->Start();
-  event_manager_->Work();
-}
+void ChatServer::Start() { server_->Start(); }
 
 void ChatServer::OnConnectionCallback(taotu::Connecting& connection) {
   taotu::LOG_DEBUG(

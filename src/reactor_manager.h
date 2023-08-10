@@ -45,7 +45,7 @@ class ServerReactorManager : NonCopyableMovable {
 
   typedef std::vector<EventManager*> EventManagers;
 
-  ServerReactorManager(EventManager* event_manager,
+  ServerReactorManager(EventManagers* event_managers,
                        const NetAddress& listen_address,
                        size_t io_thread_amount = 6,
                        bool should_reuse_port = false);
@@ -86,7 +86,7 @@ class ServerReactorManager : NonCopyableMovable {
 
   // Event managers which are the "Reactor"s that manages events in their own
   // I/O threads
-  EventManagers event_managers_;
+  EventManagers* event_managers_;
 
   // Acceptor for accepting new connections in the main thread
   AcceptorPtr acceptor_;

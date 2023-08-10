@@ -18,9 +18,9 @@
 DiscardServer::DiscardServer(const taotu::NetAddress& listen_address,
                              bool should_reuse_port, size_t io_thread_amount,
                              size_t calculation_thread_amount)
-    : event_manager_(new taotu::EventManager),
+    : event_managers_(io_thread_amount, new taotu::EventManager),
       server_(std::make_unique<taotu::Server>(
-          event_manager_, listen_address, should_reuse_port, io_thread_amount,
+          &event_managers_, listen_address, should_reuse_port, io_thread_amount,
           calculation_thread_amount)) {
   server_->SetMessageCallback([this](taotu::Connecting& connection,
                                      taotu::IoBuffer* io_buffer,
@@ -29,14 +29,14 @@ DiscardServer::DiscardServer(const taotu::NetAddress& listen_address,
   });
 }
 DiscardServer::~DiscardServer() {
-  delete event_manager_;
+  size_t event_managers_size = event_managers_.size();
+  for (size_t i = 0; i < event_managers_size; ++i) {
+    delete event_managers_[i];
+  }
   taotu::END_LOG();
 }
 
-void DiscardServer::Start() {
-  server_->Start();
-  event_manager_->Work();
-}
+void DiscardServer::Start() { server_->Start(); }
 
 void DiscardServer::OnMessageCallback(taotu::Connecting& connection,
                                       taotu::IoBuffer* io_buffer,
