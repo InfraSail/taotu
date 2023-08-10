@@ -29,11 +29,7 @@
 
 using namespace taotu;
 
-EventManager::EventManager(
-    std::function<Connecting*(EventManager*, int, const NetAddress&,
-                              const NetAddress&)>
-        CreateConnectionCallback,
-    std::function<void(Connecting*)> DestroyConnectionCallback)
+EventManager::EventManager()
     : poller_()
 #ifdef __linux__
       ,
@@ -84,10 +80,6 @@ EventManager::EventManager(
   });
   wake_up_eventer_->EnableReadEvents();
 #endif
-  if (CreateConnectionCallback && DestroyConnectionCallback) {
-    CreateConnectionCallback_ = CreateConnectionCallback;
-    DestroyConnectionCallback_ = DestroyConnectionCallback;
-  }
 }
 EventManager::~EventManager() {
 #ifdef __linux__

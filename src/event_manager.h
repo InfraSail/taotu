@@ -40,14 +40,20 @@ namespace taotu {
  */
 class EventManager : NonCopyableMovable {
  public:
-  EventManager(
+  EventManager();
+  ~EventManager();
+
+  void SetCreateConnectionCallback(
       std::function<Connecting*(EventManager*, int, const NetAddress&,
                                 const NetAddress&)>
-          CreateConnectionCallback = std::function<Connecting*(
-              EventManager*, int, const NetAddress&, const NetAddress&)>{},
-      std::function<void(Connecting*)> DestroyConnectionCallback =
-          std::function<void(Connecting*)>{});
-  ~EventManager();
+          CreateConnectionCallback) {
+    CreateConnectionCallback_ = CreateConnectionCallback;
+  }
+
+  void SetDestroyConnectionCallback(
+      std::function<void(Connecting*)> DestroyConnectionCallback) {
+    DestroyConnectionCallback_ = DestroyConnectionCallback;
+  }
 
   // Run the loop in a new thread (called once guarantee)
   void Loop();

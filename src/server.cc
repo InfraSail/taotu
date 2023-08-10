@@ -18,10 +18,10 @@
 
 using namespace taotu;
 
-Server::Server(EventManager* event_manager, const NetAddress& listen_address,
+Server::Server(EventManagers* event_managers, const NetAddress& listen_address,
                bool should_reuse_port, size_t io_thread_amount,
                size_t calculation_thread_amount)
-    : reactor_manager_(event_manager, listen_address, io_thread_amount,
+    : reactor_manager_(event_managers, listen_address, io_thread_amount,
                        should_reuse_port),
       thread_pool_(calculation_thread_amount),
       is_started_(false) {

@@ -20,6 +20,8 @@
 
 class HttpServer : taotu::NonCopyableMovable {
  public:
+  typedef std::vector<taotu::EventManager*> EventManagers;
+
   HttpServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 4, size_t calculation_thread_amount = 0);
   ~HttpServer();
@@ -44,7 +46,7 @@ class HttpServer : taotu::NonCopyableMovable {
   // Called when a request arriving
   void OnRequest(taotu::Connecting& connection, const HttpParser& http_parser);
 
-  taotu::EventManager* event_manager_;
+  EventManagers event_managers_;
   std::unique_ptr<taotu::Server> server_;
 
   std::function<void(const HttpParser&, HttpResponse*)> HttpCallback_;

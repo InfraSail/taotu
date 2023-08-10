@@ -48,12 +48,12 @@ static NetAddress GetPeerAddress(int socket_fd) {
   return NetAddress(local_addr);
 }
 
-ServerReactorManager::ServerReactorManager(EventManager* event_manager,
+ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
                                            const NetAddress& listen_address,
                                            size_t io_thread_amount,
                                            bool should_reuse_port)
-    : event_managers_({event_manager}),
-      acceptor_(std::make_unique<Acceptor>(event_managers_[0]->GetPoller(),
+    : event_managers_(event_managers),
+      acceptor_(std::make_unique<Acceptor>((*event_managers_)[0]->GetPoller(),
                                            listen_address, should_reuse_port)) {
   if (acceptor_->Fd() >= 0 && !acceptor_->IsListening()) {
     acceptor_->Listen();
@@ -65,35 +65,37 @@ ServerReactorManager::ServerReactorManager(EventManager* event_manager,
     LOG_ERROR("Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  event_managers_[0] = event_manager;
+  // TODO: event_managers_[0] = event_managers;
   for (size_t i = 0; i < io_thread_amount; ++i) {
-    // Initialize "Reactor"s
-    event_managers_.emplace_back(new EventManager(
+    // "Initialize" "Reactor"s
+    (*event_managers_)[i]->SetCreateConnectionCallback(
         [this](EventManager* event_manager, int fd,
                const NetAddress& server_address,
                const NetAddress& peer_address) -> Connecting* {
           return this->NewOneConnectingFromObjectPool(
               event_manager, fd, server_address, peer_address);
-        },
+        });
+    (*event_managers_)[i]->SetDestroyConnectionCallback(
         [this](Connecting* connecting_ptr) {
           this->DeleteOneConnectingFromObjectPool(connecting_ptr);
-        }));
+        });
   }
-  balancer_ = std::make_unique<Balancer>(&event_managers_, 0);
+  balancer_ = std::make_unique<Balancer>(event_managers_, 0);
 }
 ServerReactorManager::~ServerReactorManager() {
-  size_t thread_amount = event_managers_.size();
-  for (size_t i = 1; i < thread_amount; ++i) {
-    delete event_managers_[i];
-  }
+  // size_t thread_amount = event_managers_.size();
+  // for (size_t i = 1; i < thread_amount; ++i) {
+  //   delete event_managers_[i];
+  // }
 }
 
 void ServerReactorManager::Loop() {
-  size_t io_thread_amount = event_managers_.size();
+  size_t io_thread_amount = (*event_managers_).size();
   for (size_t i = 1; i < io_thread_amount; ++i) {
     // Start each event loop in the corresponding I/O thread
-    event_managers_[i]->Loop();
+    (*event_managers_)[i]->Loop();
   }
+  (*event_managers_)[0]->Work();
   // Do not start an event loop in main thread (mainly for accepting)
   // Like this:
   // `event_managers_[0]->Work();`

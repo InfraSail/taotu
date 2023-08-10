@@ -17,6 +17,8 @@
 
 class EchoServer : taotu::NonCopyableMovable {
  public:
+  typedef std::vector<taotu::EventManager*> EventManagers;
+
   EchoServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
              size_t io_thread_amount = 3, size_t calculation_thread_amount = 0);
   ~EchoServer();
@@ -30,7 +32,7 @@ class EchoServer : taotu::NonCopyableMovable {
                          taotu::IoBuffer* io_buffer,
                          taotu::TimePoint time_point);
 
-  taotu::EventManager* event_manager_;
+  EventManagers event_managers_;
   std::unique_ptr<taotu::Server> server_;
 };
 
