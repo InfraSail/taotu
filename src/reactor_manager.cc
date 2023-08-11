@@ -81,6 +81,7 @@ ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
   }
   balancer_ = std::make_unique<Balancer>(event_managers_, 0);
 }
+ServerReactorManager::~ServerReactorManager() {}
 
 void ServerReactorManager::Loop() {
   size_t io_thread_amount = (*event_managers_).size();
