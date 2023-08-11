@@ -65,7 +65,6 @@ ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
     LOG_ERROR("Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  // TODO: event_managers_[0] = event_managers;
   for (size_t i = 0; i < io_thread_amount; ++i) {
     // "Initialize" "Reactor"s
     (*event_managers_)[i]->SetCreateConnectionCallback(
@@ -81,12 +80,6 @@ ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
         });
   }
   balancer_ = std::make_unique<Balancer>(event_managers_, 0);
-}
-ServerReactorManager::~ServerReactorManager() {
-  // size_t thread_amount = event_managers_.size();
-  // for (size_t i = 1; i < thread_amount; ++i) {
-  //   delete event_managers_[i];
-  // }
 }
 
 void ServerReactorManager::Loop() {

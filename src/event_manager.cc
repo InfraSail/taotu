@@ -205,12 +205,12 @@ void EventManager::WakeUp() {
 #endif
 }
 
-void EventManager::Quit() { should_quit_ = true; }
+void EventManager::Quit() { should_quit_.store(true); }
 
 void EventManager::Start() {
-  should_quit_ = false;
+  should_quit_.store(false);
   LOG_DEBUG("The event loop in thread(%lu) is starting.", ::pthread_self());
-  while (!should_quit_) {
+  while (!should_quit_.load()) {
     auto return_time =
         poller_.Poll(timer_.GetMinTimeDuration(),
                      &active_events_);  // Return time is the time point of

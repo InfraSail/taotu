@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -125,7 +126,7 @@ class EventManager : NonCopyableMovable {
   mutable MutexLock connection_map_mutex_lock_;
 
   // The flag for deciding whether the event loop should quit
-  bool should_quit_;
+  std::atomic_bool should_quit_;
 
   // List for active events returned from the I/O multiplexing waiting each loop
   Poller::EventerList active_events_;
