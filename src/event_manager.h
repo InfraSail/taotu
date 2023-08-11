@@ -45,14 +45,14 @@ class EventManager : NonCopyableMovable {
   ~EventManager();
 
   void SetCreateConnectionCallback(
-      std::function<Connecting*(EventManager*, int, const NetAddress&,
-                                const NetAddress&)>
+      const std::function<Connecting*(EventManager*, int, const NetAddress&,
+                                      const NetAddress&)>&
           CreateConnectionCallback) {
     CreateConnectionCallback_ = CreateConnectionCallback;
   }
 
   void SetDestroyConnectionCallback(
-      std::function<void(Connecting*)> DestroyConnectionCallback) {
+      const std::function<void(Connecting*)>& DestroyConnectionCallback) {
     DestroyConnectionCallback_ = DestroyConnectionCallback;
   }
 
