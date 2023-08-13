@@ -47,7 +47,6 @@ class ServerReactorManager : NonCopyableMovable {
 
   ServerReactorManager(EventManagers* event_managers,
                        const NetAddress& listen_address,
-                       size_t io_thread_amount = 6,
                        bool should_reuse_port = false);
   ~ServerReactorManager();
 

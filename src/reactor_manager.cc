@@ -50,7 +50,6 @@ static NetAddress GetPeerAddress(int socket_fd) {
 
 ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
                                            const NetAddress& listen_address,
-                                           size_t io_thread_amount,
                                            bool should_reuse_port)
     : event_managers_(event_managers),
       acceptor_(std::make_unique<Acceptor>((*event_managers_)[0]->GetPoller(),
@@ -65,7 +64,7 @@ ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
     LOG_ERROR("Fail to init the acceptor!!!");
     ::exit(-1);
   }
-  for (size_t i = 0; i < io_thread_amount; ++i) {
+  for (size_t i = 0; i < event_managers->size(); ++i) {
     // "Initialize" "Reactor"s
     (*event_managers_)[i]->SetCreateConnectionCallback(
         [this](EventManager* event_manager, int fd,
