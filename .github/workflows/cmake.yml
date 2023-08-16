@@ -22,6 +22,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install Protobuf
+      run: sudo apt-get install protobuf-compiler libprotobuf-dev
+
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
 
