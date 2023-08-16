@@ -18,7 +18,7 @@ jobs:
     - name: init
       run: mkdir build
     - name: Install Protobuf
-      run: sudo apt-get install libtool pkg-config && sudo apt-get install protobuf-compiler libprotobuf-dev && sudo find /usr/ -name ProtobufConfig.cmake 2>/dev/null && sudo find /usr/ -name protobuf-config.cmake 2>/dev/null
+      run: sudo apt-get install libtool pkg-config && sudo apt-get install protobuf-compiler libprotobuf-dev && sudo find / -name ProtobufConfig.cmake 2>/dev/null && sudo find / -name protobuf-config.cmake 2>/dev/null
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: Install llhttp manually
