@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package taotu;
+
+option cc_generic_services = true;
+option java_generic_services = true;
+option py_generic_services = true;
+
+enum MessageType
+{
+  OTHER = 0;
+  REQUEST = 1;
+  RESPONSE = 2;
+  ERROR = 3;
+}
+
+enum ErrorCode
+{
+  NO_ERROR = 0;
+  WRONG_PROTO = 1;
+  NO_SERVICE = 2;
+  NO_METHOD = 3;
+  INVALID_REQUEST = 4;
+  INVALID_RESPONSE = 5;
+  TIMEOUT = 6;
+}
+
+message RpcMessage
+{
+  MessageType type = 1;
+  fixed64 id = 2;
+
+  optional string service = 3;
+  optional string method = 4;
+  optional bytes request = 5;
+
+  optional bytes response = 6;
+
+  optional ErrorCode error = 7;
+}
+
+message ListRpcRequest
+{
+  optional string service_name = 1;
+  optional bool list_method = 2;
+}
+
+message ListRpcResponse
+{
+  ErrorCode error = 1;
+  repeated string service_name = 2;
+  repeated string method_name = 3;
+}
+
+message GetServiceRequest
+{
+  string service_name = 1;
+}
+
+message GetServiceResponse
+{
+  ErrorCode error = 1;
+  repeated string proto_file = 2;
+  repeated string proto_file_name = 3;
+}
+
+service RpcService
+{
+  rpc ListRpc (ListRpcRequest) returns (ListRpcResponse);
+  rpc GetService (GetServiceRequest) returns (GetServiceResponse);
+}

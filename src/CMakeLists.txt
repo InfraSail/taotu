@@ -1,3 +1,22 @@
+FIND_PACKAGE(Protobuf CONFIG REQUIRED)
+
+SET(PROTO_PATH "${CMAKE_SOURCE_DIR}/src/")
+SET(TIME_PROTO "${PROTO_PATH}/rpc.proto")
+SET(GENERATED_PROTOBUF_PATH "${CMAKE_SOURCE_DIR}/src/")
+
+SET(RPC_PB_CPP_FILE "${GENERATED_PROTOBUF_PATH}/rpc.pb.cc")
+SET(RPC_PB_H_FILE "${GENERATED_PROTOBUF_PATH}/rpc.pb.h")
+
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${RPC_PB_H_FILE}
+          ${RPC_PB_CPP_FILE}
+  COMMAND protobuf::protoc
+  ARGS --proto_path ${PROTO_PATH}
+        --cpp_out ${GENERATED_PROTOBUF_PATH}
+        ${TIME_PROTO}
+  DEPENDS ${TIME_PROTO}
+)
+
 SET(TAOTU_SOURCE
   acceptor.cc
   timer.cc
@@ -16,6 +35,10 @@ SET(TAOTU_SOURCE
   client.cc
   net_address.cc
   balancer.cc
+  ${RPC_PB_CPP_FILE}
+  rpc_codec.cc
+  rpc_channel.cc
+  rpc_server.cc
 )
 
 FIND_PACKAGE(Threads REQUIRED)
