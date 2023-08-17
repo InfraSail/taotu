@@ -28,7 +28,31 @@ RpcServer::RpcServer(EventManagers* event_managers,
   });
 }
 
-void RpcServer::RegisterService(::google::protobuf::Service*) {}
-void RpcServer::Start() {}
+void RpcServer::RegisterService(::google::protobuf::Service* service) {
+  const auto service_descriptor = service->GetDescriptor();
+  services_[service_descriptor->name()] = service;
+}
+void RpcServer::Start() { server_.Start(); }
 
-void RpcServer::OnConnectionCallback(Connecting& connection) {}
+void RpcServer::OnConnectionCallback(Connecting& connection) {
+  LOG_NOTICE("RpcServer - [ IP(%s), Port(%s) ] -> [ IP(%s), Port(%s) ] %s",
+             connection.GetLocalNetAddress().GetIp().c_str(),
+             std::to_string(connection.GetLocalNetAddress().GetPort()).c_str(),
+             connection.GetPeerNetAddress().GetIp().c_str(),
+             std::to_string(connection.GetPeerNetAddress().GetPort()).c_str(),
+             (connection.IsConnected() ? "UP" : "DOWN"));
+  if (connection.IsConnected()) {
+    std::shared_ptr<RpcChannel> rpc_channel =
+        std::make_shared<RpcChannel>(connection);
+    rpc_channel->SetServices(&services_);
+    connection.RegisterOnMessageCallback(
+        [&rpc_channel](Connecting& connection, IoBuffer* io_buffer,
+                       TimePoint receive_time) {
+          rpc_channel->OnMessage(connection, io_buffer, receive_time);
+        });
+    connection.SetContext<std::shared_ptr<RpcChannel>>(rpc_channel);
+  } else {
+    connection.SetContext<std::shared_ptr<RpcChannel>>(
+        std::shared_ptr<RpcChannel>());
+  }
+}
