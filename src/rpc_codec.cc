@@ -49,7 +49,7 @@ void RpcCodec::Send(Connecting& connection,
                     const ::google::protobuf::Message& message) {
   IoBuffer io_buffer;
   FillEmptyBuffer(&io_buffer, message);
-  const_cast<Connecting&>(connection).Send(&io_buffer);
+  connection.Send(&io_buffer);
 }
 
 void RpcCodec::OnMessage(Connecting& connection, IoBuffer* io_buffer,
