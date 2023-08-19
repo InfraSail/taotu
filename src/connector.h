@@ -67,19 +67,19 @@ class Connector : NonCopyableMovable {
 
  private:
   typedef std::unique_ptr<Eventer> EventerPtr;
-  enum State { kDisconnected, kConnecting, kConnected };
+  enum class ConnectState { kDisconnected, kConnecting, kConnected };
 
   // After successful connecting, call it to reset because the TCP connection's
   // file descriptor is disposable
   int RemoveAndReset();
 
-  void SetState(State state) { state_ = state; }
+  void SetState(ConnectState state) { state_ = state; }
 
   // Pointer to the specific "EventManager" ("Reactor")
   EventManager* event_manager_;
 
   NetAddress server_address_;
-  State state_;
+  ConnectState state_;
   bool can_connect_;
   int retry_delay_microseconds_;
 
