@@ -31,6 +31,7 @@ RpcChannel::RpcChannel()
                     TimePoint time_point) {
         this->OnRpcMessage(connection, rpc_message, time_point);
       }),
+      connection_(nullptr),
       services_(nullptr) {
   LOG_INFO("RpcChannel::RpcChannel - %p", this);
 }
