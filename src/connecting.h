@@ -138,8 +138,12 @@ class Connecting : NonCopyableMovable {
   // Shut down the writing end (close half == stop writing indeed)
   void ShutDownWrite();
 
-  bool IsConnected() const { return kConnected == state_.load(); }
-  bool IsDisconnected() const { return kDisconnected == state_.load(); }
+  bool IsConnected() const {
+    return ConnectionState::kConnected == state_.load();
+  }
+  bool IsDisconnected() const {
+    return ConnectionState::kDisconnected == state_.load();
+  }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
@@ -149,7 +153,7 @@ class Connecting : NonCopyableMovable {
   void ForceCloseAfter(int64_t delay_microseconds);
 
  private:
-  enum ConnectionState {
+  enum class ConnectionState {
     kDisconnected,
     kConnecting,
     kConnected,

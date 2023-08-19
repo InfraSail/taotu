@@ -29,7 +29,7 @@ Connecting::Connecting(EventManager* event_manager, int socket_fd,
       eventer_(event_manager->GetPoller(), socket_fd),
       local_address_(local_address),
       peer_address_(peer_address),
-      state_(kConnecting) {
+      state_(ConnectionState::kConnecting) {
   socketer_.SetKeepAlive(true);
   eventer_.RegisterReadCallback(
       [this](TimePoint receive_time) { this->DoReading(receive_time); });
@@ -71,7 +71,7 @@ void Connecting::DoWriting() {
         if (WriteCompleteCallback_) {
           WriteCompleteCallback_(*this);
         }
-        if (kDisconnecting == state_.load() &&
+        if (ConnectionState::kDisconnecting == state_.load() &&
             !eventer_
                  .HasWriteEvents()) {  // If the state of this TCP connection is
                                        // disconnecting and the writing event of
@@ -89,10 +89,10 @@ void Connecting::DoWriting() {
   }
 }
 void Connecting::DoClosing() {
-  if (state_.load() != kDisconnected) {
+  if (state_.load() != ConnectionState::kDisconnected) {
     LOG_DEBUG("Fd(%d) with state(\"%s\") is closing.", Fd(),
               GetConnectionStateInfo(state_).c_str());
-    SetState(kDisconnected);
+    SetState(ConnectionState::kDisconnected);
     StopReadingWriting();
     if (OnConnectionCallback_) {
       OnConnectionCallback_(*this);
@@ -120,21 +120,21 @@ void Connecting::DoWithError() const {
 }
 
 void Connecting::OnEstablishing() {
-  if (kConnecting ==
+  if (ConnectionState::kConnecting ==
       state_.load()) {  // This TCP connection can only be created once
-    SetState(kConnected);
+    SetState(ConnectionState::kConnected);
     OnConnectionCallback_(*this);
     StartReading();
   }
 }
 
 void Connecting::Send(const void* message, size_t msg_len) {
-  if (kDisconnected == state_.load()) {
+  if (ConnectionState::kDisconnected == state_.load()) {
     LOG_ERROR("Fd(%d) is disconnected, so give up sending the message!!!",
               Fd());
     return;
   }
-  if (kConnected == state_.load()) {
+  if (ConnectionState::kConnected == state_.load()) {
     ssize_t sent_bytes = 0;
     size_t unsent_bytes = msg_len;
     bool fault = false;  // 'false' represents that there is no error
@@ -188,8 +188,8 @@ void Connecting::Send(IoBuffer* io_buffer) {
 }
 
 void Connecting::ShutDownWrite() {
-  if (kConnected == state_.load()) {
-    SetState(kDisconnecting);
+  if (ConnectionState::kConnected == state_.load()) {
+    SetState(ConnectionState::kDisconnecting);
     if (!eventer_
              .HasWriteEvents()) {  // If the writing event is not paid attention
                                    // to, shut down the writing end (this end)
@@ -199,8 +199,8 @@ void Connecting::ShutDownWrite() {
 }
 
 void Connecting::ForceClose() {
-  if (kDisconnected != state_.load()) {
-    SetState(kDisconnecting);
+  if (ConnectionState::kDisconnected != state_.load()) {
+    SetState(ConnectionState::kDisconnecting);
     DoClosing();
   }
 }
@@ -208,7 +208,7 @@ void Connecting::ForceClose() {
 // FIXME: Make it be effective in the condition that the connection has been
 // destroyed.
 void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
-  if (kDisconnected != state_.load()) {
+  if (ConnectionState::kDisconnected != state_.load()) {
     event_manager_->RunAfter(delay_microseconds,
                              [this]() { this->ForceClose(); });
   }
@@ -216,13 +216,13 @@ void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
 
 std::string Connecting::GetConnectionStateInfo(ConnectionState state) {
   switch (state) {
-    case kDisconnected:
+    case ConnectionState::kDisconnected:
       return "Disconnected";
-    case kConnecting:
+    case ConnectionState::kConnecting:
       return "Connecting";
-    case kConnected:
+    case ConnectionState::kConnected:
       return "Connected";
-    case kDisconnecting:
+    case ConnectionState::kDisconnecting:
       return "Disconnecting";
   }
   return std::string{};

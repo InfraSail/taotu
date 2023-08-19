@@ -25,10 +25,12 @@
 #include "time_point.h"
 
 using namespace taotu;
+namespace {
 enum {
   kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
   kInitRetryDelayMicroseconds = 500 * 1000,
 };
+}
 static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
@@ -63,7 +65,7 @@ Connector::Connector(EventManager* event_manager,
                      const NetAddress& server_address)
     : event_manager_(event_manager),
       server_address_(server_address),
-      state_(kDisconnected),
+      state_(ConnectState::kDisconnected),
       can_connect_(false),
       retry_delay_microseconds_(static_cast<int>(kInitRetryDelayMicroseconds)) {
 }
@@ -73,15 +75,15 @@ void Connector::Start() {
   Connect();
 }
 void Connector::Restart() {
-  SetState(kDisconnected);
+  SetState(ConnectState::kDisconnected);
 
   retry_delay_microseconds_ = static_cast<int>(kInitRetryDelayMicroseconds);
   Start();
 }
 void Connector::Stop() {
   can_connect_ = false;
-  if (kConnecting == state_) {
-    SetState(kDisconnected);
+  if (ConnectState::kConnecting == state_) {
+    SetState(ConnectState::kDisconnected);
     DoRetrying(RemoveAndReset());
   }
 }
@@ -136,7 +138,7 @@ void Connector::Connect() {
   }
 }
 void Connector::DoConnecting(int conn_fd) {
-  SetState(kConnecting);
+  SetState(ConnectState::kConnecting);
   eventer_ = std::make_unique<Eventer>(event_manager_->GetPoller(), conn_fd);
   eventer_->RegisterWriteCallback([this]() { this->DoWriting(); });
   eventer_->RegisterErrorCallback([this]() { this->DoWithError(); });
@@ -145,7 +147,7 @@ void Connector::DoConnecting(int conn_fd) {
 void Connector::DoRetrying(int conn_fd) {
   LOG_WARN("Connector fd(%d) is closing for retrying!", conn_fd);
   ::close(conn_fd);
-  SetState(kDisconnected);
+  SetState(ConnectState::kDisconnected);
   if (can_connect_) {
     LOG_DEBUG("Connector fd(%d) is retrying to connect.", conn_fd);
     event_manager_->RunAfter(retry_delay_microseconds_,
@@ -159,7 +161,7 @@ void Connector::DoRetrying(int conn_fd) {
 }
 void Connector::DoWriting() {
   LOG_DEBUG("Connector fd(%d) is writing.", eventer_->Fd());
-  if (kConnecting == state_) {
+  if (ConnectState::kConnecting == state_) {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     if (error) {
@@ -191,7 +193,7 @@ void Connector::DoWriting() {
       LOG_DEBUG("Connector fd(%d) is self-connected.", conn_fd);
       DoRetrying(conn_fd);
     } else {
-      SetState(kConnected);
+      SetState(ConnectState::kConnected);
       if (can_connect_ && NewConnectionCallback_) {
         NewConnectionCallback_(conn_fd);
       } else {
@@ -203,7 +205,7 @@ void Connector::DoWriting() {
 void Connector::DoWithError() {
   LOG_ERROR("Connector fd(%d) has the error with the state(%d).",
             eventer_->Fd(), state_);
-  if (kConnecting == state_) {
+  if (ConnectState::kConnecting == state_) {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     char errno_info[512];
