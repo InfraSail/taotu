@@ -145,7 +145,7 @@ RpcCodec::ErrorCode RpcCodec::Parse(const char* buffer, int length,
   ErrorCode error_code = ErrorCode::kNoError;
   if (ValidateChecksum(buffer, length)) {
     if (::memcmp(reinterpret_cast<const void*>(buffer), tag_.data(),
-                 tag_.size()) == 0) {  // Parse from the buffer
+                 tag_.size()) == 0) {  // Check the tag (the message type)
       const char* data = buffer + tag_.size();
       int32_t data_length =
           length - kChecksumLength - static_cast<int32_t>(tag_.size());
