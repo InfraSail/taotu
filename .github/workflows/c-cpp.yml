@@ -26,7 +26,9 @@ jobs:
       run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
     - name: cmake
       working-directory: build
-      run: cmake -DCMAKE_PREFIX_PATH=`pkg-config --variable=prefix protobuf`:$CMAKE_PREFIX_PATH -DCMAKE_BUILD_TYPE=Release ..
+      run: |
+        echo `pkg-config --variable=prefix protobuf`
+        cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf`:$CMAKE_PREFIX_PATH -DCMAKE_BUILD_TYPE=Release ..
     - name: make
       working-directory: build
       run: make
