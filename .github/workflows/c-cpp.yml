@@ -28,7 +28,7 @@ jobs:
       working-directory: build
       run: |
         echo `pkg-config --variable=prefix protobuf`
-        cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf`:$CMAKE_PREFIX_PATH -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DProtobuf_DIR=/usr -DCMAKE_BUILD_TYPE=Release ..
     - name: make
       working-directory: build
       run: make
