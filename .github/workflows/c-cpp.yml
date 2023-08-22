@@ -19,15 +19,13 @@ jobs:
       run: mkdir build
     - name: Install Protobuf
       run: |
-        sudo apt-get install libtool pkg-config wget
-        wget https://github.com/protocolbuffers/protobuf/archive/refs/tags/v24.1.tar.gz
-        tar -zxvf v24.1.tar.gz
-        cd protobuf-24.1
+        sudo apt-get install libtool pkg-config wget git bazel
+        git clone --recursive https://github.com/protocolbuffers/protobuf/releases/latest
+        cd protobuf
         mkdir build
         cd build
         cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
         make
-        make check
         sudo make install
         sudo ldconfig
     - name: Install gtest manually
