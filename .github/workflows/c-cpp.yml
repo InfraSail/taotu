@@ -26,7 +26,9 @@ jobs:
       run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
     - name: cmake
       working-directory: build
-      run: cmake ..
+      run: |
+        export CMAKE_PREFIX_PATH=/usr/local/:/usr/:$CMAKE_PREFIX_PATH:/
+        cmake ..
     - name: make
       working-directory: build
       run: make
