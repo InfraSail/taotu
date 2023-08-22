@@ -18,7 +18,16 @@ jobs:
     - name: init
       run: mkdir build
     - name: Install Protobuf
-      run: sudo apt-get install libtool pkg-config && sudo apt-get install protobuf-compiler libprotobuf-dev
+      run: |
+        sudo apt-get install libtool pkg-config wget
+        wget https://github.com/protocolbuffers/protobuf/archive/refs/tags/v24.1.tar.gz
+        tar -zxvf v24.1.tar.gz
+        cd protobuf-24.1
+        ./configure
+        make
+        make check
+        sudo make install
+        sudo ldconfig
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: Install llhttp manually
@@ -26,9 +35,7 @@ jobs:
       run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
     - name: cmake
       working-directory: build
-      run: |
-        echo `pkg-config --variable=prefix protobuf`
-        cmake -DProtobuf_DIR=/usr -DCMAKE_BUILD_TYPE=Release ..
+      run: cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release ..
     - name: make
       working-directory: build
       run: make
