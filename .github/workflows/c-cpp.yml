@@ -27,7 +27,7 @@ jobs:
     - name: cmake
       working-directory: build
       run: |
-        export CMAKE_PREFIX_PATH=/usr/local/:/usr/:$CMAKE_PREFIX_PATH:/
+        export CMAKE_PREFIX_PATH=`pkg-config --variable=prefix protobuf`:$CMAKE_PREFIX_PATH:/
         cmake ..
     - name: make
       working-directory: build
