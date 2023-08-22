@@ -42,17 +42,17 @@ void RpcServer::OnConnectionCallback(Connecting& connection) {
              std::to_string(connection.GetPeerNetAddress().GetPort()).c_str(),
              (connection.IsConnected() ? "UP" : "DOWN"));
   if (connection.IsConnected()) {
-    std::shared_ptr<RpcChannel> rpc_channel =
-        std::make_shared<RpcChannel>(connection);
+    std::shared_ptr<RpcAsyncChannel> rpc_channel =
+        std::make_shared<RpcAsyncChannel>(connection);
     rpc_channel->SetServices(&services_);
     connection.RegisterOnMessageCallback(
         [&rpc_channel](Connecting& connection, IoBuffer* io_buffer,
                        TimePoint receive_time) {
           rpc_channel->OnMessage(connection, io_buffer, receive_time);
         });
-    connection.SetContext<std::shared_ptr<RpcChannel>>(rpc_channel);
+    connection.SetContext<std::shared_ptr<RpcAsyncChannel>>(rpc_channel);
   } else {
-    connection.SetContext<std::shared_ptr<RpcChannel>>(
-        std::shared_ptr<RpcChannel>());
+    connection.SetContext<std::shared_ptr<RpcAsyncChannel>>(
+        std::shared_ptr<RpcAsyncChannel>());
   }
 }

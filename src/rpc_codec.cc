@@ -13,9 +13,8 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/stubs/common.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <zlib.h>
-
-#include <cstdint>
 #ifdef __MACH__
 #include <libkern/OSByteOrder.h>
 #define htobe16(x) OSSwapHostToBigInt16(x)
@@ -43,6 +42,23 @@ int ProtobufVersionCheck() {
 }
 int __attribute__((unused)) dummy = ProtobufVersionCheck();
 
+static bool CheckSocketStatusValid(int sock_fd) {
+  if (sock_fd < 0) {
+    return false;
+  }
+  int error;
+  socklen_t len = sizeof(error);
+  if (::getsockopt(sock_fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
+    LOG_ERROR("Fd(%d) - getsockopt() failed!", sock_fd);
+    return false;
+  }
+  if (error != 0) {
+    LOG_ERROR("Fd(%d) - errno(%d)!", sock_fd, error);
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 void RpcCodec::Send(Connecting& connection,
@@ -51,6 +67,18 @@ void RpcCodec::Send(Connecting& connection,
   FillEmptyBuffer(&io_buffer, message);
   connection.Send(&io_buffer);
 }
+void RpcCodec::Send(int sock_fd, const ::google::protobuf::Message& message) {
+  if (!CheckSocketStatusValid(sock_fd)) {
+    return;
+  }
+  IoBuffer io_buffer;
+  FillEmptyBuffer(&io_buffer, message);
+  auto buffer_size = io_buffer.GetReadableBytes();
+  while (buffer_size > 0) {
+    auto bytes_sent = io_buffer.WriteToFd(sock_fd);
+    buffer_size -= bytes_sent;
+  }
+}
 
 void RpcCodec::OnMessage(Connecting& connection, IoBuffer* io_buffer,
                          TimePoint receive_time) {
@@ -58,16 +86,16 @@ void RpcCodec::OnMessage(Connecting& connection, IoBuffer* io_buffer,
          static_cast<uint32_t>(kMinMessageLength + kHeaderLength)) {
     const int32_t len = io_buffer->GetReadableInt32();
     if (len > kMaxMessageLength || len < kMinMessageLength) {
-      ErrCallback_(connection, io_buffer, receive_time,
-                   ErrorCode::kInvalidLength);
+      AsyncErrCallback_(connection, io_buffer, receive_time,
+                        ErrorCode::kInvalidLength);
       break;
     } else if (io_buffer->GetReadableBytes() >=
                static_cast<size_t>(kHeaderLength + len)) {
-      if (RawCallback_ &&
-          !RawCallback_(connection,
-                        std::string_view(io_buffer->GetReadablePosition(),
-                                         kHeaderLength + len),
-                        receive_time)) {
+      if (AsyncRawCallback_ &&
+          !AsyncRawCallback_(connection,
+                             std::string_view(io_buffer->GetReadablePosition(),
+                                              kHeaderLength + len),
+                             receive_time)) {
         io_buffer->Refresh(kHeaderLength + len);
         continue;
       }
@@ -75,15 +103,58 @@ void RpcCodec::OnMessage(Connecting& connection, IoBuffer* io_buffer,
       ErrorCode error_code = Parse(
           io_buffer->GetReadablePosition() + kHeaderLength, len, message.get());
       if (error_code == ErrorCode::kNoError) {
-        MessageCallback_(connection, message, receive_time);
+        AsyncMessageCallback_(connection, message, receive_time);
         io_buffer->Refresh(kHeaderLength + len);
       } else {
-        ErrCallback_(connection, io_buffer, receive_time, error_code);
+        AsyncErrCallback_(connection, io_buffer, receive_time, error_code);
         break;
       }
     } else {
       break;
     }
+  }
+}
+void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
+                         TimePoint receive_time) {
+  if (!CheckSocketStatusValid(sock_fd)) {
+    return;
+  }
+  int saved_errno = 0;  // FIXME: error check
+  const ssize_t min_header_len =
+      static_cast<ssize_t>(kMinMessageLength + kHeaderLength);
+  while (min_header_len >= io_buffer->GetReadableBytes()) {
+    io_buffer->ReadFromFd(sock_fd, &saved_errno);
+    if (saved_errno != 0) {
+      LOG_ERROR("RpcCodec::OnMessage() - Fd(%d) with errno(%d)", sock_fd,
+                saved_errno);
+    }
+  }
+  const int32_t len = io_buffer->GetReadableInt32();
+  if (len > kMaxMessageLength || len < kMinMessageLength) {
+    SyncErrCallback_(sock_fd, io_buffer, receive_time,
+                     ErrorCode::kInvalidLength);
+    return;
+  }
+  while (io_buffer->GetReadableBytes() <=
+         static_cast<size_t>(kHeaderLength + len)) {
+    io_buffer->ReadFromFd(sock_fd, &saved_errno);
+  }
+  if (AsyncRawCallback_ &&
+      !SyncRawCallback_(sock_fd,
+                        std::string_view(io_buffer->GetReadablePosition(),
+                                         kHeaderLength + len),
+                        receive_time)) {
+    io_buffer->Refresh(kHeaderLength + len);
+    return;
+  }
+  std::shared_ptr<::google::protobuf::Message> message(prototype_->New());
+  ErrorCode error_code = Parse(io_buffer->GetReadablePosition() + kHeaderLength,
+                               len, message.get());
+  if (error_code == ErrorCode::kNoError) {
+    SyncMessageCallback_(sock_fd, message, receive_time);
+    io_buffer->Refresh(kHeaderLength + len);
+  } else {
+    SyncErrCallback_(sock_fd, io_buffer, receive_time, error_code);
   }
 }
 
@@ -112,6 +183,7 @@ int RpcCodec::Serialize2Buffer(const ::google::protobuf::Message& message,
 }
 
 namespace {
+
 const std::string kNoErrorStr = "NoError";
 const std::string kInvalidLengthStr = "InvalidLength";
 const std::string kCheckSumErrorStr = "CheckSumError";
@@ -119,6 +191,7 @@ const std::string kInvalidNameLenStr = "InvalidNameLen";
 const std::string kUnknownMessageTypeStr = "UnknownMessageType";
 const std::string kParseErrorStr = "ParseError";
 const std::string kUnknownErrorStr = "UnknownError";
+
 }  // namespace
 
 const std::string& RpcCodec::ErrorCode2String(ErrorCode error_code) {
@@ -145,7 +218,7 @@ RpcCodec::ErrorCode RpcCodec::Parse(const char* buffer, int length,
   ErrorCode error_code = ErrorCode::kNoError;
   if (ValidateChecksum(buffer, length)) {
     if (::memcmp(reinterpret_cast<const void*>(buffer), tag_.data(),
-                 tag_.size()) == 0) {  // Check the tag (the message type)
+                 tag_.size()) == 0) {  // Check the tag (data switch protocol)
       const char* data = buffer + tag_.size();
       int32_t data_length =
           length - kChecksumLength - static_cast<int32_t>(tag_.size());
@@ -185,12 +258,24 @@ int32_t RpcCodec::AsInt32(const char* buffer) {
   ::memcpy(&be32, buffer, sizeof(be32));
   return be32toh(be32);
 }
-void RpcCodec::DefaultErrorCallback(Connecting& connection, IoBuffer* io_buffer,
-                                    TimePoint time_point,
-                                    ErrorCode error_code) {
+void RpcCodec::AsyncDefaultErrorCallback(Connecting& connection,
+                                         IoBuffer* io_buffer,
+                                         TimePoint time_point,
+                                         ErrorCode error_code) {
   LOG_ERROR("RpcCodec::DefaultErrorCallback - %s",
             ErrorCode2String(error_code));
   if (connection.IsConnected()) {
     const_cast<Connecting&>(connection).ShutDownWrite();
+  }
+}
+void RpcCodec::SyncDefaultErrorCallback(int sock_fd, IoBuffer* io_buffer,
+                                        TimePoint time_point,
+                                        ErrorCode error_code) {
+  LOG_ERROR("RpcCodec::DefaultErrorCallback - %s",
+            ErrorCode2String(error_code));
+  if (!CheckSocketStatusValid(sock_fd)) {
+    LOG_ERROR(
+        "RpcCodec::SyncDefaultErrorCallback() - Fd(%d) - socket invalid!!!",
+        sock_fd);
   }
 }

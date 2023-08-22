@@ -91,6 +91,10 @@ void Connector::Connect() {
   int sock_fd =
       ::socket(server_address_.GetFamily(),
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+  if (sock_fd < 0) {
+    LOG_ERROR("Fail to initialize for connector!!!");
+    return;
+  }
 #ifndef __linux__
   int flags = ::fcntl(sock_fd, F_GETFL, 0);
   flags |= O_NONBLOCK;
@@ -99,9 +103,6 @@ void Connector::Connect() {
   flags |= FD_CLOEXEC;
   ::fcntl(sock_fd, F_SETFD, flags);
 #endif
-  if (sock_fd < 0) {
-    LOG_ERROR("Fail to initialize for connector!!!");
-  }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
                          server_address_.GetSize());
   int saved_errno = (0 == status) ? 0 : errno;

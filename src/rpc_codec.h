@@ -67,32 +67,52 @@ class RpcCodec : NonCopyableMovable {
   typedef std::function<void(
       Connecting&, const std::shared_ptr<::google::protobuf::Message>&,
       TimePoint)>
-      ProtobufMessageCallback;
+      AsyncProtobufMessageCallback;
+  typedef std::function<void(
+      int, const std::shared_ptr<::google::protobuf::Message>&, TimePoint)>
+      SyncProtobufMessageCallback;
   typedef std::function<bool(Connecting&, std::string_view, TimePoint)>
-      RawMessageCallback;
+      AsyncRawMessageCallback;
+  typedef std::function<bool(int, std::string_view, TimePoint)>
+      SyncRawMessageCallback;
   typedef std::function<void(Connecting&, IoBuffer*, TimePoint, ErrorCode)>
-      ErrorCallback;
+      AsyncErrorCallback;
+  typedef std::function<void(int, IoBuffer*, TimePoint, ErrorCode)>
+      SyncErrorCallback;
 
-  RpcCodec(const ::google::protobuf::Message* prototype,
-           std::string_view tag_arg,
-           const ProtobufMessageCallback& MessageCallback,
-           const RawMessageCallback& RawCallback = RawMessageCallback{},
-           const ErrorCallback& ErrCallback = DefaultErrorCallback)
+  RpcCodec(
+      const ::google::protobuf::Message* prototype, std::string_view tag_arg,
+      const AsyncProtobufMessageCallback& AsyncMessageCallback,
+      const AsyncRawMessageCallback& RawCallback = AsyncRawMessageCallback{},
+      const AsyncErrorCallback& ErrCallback = AsyncDefaultErrorCallback)
       : prototype_(prototype),
         tag_(tag_arg),
         kMinMessageLength(tag_arg.size() + kChecksumLength),
-        MessageCallback_(MessageCallback),
-        RawCallback_(RawCallback),
-        ErrCallback_(ErrCallback) {}
+        AsyncMessageCallback_(AsyncMessageCallback),
+        AsyncRawCallback_(RawCallback),
+        AsyncErrCallback_(ErrCallback) {}
+  RpcCodec(const ::google::protobuf::Message* prototype,
+           std::string_view tag_arg,
+           const SyncProtobufMessageCallback& SyncMessageCallback,
+           const SyncRawMessageCallback& RawCallback = SyncRawMessageCallback{},
+           const SyncErrorCallback& ErrCallback = SyncDefaultErrorCallback)
+      : prototype_(prototype),
+        tag_(tag_arg),
+        kMinMessageLength(tag_arg.size() + kChecksumLength),
+        SyncMessageCallback_(SyncMessageCallback),
+        SyncRawCallback_(RawCallback),
+        SyncErrCallback_(ErrCallback) {}
 
   virtual ~RpcCodec() = default;
 
   const std::string& GetTag() const { return tag_; }
 
   void Send(Connecting& connection, const ::google::protobuf::Message& message);
+  void Send(int sock_fd, const ::google::protobuf::Message& message);
 
   void OnMessage(Connecting& connection, IoBuffer* io_buffer,
                  TimePoint receive_time);
+  void OnMessage(int sock_fd, IoBuffer* io_buffer, TimePoint receive_time);
 
   virtual bool ParseFromBuffer(std::string_view buffer,
                                ::google::protobuf::Message* message);
@@ -109,17 +129,25 @@ class RpcCodec : NonCopyableMovable {
   static int32_t Checksum(const void* buffer, int length);
   static bool ValidateChecksum(const char* buffer, int length);
   static int32_t AsInt32(const char* buffer);
-  static void DefaultErrorCallback(Connecting& connection, IoBuffer* io_buffer,
-                                   TimePoint time_point, ErrorCode error_code);
+  static void AsyncDefaultErrorCallback(Connecting& connection,
+                                        IoBuffer* io_buffer,
+                                        TimePoint time_point,
+                                        ErrorCode error_code);
+  static void SyncDefaultErrorCallback(int sock_Fd, IoBuffer* io_buffer,
+                                       TimePoint time_point,
+                                       ErrorCode error_code);
 
  private:
   const ::google::protobuf::Message* prototype_;
   const std::string tag_;
   const int kMinMessageLength;
 
-  ProtobufMessageCallback MessageCallback_;
-  RawMessageCallback RawCallback_;
-  ErrorCallback ErrCallback_;
+  AsyncProtobufMessageCallback AsyncMessageCallback_;
+  SyncProtobufMessageCallback SyncMessageCallback_;
+  AsyncRawMessageCallback AsyncRawCallback_;
+  SyncRawMessageCallback SyncRawCallback_;
+  AsyncErrorCallback AsyncErrCallback_;
+  SyncErrorCallback SyncErrCallback_;
 };
 
 /**
@@ -132,15 +160,20 @@ class RpcCodecT {
  public:
   typedef std::function<void(Connecting&, const std::shared_ptr<MSG>&,
                              TimePoint)>
-      ProtobufMessageCallback;
-  typedef RpcCodec::RawMessageCallback RawMessageCallback;
-  typedef RpcCodec::ErrorCallback ErrorCallback;
+      AsyncProtobufMessageCallback;
+  typedef std::function<void(int, const std::shared_ptr<MSG>&, TimePoint)>
+      SyncProtobufMessageCallback;
+  typedef RpcCodec::AsyncRawMessageCallback AsyncRawMessageCallback;
+  typedef RpcCodec::SyncRawMessageCallback SyncRawMessageCallback;
+  typedef RpcCodec::AsyncErrorCallback AsyncErrorCallback;
+  typedef RpcCodec::SyncErrorCallback SyncErrorCallback;
 
   explicit RpcCodecT(
-      const ProtobufMessageCallback& MessageCallback,
-      const RawMessageCallback& RawCallback = RawMessageCallback{},
-      const ErrorCallback& ErrCallback = RpcCodec::DefaultErrorCallback)
-      : MessageCallback_(MessageCallback),
+      const AsyncProtobufMessageCallback& AsyncMessageCallback,
+      const AsyncRawMessageCallback& RawCallback = AsyncRawMessageCallback{},
+      const AsyncErrorCallback& ErrCallback =
+          RpcCodec::AsyncDefaultErrorCallback)
+      : AsyncMessageCallback_(AsyncMessageCallback),
         codec_(
             &MSG::default_instance(), TAG,
             [this](Connecting& connection,
@@ -149,23 +182,46 @@ class RpcCodecT {
               this->OnRpcMessage(connection, message, receive_time);
             },
             RawCallback, ErrCallback) {}
+  explicit RpcCodecT(
+      const SyncProtobufMessageCallback& SyncMessageCallback,
+      const SyncRawMessageCallback& RawCallback = SyncRawMessageCallback{},
+      const SyncErrorCallback& ErrCallback = RpcCodec::SyncDefaultErrorCallback)
+      : SyncMessageCallback_(SyncMessageCallback),
+        codec_(
+            &MSG::default_instance(), TAG,
+            [this](int sock_fd,
+                   const std::shared_ptr<::google::protobuf::Message>& message,
+                   TimePoint receive_time) {
+              this->OnRpcMessage(sock_fd, message, receive_time);
+            },
+            RawCallback, ErrCallback) {}
 
   const std::string& GetTag() const { return codec_.GetTag(); }
 
   void Send(Connecting& connection, const MSG& message) {
     codec_.Send(connection, message);
   }
+  void Send(int sock_fd, const MSG& message) { codec_.Send(sock_fd, message); }
 
   void OnMessage(Connecting& connection, IoBuffer* io_buffer,
                  TimePoint receive_time) {
     codec_.OnMessage(connection, io_buffer, receive_time);
   }
+  void OnMessage(int sock_fd, IoBuffer* io_buffer, TimePoint receive_time) {
+    codec_.OnMessage(sock_fd, io_buffer, receive_time);
+  }
 
   void OnRpcMessage(Connecting& connection,
                     const std::shared_ptr<::google::protobuf::Message>& message,
                     TimePoint receive_time) {
-    MessageCallback_(connection, std::dynamic_pointer_cast<MSG>(message),
-                     receive_time);
+    AsyncMessageCallback_(connection, std::dynamic_pointer_cast<MSG>(message),
+                          receive_time);
+  }
+  void OnRpcMessage(int sock_fd,
+                    const std::shared_ptr<::google::protobuf::Message>& message,
+                    TimePoint receive_time) {
+    SyncMessageCallback_(sock_fd, std::dynamic_pointer_cast<MSG>(message),
+                         receive_time);
   }
 
   void FillEmptyBuffer(IoBuffer* io_buffer, const MSG& message) {
@@ -173,7 +229,8 @@ class RpcCodecT {
   }
 
  private:
-  ProtobufMessageCallback MessageCallback_;
+  AsyncProtobufMessageCallback AsyncMessageCallback_;
+  SyncProtobufMessageCallback SyncMessageCallback_;
   RpcCodec codec_;
 };
 

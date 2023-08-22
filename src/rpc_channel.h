@@ -1,8 +1,8 @@
 /**
  * @file rpc_channel.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief Declarations of class "RpcChannel" which represents the single RPC
- * message communication pipe.
+ * @brief Declarations of class "RpcAsyncChannel" and "RpcSyncChannel" which
+ * represents the single RPC message communication pipe.
  * @date 2023-07-21
  *
  * @copyright Copyright (c) 2023 Sigma711
@@ -20,6 +20,7 @@
 
 #include "connecting.h"
 #include "io_buffer.h"
+#include "net_address.h"
 #include "rpc.pb.h"
 #include "rpc_codec.h"
 #include "spin_lock.h"
@@ -48,14 +49,15 @@ namespace taotu {
 extern const char kRpcTag[];
 
 /**
- * @brief "RpcChannel" represents a communication pipe to a RPC service.
+ * @brief "RpcAsyncChannel" represents a async communication pipe to a RPC
+ * service.
  *
  */
-class RpcChannel : public ::google::protobuf::RpcChannel {
+class RpcAsyncChannel : public ::google::protobuf::RpcChannel {
  public:
-  RpcChannel();
-  explicit RpcChannel(Connecting& connection);
-  ~RpcChannel();
+  RpcAsyncChannel();
+  explicit RpcAsyncChannel(Connecting& connection);
+  ~RpcAsyncChannel();
 
   void SetConnection(Connecting& connection) { connection_ = &connection; }
 
@@ -68,7 +70,7 @@ class RpcChannel : public ::google::protobuf::RpcChannel {
                   ::google::protobuf::RpcController* rpc_controller,
                   const ::google::protobuf::Message* request_message,
                   ::google::protobuf::Message* response_message,
-                  ::google::protobuf::Closure* DoneCallback);
+                  ::google::protobuf::Closure* DoneCallback) override;
 
   void OnMessage(Connecting& connection, IoBuffer* io_buffer,
                  TimePoint receive_time);
@@ -87,6 +89,48 @@ class RpcChannel : public ::google::protobuf::RpcChannel {
 
   RpcCodecT<RpcMessage, kRpcTag> codec_;
   Connecting* connection_;
+  std::atomic_int64_t id_;
+
+  MutexLock outstanding_calls_lock_;
+  std::unordered_map<int64_t, OutstandingCall> outstanding_calls_;
+
+  const std::unordered_map<std::string, ::google::protobuf::Service*>*
+      services_;
+};
+
+/**
+ * @brief "RpcSyncChannel" represents a sync communication pipe to a RPC
+ * service.
+ *
+ */
+class RpcSyncChannel : public ::google::protobuf::RpcChannel {
+ public:
+  explicit RpcSyncChannel(const NetAddress& server_address);
+  ~RpcSyncChannel();
+
+  void CallMethod(const ::google::protobuf::MethodDescriptor* method_descriptor,
+                  ::google::protobuf::RpcController* rpc_controller,
+                  const ::google::protobuf::Message* request_message,
+                  ::google::protobuf::Message* response_message,
+                  ::google::protobuf::Closure* DoneCallback) override;
+
+  void OnMessage(int sock_fd, IoBuffer* io_buffer, TimePoint receive);
+
+ private:
+  void OnRpcMessage(int sock_fd,
+                    const std::shared_ptr<RpcMessage>& rpc_message_ptr,
+                    TimePoint receive_time);
+
+  struct OutstandingCall {
+    ::google::protobuf::Message* response_message_;
+    ::google::protobuf::Closure* DoneCallback_;
+  };
+
+  const NetAddress& server_address_;
+
+  RpcCodecT<RpcMessage, kRpcTag> codec_;
+  int socket_fd_;
+  IoBuffer io_buffer_;
   std::atomic_int64_t id_;
 
   MutexLock outstanding_calls_lock_;
