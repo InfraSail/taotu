@@ -19,7 +19,7 @@ jobs:
       run: mkdir build
     - name: Install Protobuf
       run: |
-        sudo apt-get install libtool pkg-config wget git bazel
+        sudo apt-get install libtool pkg-config wget git
         git clone --recursive https://github.com/protocolbuffers/protobuf/releases/latest
         cd protobuf
         mkdir build
