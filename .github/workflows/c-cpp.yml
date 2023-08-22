@@ -23,7 +23,9 @@ jobs:
         wget https://github.com/protocolbuffers/protobuf/archive/refs/tags/v24.1.tar.gz
         tar -zxvf v24.1.tar.gz
         cd protobuf-24.1
-        ./configure
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
         make
         make check
         sudo make install
