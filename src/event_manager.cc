@@ -30,7 +30,8 @@
 using namespace taotu;
 
 EventManager::EventManager()
-    : poller_()
+    : poller_(),
+      thread_()
 #ifdef __linux__
       ,
       wake_up_eventer_(
@@ -93,8 +94,8 @@ EventManager::~EventManager() {
   ::close(wake_up_pipe_[1]);
   delete wake_up_eventer_;
 #endif
-  if (thread_.joinable()) {
-    thread_.join();
+  if (thread_->joinable()) {
+    thread_->join();
   }
 }
 
@@ -104,7 +105,7 @@ void EventManager::Loop() {
     LOG_WARN("EventManager - %p cannot start again!", this);
     return;
   }
-  thread_ = std::thread([this] { this->Start(); });
+  thread_ = std::make_unique<std::thread>([this] { this->Start(); });
 }
 void EventManager::Work() {
   std::unique_lock<std::mutex> start_once_lock_guard(start_once_lock_);

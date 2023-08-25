@@ -118,7 +118,7 @@ class EventManager : NonCopyableMovable {
   // descriptor -> connection class pointer)
   ConnectionMap connection_map_;
 
-  std::thread thread_;
+  std::unique_ptr<std::thread> thread_;
 
   Timer timer_;
 
