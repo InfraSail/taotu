@@ -170,6 +170,7 @@ class IoBuffer {
   // Retrieve content from the file descriptor with discrete reading(coping with
   // sudden large traffic) to the buffer
   ssize_t ReadFromFd(int fd, int* tmp_errno);
+  ssize_t ReadFromFd(int fd, size_t read_len, int* tmp_errno);
 
   // Stuff content of the buffer into the file descriptor
   ssize_t WriteToFd(int fd);
