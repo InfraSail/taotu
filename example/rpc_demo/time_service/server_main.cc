@@ -30,7 +30,7 @@ class TimeServiceImpl : public timeservice::TimeService {
     current_time[current_time.size() - 1] = '\0';
     current_time.resize(current_time.size() - 1);
     response->set_current_time(current_time);
-    response->current_time();
+    done->Run();
   }
 };
 
