@@ -139,7 +139,7 @@ class EventManager : NonCopyableMovable {
   mutable MutexLock closed_fds_lock_;
 
   // Guaranteed to only start myself once
-  std::once_flag start_once_flag_;
+  mutable std::mutex start_once_lock_;
 
 #ifdef __linux__
   // To wake up this I/O thread
