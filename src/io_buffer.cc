@@ -254,6 +254,19 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   }
   return n;
 }
+ssize_t IoBuffer::ReadFromFd(int fd, size_t read_len, int* tmp_errno) {
+  EnsureWritableSpace(read_len);
+  ssize_t res = 0;
+  while (read_len > 0) {
+    auto bytes_read =
+        ::recv(fd, static_cast<void*>(const_cast<char*>(GetWritablePosition())),
+               read_len, MSG_NOSIGNAL);
+    read_len -= bytes_read;
+    writing_index_ += bytes_read;
+    res += bytes_read;
+  }
+  return res;
+}
 
 ssize_t IoBuffer::WriteToFd(int fd) {
   ssize_t n = ::send(
