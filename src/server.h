@@ -36,16 +36,13 @@ class Server : NonCopyableMovable {
 
   explicit Server(EventManagers* event_managers,
                   const NetAddress& listen_address,
-                  bool should_reuse_port = false,
-                  size_t calculation_thread_amount = 4);
+                  bool should_reuse_port = false);
 
   void SetConnectionCallback(const std::function<void(Connecting&)>& cb);
   void SetMessageCallback(
       const std::function<void(Connecting&, IoBuffer*, TimePoint)>& cb);
   void SetWriteCompleteCallback(const std::function<void(Connecting&)>& cb);
   void SetCloseCallback(const std::function<void(Connecting&)>& cb);
-
-  ThreadPool& GetThreadPool() { return thread_pool_; }
 
   // Start all "Reactors" (make all event loops run)
   void Start();
@@ -59,9 +56,6 @@ class Server : NonCopyableMovable {
 
   // Reactor manager (the "engine")
   ServerReactorManager reactor_manager_;
-
-  // Thread pool for calculation
-  ThreadPool thread_pool_;
 
   std::atomic_bool is_started_;
 };

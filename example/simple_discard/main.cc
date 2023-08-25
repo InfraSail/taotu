@@ -17,8 +17,7 @@
 #include "discard.h"
 
 // Call it by:
-// './simple_discard [port [amount-of-I/O-threads
-// [amount-of-calculation-threads]]]'
+// './simple_discard [port [amount-of-I/O-threads]]'
 int main(int argc, char* argv[]) {
   taotu::START_LOG("simple_discard_log.txt");
   if (1 == argc) {
@@ -29,18 +28,11 @@ int main(int argc, char* argv[]) {
                                      std::stoi(std::string{argv[1]}))},
                                  false};
     discard_server.Start();
-  } else if (3 == argc) {
-    DiscardServer discard_server{
-        taotu::NetAddress{
-            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
-    discard_server.Start();
   } else {
     DiscardServer discard_server{
         taotu::NetAddress{
             static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]})),
-        static_cast<size_t>(std::stoi(std::string{argv[3]}))};
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
     discard_server.Start();
   }
   return 0;

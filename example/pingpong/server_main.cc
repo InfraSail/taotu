@@ -16,8 +16,7 @@
 #include "pingpong_server.h"
 
 // Call it by:
-// './pingpong_server [port [amount-of-I/O-threads
-// [amount-of-calculation-threads]]]'
+// './pingpong_server [port [amount-of-I/O-threads]]'
 int main(int argc, char* argv[]) {
   taotu::START_LOG("pingpong_server_log.txt");
   if (1 == argc) {
@@ -28,18 +27,11 @@ int main(int argc, char* argv[]) {
                                        std::stoi(std::string{argv[1]}))},
                                    false};
     pingpong_server.Start();
-  } else if (3 == argc) {
-    PingpongServer pingpong_server{
-        taotu::NetAddress{
-            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
-    pingpong_server.Start();
   } else {
     PingpongServer pingpong_server{
         taotu::NetAddress{
             static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]})),
-        static_cast<size_t>(std::stoi(std::string{argv[3]}))};
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
     pingpong_server.Start();
   }
   return 0;

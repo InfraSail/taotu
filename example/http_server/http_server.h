@@ -23,7 +23,7 @@ class HttpServer : taotu::NonCopyableMovable {
   typedef std::vector<taotu::EventManager*> EventManagers;
 
   HttpServer(const taotu::NetAddress& listen_address, bool should_reuse_port,
-             size_t io_thread_amount = 4, size_t calculation_thread_amount = 0);
+             size_t io_thread_amount = 4);
   ~HttpServer();
 
   // Start the server
