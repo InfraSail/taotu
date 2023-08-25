@@ -263,7 +263,7 @@ void RpcCodec::AsyncDefaultErrorCallback(Connecting& connection,
                                          TimePoint time_point,
                                          ErrorCode error_code) {
   LOG_ERROR("RpcCodec::DefaultErrorCallback - %s",
-            ErrorCode2String(error_code));
+            ErrorCode2String(error_code).c_str());
   if (connection.IsConnected()) {
     const_cast<Connecting&>(connection).ShutDownWrite();
   }
