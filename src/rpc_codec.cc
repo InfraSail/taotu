@@ -122,8 +122,9 @@ void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
   int saved_errno = 0;  // FIXME: error check
   const ssize_t min_header_len =
       static_cast<ssize_t>(kMinMessageLength + kHeaderLength);
-  while (min_header_len >= io_buffer->GetReadableBytes()) {
-    io_buffer->ReadFromFd(sock_fd, min_header_len, &saved_errno);
+  while (min_header_len > io_buffer->GetReadableBytes()) {
+    io_buffer->ReadFromFd(
+        sock_fd, min_header_len - io_buffer->GetReadableBytes(), &saved_errno);
     if (saved_errno != 0) {
       LOG_ERROR("RpcCodec::OnMessage() - Fd(%d) with errno(%d)", sock_fd,
                 saved_errno);
@@ -135,9 +136,11 @@ void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
                      ErrorCode::kInvalidLength);
     return;
   }
-  while (static_cast<size_t>(kHeaderLength + len) >=
+  while (static_cast<size_t>(kHeaderLength + len) >
          io_buffer->GetReadableBytes()) {
-    io_buffer->ReadFromFd(sock_fd, static_cast<size_t>(kHeaderLength + len),
+    io_buffer->ReadFromFd(sock_fd,
+                          static_cast<size_t>(kHeaderLength + len) -
+                              io_buffer->GetReadableBytes(),
                           &saved_errno);
   }
   if (AsyncRawCallback_ &&
