@@ -39,8 +39,7 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
 }
 
 // Call it by:
-// './http_server [port [amount-of-I/O-threads
-// [amount-of-calculation-threads]]]'
+// './http_server [port [amount-of-I/O-threads]]'
 int main(int argc, char* argv[]) {
   taotu::START_LOG("http_server_log.txt");
   if (1 == argc) {
@@ -59,22 +58,11 @@ int main(int argc, char* argv[]) {
           OnRequest(http_parser, http_response);
         });
     http_server.Start();
-  } else if (3 == argc) {
-    HttpServer http_server{
-        taotu::NetAddress{
-            static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
-    http_server.SetHttpCallback(
-        [](const HttpParser& http_parser, HttpResponse* http_response) {
-          OnRequest(http_parser, http_response);
-        });
-    http_server.Start();
   } else {
     HttpServer http_server{
         taotu::NetAddress{
             static_cast<uint16_t>(std::stoi(std::string{argv[1]}))},
-        false, static_cast<size_t>(std::stoi(std::string{argv[2]})),
-        static_cast<size_t>(std::stoi(std::string{argv[3]}))};
+        false, static_cast<size_t>(std::stoi(std::string{argv[2]}))};
     http_server.SetHttpCallback(
         [](const HttpParser& http_parser, HttpResponse* http_response) {
           OnRequest(http_parser, http_response);

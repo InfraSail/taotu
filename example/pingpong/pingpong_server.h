@@ -20,8 +20,7 @@ class PingpongServer : taotu::NonCopyableMovable {
   typedef std::vector<taotu::EventManager*> EventManagers;
 
   PingpongServer(const taotu::NetAddress& listen_address,
-                 bool should_reuse_port, size_t io_thread_amount = 5,
-                 size_t calculation_thread_amount = 0);
+                 bool should_reuse_port, size_t io_thread_amount = 5);
   ~PingpongServer();
 
   // Start the server
