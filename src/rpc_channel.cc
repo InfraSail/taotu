@@ -183,9 +183,9 @@ RpcSyncChannel::RpcSyncChannel(const NetAddress& server_address)
     ::exit(-1);
   }
 #ifndef __linux__
-  int flags = ::fcntl(sock_fd, F_GETFL, 0);
+  int flags = ::fcntl(socket_fd_, F_GETFL, 0);
   flags |= FD_CLOEXEC;
-  ::fcntl(sock_fd, F_SETFD, flags);
+  ::fcntl(socket_fd_, F_SETFD, flags);
 #endif
   if (::connect(socket_fd_, server_address_.GetNetAddress(),
                 server_address_.GetSize()) == -1) {
