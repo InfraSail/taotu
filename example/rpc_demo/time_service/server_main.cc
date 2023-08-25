@@ -36,8 +36,10 @@ class TimeServiceImpl : public timeservice::TimeService {
 
 int main() {
   taotu::START_LOG("time_service_server_log.txt");
-  std::vector<taotu::EventManager*> event_managers(4,
-                                                   new taotu::EventManager{});
+  std::vector<taotu::EventManager*> event_managers(4, nullptr);
+  for (auto& event_manager : event_managers) {
+    event_manager = new taotu::EventManager{};
+  }
   taotu::RpcServer rpc_server(&event_managers, taotu::NetAddress{4567});
   TimeServiceImpl time_service_impl;
   rpc_server.RegisterService(&time_service_impl);
