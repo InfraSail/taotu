@@ -99,12 +99,20 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  std::call_once(start_once_flag_, [this]() {
-    thread_ = std::thread([this] { this->Start(); });
-  });
+  std::unique_lock<std::mutex> start_once_lock_guard(start_once_lock_);
+  if (!start_once_lock_guard.owns_lock()) {
+    LOG_WARN("EventManager - %p cannot start again!", this);
+    return;
+  }
+  thread_ = std::thread([this] { this->Start(); });
 }
 void EventManager::Work() {
-  std::call_once(start_once_flag_, [this]() { this->Start(); });
+  std::unique_lock<std::mutex> start_once_lock_guard(start_once_lock_);
+  if (!start_once_lock_guard.owns_lock()) {
+    LOG_WARN("EventManager - %p cannot start again!", this);
+    return;
+  }
+  Start();
 }
 
 Connecting* EventManager::InsertNewConnection(int socket_fd,
