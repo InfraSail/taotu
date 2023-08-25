@@ -100,16 +100,14 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  std::unique_lock<std::mutex> start_once_lock_guard(start_once_lock_);
-  if (!start_once_lock_guard.owns_lock()) {
+  if (!start_once_lock_.try_lock()) {
     LOG_WARN("EventManager - %p cannot start again!", this);
     return;
   }
   thread_ = std::make_unique<std::thread>([this] { this->Start(); });
 }
 void EventManager::Work() {
-  std::unique_lock<std::mutex> start_once_lock_guard(start_once_lock_);
-  if (!start_once_lock_guard.owns_lock()) {
+  if (!start_once_lock_.try_lock()) {
     LOG_WARN("EventManager - %p cannot start again!", this);
     return;
   }
@@ -234,6 +232,7 @@ void EventManager::Start() {
     delete connection;
   }
   connection_map_.clear();
+  start_once_lock_.unlock();
 }
 
 void EventManager::DoWithActiveTasks(const TimePoint& return_time) {
