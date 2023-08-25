@@ -100,18 +100,12 @@ EventManager::~EventManager() {
 }
 
 void EventManager::Loop() {
-  if (!start_once_lock_.try_lock()) {
-    LOG_WARN("EventManager - %p cannot start again!", this);
-    return;
-  }
-  thread_ = std::make_unique<std::thread>([this] { this->Start(); });
+  std::call_once(start_once_flag_, [this]() {
+    thread_ = std::make_unique<std::thread>([this] { this->Start(); });
+  });
 }
 void EventManager::Work() {
-  if (!start_once_lock_.try_lock()) {
-    LOG_WARN("EventManager - %p cannot start again!", this);
-    return;
-  }
-  Start();
+  std::call_once(start_once_flag_, [this]() { this->Start(); });
 }
 
 Connecting* EventManager::InsertNewConnection(int socket_fd,
@@ -232,7 +226,6 @@ void EventManager::Start() {
     delete connection;
   }
   connection_map_.clear();
-  start_once_lock_.unlock();
 }
 
 void EventManager::DoWithActiveTasks(const TimePoint& return_time) {
