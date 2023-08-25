@@ -272,7 +272,7 @@ void RpcCodec::SyncDefaultErrorCallback(int sock_fd, IoBuffer* io_buffer,
                                         TimePoint time_point,
                                         ErrorCode error_code) {
   LOG_ERROR("RpcCodec::DefaultErrorCallback - %s",
-            ErrorCode2String(error_code));
+            ErrorCode2String(error_code).c_str());
   if (!CheckSocketStatusValid(sock_fd)) {
     LOG_ERROR(
         "RpcCodec::SyncDefaultErrorCallback() - Fd(%d) - socket invalid!!!",
