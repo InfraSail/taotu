@@ -201,16 +201,17 @@ RpcSyncChannel::~RpcSyncChannel() {
   if (socket_fd_ >= 0) {
     ::close(socket_fd_);
   }
-  for (auto itr = outstanding_calls_.begin(); itr != outstanding_calls_.end();
-       ++itr) {
-    auto outstanding_call = itr->second;
-    if (outstanding_call.response_message_ != nullptr) {
-      delete outstanding_call.response_message_;
-    }
-    if (outstanding_call.DoneCallback_ != nullptr) {
-      delete outstanding_call.DoneCallback_;
-    }
-  }
+  // for (auto itr = outstanding_calls_.begin(); itr !=
+  // outstanding_calls_.end();
+  //      ++itr) {
+  //   auto outstanding_call = itr->second;
+  //   if (outstanding_call.response_message_ != nullptr) {
+  //     delete outstanding_call.response_message_;
+  //   }
+  //   if (outstanding_call.DoneCallback_ != nullptr) {
+  //     delete outstanding_call.DoneCallback_;
+  //   }
+  // }
 }
 
 void RpcSyncChannel::CallMethod(
@@ -219,13 +220,13 @@ void RpcSyncChannel::CallMethod(
     const ::google::protobuf::Message* request_message,
     ::google::protobuf::Message* response_message,
     ::google::protobuf::Closure* DoneCallback) {
-  std::shared_ptr<RpcMessage> rpc_message;
-  rpc_message->set_type(REQUEST);
+  RpcMessage rpc_message;
+  rpc_message.set_type(REQUEST);
   int64_t id = id_.fetch_add(1) + 1;
-  rpc_message->set_id(id);
-  rpc_message->set_service(method_descriptor->service()->name());
-  rpc_message->set_method(method_descriptor->name());
-  rpc_message->set_request(request_message->SerializeAsString());
+  rpc_message.set_id(id);
+  rpc_message.set_service(method_descriptor->service()->name());
+  rpc_message.set_method(method_descriptor->name());
+  rpc_message.set_request(request_message->SerializeAsString());
   OutstandingCall outstanding_call = {response_message, DoneCallback};
   {
     LockGuard lock_guard(outstanding_calls_lock_);
@@ -234,7 +235,7 @@ void RpcSyncChannel::CallMethod(
   if (socket_fd_ < 0) {
     return;
   }
-  codec_.Send(socket_fd_, *rpc_message);
+  codec_.Send(socket_fd_, rpc_message);
   if (socket_fd_ < 0) {
     return;
   }
@@ -262,8 +263,6 @@ void RpcSyncChannel::OnRpcMessage(
       }
     }
     if (outstanding_call.response_message_ != nullptr) {
-      std::unique_ptr<google::protobuf::Message> response_message_ptr(
-          outstanding_call.response_message_);
       if (rpc_message.has_response()) {
         outstanding_call.response_message_->ParseFromString(
             rpc_message.response());

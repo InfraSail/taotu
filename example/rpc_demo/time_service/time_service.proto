@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package timeservice;
+
+option cc_generic_services = true;
+
+service TimeService {
+  rpc GetTime (TimeRequest) returns (TimeResponse) {}
+}
+
+message TimeRequest {
+  string client_id = 1;
+}
+
+message TimeResponse {
+  string current_time = 1;
+}

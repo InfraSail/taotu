@@ -3,6 +3,7 @@
 build*/*
 .idea/*
 src/rpc.pb*
+example/rpc_demo/time_service/time_service.pb*
 cmake-build-debug/*
 cmake-build-release/*
 CMakeLists.txt.user
