@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: init
       run: mkdir build
-    - name: Install Protobuf
+    - name: Install protobuf manually
       run: |
         sudo apt-get install libtool pkg-config wget git
         git clone --recursive https://github.com/protocolbuffers/protobuf.git
