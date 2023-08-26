@@ -20,8 +20,9 @@ jobs:
     - name: Install Protobuf
       run: |
         sudo apt-get install libtool pkg-config wget git
-        git clone --recursive https://github.com/protocolbuffers/protobuf/releases/latest
+        git clone --recursive https://github.com/protocolbuffers/protobuf.git
         cd protobuf
+        git checkout tags/v24.2
         mkdir build
         cd build
         cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
