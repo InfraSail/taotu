@@ -116,6 +116,8 @@ class RpcSyncChannel : public ::google::protobuf::RpcChannel {
 
   void OnMessage(int sock_fd, IoBuffer* io_buffer, TimePoint receive);
 
+  int Fd() const { return socket_fd_; }
+
  private:
   void OnRpcMessage(int sock_fd,
                     const std::shared_ptr<RpcMessage>& rpc_message_ptr,
