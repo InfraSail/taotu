@@ -94,7 +94,7 @@ EventManager::~EventManager() {
   ::close(wake_up_pipe_[1]);
   delete wake_up_eventer_;
 #endif
-  if (thread_->joinable()) {
+  if (thread_ && thread_->joinable()) {
     thread_->join();
   }
 }
