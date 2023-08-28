@@ -105,6 +105,7 @@ void Connecting::DoClosing() {
   }
 }
 void Connecting::DoWithError() const {
+#ifdef __linux__
   int opt_val;
   auto opt_len = static_cast<socklen_t>(sizeof(opt_val));
   int saved_errno;
@@ -114,6 +115,9 @@ void Connecting::DoWithError() const {
   } else {
     saved_errno = opt_val;
   }
+#else
+  int saved_errno = errno;
+#endif
   char errno_info[512];
   ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
   LOG_ERROR("Fd(%d) gets an error -- %s!!!", Fd(), errno_info);
