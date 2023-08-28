@@ -115,7 +115,7 @@ void Connecting::DoWithError() const {
     saved_errno = opt_val;
   }
   char errno_info[512];
-  auto tmp_ptr = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+  ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
   LOG_ERROR("Fd(%d) gets an error -- %s!!!", Fd(), errno_info);
 }
 
