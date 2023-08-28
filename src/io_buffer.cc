@@ -240,8 +240,14 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   discrete_buffers[1].iov_len = 64 * 1024;
   // Use extra buffer to receive data if the writable space is not enough
   const int iov_seq = writable_bytes < 64 * 1024 ? 2 : 1;
-  ssize_t n =
-      ::readv(fd, static_cast<const struct iovec*>(discrete_buffers), iov_seq);
+  // To replace this (because of signals):
+  // ssize_t n = ::readv(fd, static_cast<const struct iovec*>(discrete_buffers),
+  // iov_seq);
+  struct msghdr message;
+  ::memset(&message, 0, sizeof(message));  // clear the structure
+  message.msg_iov = discrete_buffers;
+  message.msg_iovlen = iov_seq;
+  ssize_t n = ::recvmsg(fd, &message, MSG_NOSIGNAL);
   if (n < 0) {
     *tmp_errno = errno;
     LOG_ERROR("Discrete reading in Fd(%d) failed!!!", fd);
