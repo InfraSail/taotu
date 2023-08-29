@@ -45,11 +45,11 @@ void RpcServer::OnConnectionCallback(Connecting& connection) {
     std::shared_ptr<RpcAsyncChannel> rpc_channel =
         std::make_shared<RpcAsyncChannel>(connection);
     rpc_channel->SetServices(&services_);
-    connection.RegisterOnMessageCallback(
-        [&rpc_channel](Connecting& connection, IoBuffer* io_buffer,
-                       TimePoint receive_time) {
-          rpc_channel->OnMessage(connection, io_buffer, receive_time);
-        });
+    connection.RegisterOnMessageCallback([rpc_channel](Connecting& connection,
+                                                       IoBuffer* io_buffer,
+                                                       TimePoint receive_time) {
+      rpc_channel->OnMessage(connection, io_buffer, receive_time);
+    });
     connection.SetContext<std::shared_ptr<RpcAsyncChannel>>(rpc_channel);
   } else {
     connection.SetContext<std::shared_ptr<RpcAsyncChannel>>(
