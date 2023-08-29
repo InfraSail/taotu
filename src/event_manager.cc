@@ -206,7 +206,10 @@ void EventManager::WakeUp() {
 #endif
 }
 
-void EventManager::Quit() { should_quit_.store(true); }
+void EventManager::Quit() {
+  should_quit_.store(true);
+  WakeUp();
+}
 
 void EventManager::Start() {
   should_quit_.store(false);
