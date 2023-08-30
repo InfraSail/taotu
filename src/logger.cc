@@ -180,7 +180,12 @@ Logger::Logger()
       wrote_index_(-1L),
       log_file_(NULL),
       time_now_sec_(0),
-      write_index_(0L) {}
+      write_index_(0L) {
+  (void)filler1_;
+  (void)filler2_;
+  (void)filler3_;
+  (void)filler4_;
+}
 
 Logger::~Logger() {
   if (thread_.joinable()) {

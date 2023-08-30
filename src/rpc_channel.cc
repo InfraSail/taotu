@@ -175,8 +175,7 @@ RpcSyncChannel::RpcSyncChannel(const NetAddress& server_address)
         this->OnRpcMessage(sock_fd, rpc_message, receive_time);
       }),
       socket_fd_(::socket(server_address.GetFamily(),
-                          SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP)),
-      services_(nullptr) {
+                          SOCK_STREAM | SOCK_CLOEXEC, IPPROTO_TCP)) {
   LOG_INFO("RpcSyncChannel::RpcSyncChannel - %p", this);
   if (socket_fd_ < 0) {
     LOG_ERROR("Fail to initialize for the socket fd of new RpcSyncChannel!!!");
