@@ -119,7 +119,8 @@ void Connecting::DoWithError() const {
   int saved_errno = errno;
 #endif
   char errno_info[512];
-  ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+  auto tmp = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+  (void)tmp;
   LOG_ERROR("Fd(%d) gets an error -- %s!!!", Fd(), errno_info);
 }
 

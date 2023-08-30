@@ -167,8 +167,9 @@ void Connector::DoWriting() {
     int error = GetSocketError(conn_fd);
     if (error) {
       char errno_info[512];
-      LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
-               ::strerror_r(error, errno_info, sizeof(errno_info)));
+      auto tmp = ::strerror_r(error, errno_info, sizeof(errno_info));
+      LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd, errno_info);
+      (void)tmp;
       DoRetrying(conn_fd);
     } else if ([](int conn_fd) -> bool {
                  struct sockaddr_in6 local_address =
@@ -210,8 +211,9 @@ void Connector::DoWithError() {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     char errno_info[512];
-    LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
-             ::strerror_r(error, errno_info, sizeof(errno_info)));
+    auto tmp = ::strerror_r(error, errno_info, sizeof(errno_info));
+    (void)tmp;
+    LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd, errno_info);
     DoRetrying(conn_fd);
   }
 }
