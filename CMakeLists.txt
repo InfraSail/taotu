@@ -5,7 +5,13 @@ SET(CMAKE_CXX_STANDARD 17)
 
 SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++17")
 
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++17 -fsanitize=address,leak -Wall -O0 -DTAOTU_DEBUG")
+SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -std=c++17 -fsanitize=address -Wall -O0 -DTAOTU_DEBUG")
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  message(STATUS "Darwin detected, not using -fsanitize=leak")
+else()
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
+endif()
 
 ADD_DEFINITIONS(-Wno-format-security)
 
