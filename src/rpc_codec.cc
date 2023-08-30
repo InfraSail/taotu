@@ -122,7 +122,7 @@ void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
   int saved_errno = 0;  // FIXME: error check
   const ssize_t min_header_len =
       static_cast<ssize_t>(kMinMessageLength + kHeaderLength);
-  while (min_header_len > io_buffer->GetReadableBytes()) {
+  while (static_cast<size_t>(min_header_len) > io_buffer->GetReadableBytes()) {
     io_buffer->ReadFromFd(
         sock_fd, min_header_len - io_buffer->GetReadableBytes(), &saved_errno);
     if (saved_errno != 0) {
@@ -173,7 +173,8 @@ int RpcCodec::Serialize2Buffer(const ::google::protobuf::Message& message,
   uint8_t* start = reinterpret_cast<uint8_t*>(
       const_cast<char*>(io_buffer->GetWritablePosition()));
   uint8_t* end = message.SerializeWithCachedSizesToArray(start);
-  if (end - start != byte_size || byte_size != message.ByteSizeLong()) {
+  if (static_cast<size_t>(end - start) != byte_size ||
+      byte_size != message.ByteSizeLong()) {
     LOG_ERROR(
         "Protocol message was modified concurrently during serialization. Or "
         "Byte size calculation and serialization were inconsistent (This may "
@@ -244,6 +245,7 @@ void RpcCodec::FillEmptyBuffer(IoBuffer* io_buffer,
   int32_t checksum = Checksum(io_buffer->GetReadablePosition(),
                               static_cast<int>(io_buffer->GetReadableBytes()));
   io_buffer->AppendInt32(checksum);
+  (void)byte_size;
   int32_t len = htobe32(static_cast<int32_t>(io_buffer->GetReadableBytes()));
   io_buffer->SetHeadContent(&len, sizeof(len));
 }
