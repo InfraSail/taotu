@@ -137,9 +137,6 @@ class RpcSyncChannel : public ::google::protobuf::RpcChannel {
 
   MutexLock outstanding_calls_lock_;
   std::unordered_map<int64_t, OutstandingCall> outstanding_calls_;
-
-  const std::unordered_map<std::string, ::google::protobuf::Service*>*
-      services_;
 };
 
 }  // namespace taotu
