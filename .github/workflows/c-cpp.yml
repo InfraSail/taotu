@@ -30,10 +30,23 @@ jobs:
         sudo ninja install
         sudo ldconfig
     - name: Install gtest manually
-      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+      run: |
+        sudo apt-get install libgtest-dev
+        cd /usr/src/gtest
+        sudo cmake -DCMAKE_BUILD_TYPE=Release -G Ninja CMakeLists.txt
+        sudo ninja
+        sudo cp lib/*.a /usr/lib
+        sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a
+        sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - name: Install llhttp manually
       working-directory: ${{github.workspace}}/..
-      run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
+      run: |
+        git clone https://github.com/nodejs/llhttp.git
+        cd llhttp
+        sudo apt-get install npm
+        npm install
+        make
+        sudo make install
     - name: cmake
       working-directory: build
       run: cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release -G Ninja  ..
