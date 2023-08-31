@@ -25,9 +25,9 @@ jobs:
         git checkout tags/v24.2
         mkdir build
         cd build
-        cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
-        make
-        sudo make install
+        cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -G Ninja ..
+        ninja
+        sudo ninja install
         sudo ldconfig
     - name: Install gtest manually
       run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp lib/*.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
@@ -36,10 +36,10 @@ jobs:
       run: git clone https://github.com/nodejs/llhttp.git && cd llhttp && sudo apt-get install npm && npm install && make && sudo make install
     - name: cmake
       working-directory: build
-      run: cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release ..
-    - name: make
+      run: cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release -G Ninja  ..
+    - name: ninja
       working-directory: build
-      run: make
+      run: ninja
     - name: gtest
       working-directory: ${{github.workspace}}/build/output/bin
       # Execute tests defined by the CMake configuration.  
