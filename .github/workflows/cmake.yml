@@ -24,7 +24,7 @@ jobs:
 
     - name: Install protobuf manually
       run: |
-        sudo apt-get install libtool pkg-config wget git
+        sudo apt-get install libtool pkg-config wget git ninja-build
         git clone --recursive https://github.com/protocolbuffers/protobuf.git
         cd protobuf
         git checkout tags/v24.2
