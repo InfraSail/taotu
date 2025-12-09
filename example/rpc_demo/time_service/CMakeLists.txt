@@ -1,4 +1,8 @@
-FIND_PACKAGE(Protobuf CONFIG REQUIRED)
+# 优先使用带 ProtobufConfig.cmake 的安装，找不到再回退到模块模式（兼容 Ubuntu apt 包）
+FIND_PACKAGE(Protobuf CONFIG QUIET)
+IF(NOT Protobuf_FOUND)
+  FIND_PACKAGE(Protobuf REQUIRED)
+ENDIF()
 
 SET(PROTO_PATH "${CMAKE_SOURCE_DIR}/example/rpc_demo/time_service/")
 SET(TIME_PROTO "${PROTO_PATH}/time_service.proto")
