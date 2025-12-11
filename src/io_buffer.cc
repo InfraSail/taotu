@@ -20,9 +20,11 @@
 
 #include "logger.h"
 
-using namespace taotu;
+namespace taotu {
 
-static const char kCrlf[] = "\r\n";
+namespace {
+constexpr char kCrlf[] = "\r\n";
+}  // namespace
 
 IoBuffer::IoBuffer(size_t initial_capacity)
     : buffer_(kReservedCapacity + initial_capacity),
@@ -250,7 +252,15 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   ssize_t n = ::recvmsg(fd, &message, MSG_NOSIGNAL);
   if (n < 0) {
     *tmp_errno = errno;
-    LOG_ERROR("Discrete reading in Fd(%d) failed!!!", fd);
+    // EAGAIN/EWOULDBLOCK/EINTR 属于可忽略的非致命情况
+    if (*tmp_errno != EAGAIN && *tmp_errno != EWOULDBLOCK &&
+        *tmp_errno != EINTR) {
+      char errbuf[128];
+      errbuf[0] = '\0';
+      (void)::strerror_r(*tmp_errno, errbuf, sizeof(errbuf));
+      LOG_ERROR("Discrete reading in Fd(%d) failed!!! errno(%d): %s", fd,
+                *tmp_errno, errbuf);
+    }
   } else if (static_cast<size_t>(n) <= static_cast<size_t>(writable_bytes)) {
     writing_index_ += n;
   } else {
@@ -299,3 +309,5 @@ void IoBuffer::ReserveWritableSpace(size_t len) {
     writing_index_ = reading_index_ + GetReadableBytes();
   }
 }
+
+}  // namespace taotu

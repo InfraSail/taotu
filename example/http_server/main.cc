@@ -19,22 +19,44 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
   ::strftime(buf, 100, "%a, %d %b %Y %T %Z", time_tm);
   http_response->AddHeaderField("Date", buf);
   http_response->AddHeaderField("Server", "taotu-http-server");
-  if (http_parser.GetMethod() == "GET") {
+  const std::string method = http_parser.GetMethod();
+  const bool is_head = method == "HEAD";
+  if (method == "GET" || is_head) {
     if (http_parser.GetUrl() == "/") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html;charset=UTF-8");
-      http_response->SetBody(
-          "<!DOCTYPE "
-          "html><html><head><title>taotu</title></head><body><h1>Hello</"
-          "h1>Welcome to taotu!</body></html>");
+      if (!is_head) {
+        http_response->SetBody(
+            "<!DOCTYPE "
+            "html><html><head><title>taotu</title></head><body><h1>Hello</"
+            "h1>Welcome to taotu!</body></html>");
+      }
     } else if (http_parser.GetUrl() == "/hello") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html;charset=UTF-8");
-      http_response->SetBody(
-          "<!DOCTYPE "
-          "html><html><head><title>taotu</title></head><body><h1>Hello</"
-          "h1>Hello, taotu!</body></html>");
+      if (!is_head) {
+        http_response->SetBody(
+            "<!DOCTYPE "
+            "html><html><head><title>taotu</title></head><body><h1>Hello</"
+            "h1>Hello, taotu!</body></html>");
+      }
+    } else {
+      http_response->SetStatus(404, "Not Found");
+      http_response->SetContentType("text/html;charset=UTF-8");
+      if (!is_head) {
+        http_response->SetBody(
+            "<!DOCTYPE "
+            "html><html><head><title>404</title></head><body><h1>Not "
+            "Found</h1></body></html>");
+      }
     }
+  } else {
+    http_response->SetStatus(405, "Method Not Allowed");
+    http_response->SetContentType("text/html;charset=UTF-8");
+    http_response->SetBody(
+        "<!DOCTYPE "
+        "html><html><head><title>405</title></head><body><h1>Method Not "
+        "Allowed</h1></body></html>");
   }
 }
 

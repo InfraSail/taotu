@@ -11,7 +11,7 @@
 
 #include "client.h"
 
-using namespace taotu;
+namespace taotu {
 
 Client::Client(EventManager* event_manager, const NetAddress& server_address,
                bool should_retry_)
@@ -35,3 +35,5 @@ void Client::SetWriteCompleteCallback(
 void Client::Connect() { reactor_manager_->Connect(); }
 void Client::Disconnect() { reactor_manager_->Disconnect(); }
 void Client::Stop() { reactor_manager_->Stop(); }
+
+}  // namespace taotu

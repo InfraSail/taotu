@@ -55,6 +55,15 @@ class Acceptor : NonCopyableMovable {
   void DoReading();
 
  private:
+  struct AcceptContext {
+    Acceptor* self{nullptr};
+    struct sockaddr_storage addr {};
+    socklen_t len{sizeof(addr)};
+  };
+
+  static void OnAcceptComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op);
+  void SubmitAcceptOnce();
+
   // Socketer which is about configurations of the socket
   Socketer accept_socketer_;
 

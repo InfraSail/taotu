@@ -15,7 +15,7 @@
 
 #include <utility>
 
-using namespace taotu;
+namespace taotu {
 
 TimePoint::TimePoint() : time_point_microseconds_(FNow()), context_(0) {}
 TimePoint::TimePoint(int64_t duration_microseconds, bool repeated)
@@ -50,3 +50,5 @@ int64_t TimePoint::FNow() {
   ::gettimeofday(&tv, NULL);
   return static_cast<int64_t>(tv.tv_sec * 1000 * 1000 + tv.tv_usec);
 }
+
+}  // namespace taotu

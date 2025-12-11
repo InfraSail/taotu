@@ -16,7 +16,7 @@
 
 #include "logger.h"
 
-using namespace taotu;
+namespace taotu {
 
 NetAddress::NetAddress(uint16_t port, bool loop_back, bool use_ipv6) {
   if (use_ipv6) {
@@ -66,3 +66,5 @@ std::string NetAddress::GetIp() const {
   return std::string{ip};
 }
 uint16_t NetAddress::GetPort() const { return htons(socket_address_.sin_port); }
+
+}  // namespace taotu

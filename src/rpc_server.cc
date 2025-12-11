@@ -18,7 +18,7 @@
 #include "rpc_channel.h"
 #include "server.h"
 
-using namespace taotu;
+namespace taotu {
 
 RpcServer::RpcServer(EventManagers* event_managers,
                      const NetAddress& listen_address)
@@ -56,3 +56,5 @@ void RpcServer::OnConnectionCallback(Connecting& connection) {
         std::shared_ptr<RpcAsyncChannel>());
   }
 }
+
+}  // namespace taotu

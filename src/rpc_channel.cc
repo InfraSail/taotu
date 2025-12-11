@@ -18,13 +18,9 @@
 #include "spin_lock.h"
 #include "time_point.h"
 
-using namespace taotu;
-
 namespace taotu {
 
 const char kRpcTag[] = "RPC0";
-
-}  // namespace taotu
 
 RpcAsyncChannel::RpcAsyncChannel()
     : codec_([this](Connecting& connection,
@@ -274,3 +270,5 @@ void RpcSyncChannel::OnRpcMessage(
     LOG_ERROR("RpcSyncClient - Rpc message type is not RESPONSE!!!");
   }
 }
+
+}  // namespace taotu
