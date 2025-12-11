@@ -14,7 +14,8 @@
 #include <functional>
 #include <utility>
 
-using namespace taotu::logger;
+namespace taotu {
+namespace logger {
 
 bool Logger::is_initialized{false};
 
@@ -193,3 +194,6 @@ Logger::~Logger() {
   }
   is_initialized = false;
 }
+
+}  // namespace logger
+}  // namespace taotu

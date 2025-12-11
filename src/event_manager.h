@@ -60,6 +60,8 @@ class EventManager : NonCopyableMovable {
   void Loop();
   // Run the loop in this thread (called once guarantee)
   void Work();
+  // Block until the loop thread exits (only valid after Loop()).
+  void Join();
 
   // Insert a new connection into current I/O thread
   Connecting* InsertNewConnection(int socket_fd,
@@ -141,14 +143,8 @@ class EventManager : NonCopyableMovable {
   // Guaranteed to only start myself once
   std::once_flag start_once_flag_;
 
-#ifdef __linux__
   // To wake up this I/O thread
   Eventer wake_up_eventer_;
-#else
-  // To wake up this I/O thread
-  int wake_up_pipe_[2];
-  Eventer* wake_up_eventer_;
-#endif
 
   std::function<Connecting*(EventManager*, int, const NetAddress&,
                             const NetAddress&)>

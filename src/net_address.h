@@ -49,6 +49,13 @@ class NetAddress {
   void SetNetAddress(const struct sockaddr_in& socket_address) {
     socket_address_ = socket_address;
   }
+  void SetRawAddr(const struct sockaddr_storage& addr) {
+    if (addr.ss_family == AF_INET) {
+      socket_address_ = *reinterpret_cast<const struct sockaddr_in*>(&addr);
+    } else if (addr.ss_family == AF_INET6) {
+      socket_address6_ = *reinterpret_cast<const struct sockaddr_in6*>(&addr);
+    }
+  }
   void SetNetAddress6(const struct sockaddr_in6& socket_address6) {
     socket_address6_ = socket_address6;
   }

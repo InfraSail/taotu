@@ -14,6 +14,7 @@
 #include <stddef.h>
 
 #include <any>
+#include <array>
 #include <atomic>
 #include <functional>
 #include <string>
@@ -95,29 +96,19 @@ class Connecting : NonCopyableMovable {
   void DoWithError() const;
 
   void StartReading() {
-    if (!eventer_.HasReadEvents()) {
-      eventer_.EnableReadEvents();
-    }
+    SubmitReadOnce();
   }
   void StopReading() {
-    if (eventer_.HasReadEvents()) {
-      eventer_.DisableReadEvents();
-    }
+    CancelPendingIo();
   }
   void StartWriting() {
-    if (!eventer_.HasWriteEvents()) {
-      eventer_.EnableWriteEvents();
-    }
+    SubmitWriteOnce();
   }
   void StopWriting() {
-    if (eventer_.HasWriteEvents()) {
-      eventer_.DisableWriteEvents();
-    }
+    CancelPendingIo();
   }
   void StopReadingWriting() {
-    if (eventer_.HasReadEvents() || eventer_.HasWriteEvents()) {
-      eventer_.DisableAllEvents();
-    }
+    CancelPendingIo();
   }
 
   IoBuffer* GetInputBuffer() { return &input_buffer_; }
@@ -153,6 +144,29 @@ class Connecting : NonCopyableMovable {
   void ForceCloseAfter(int64_t delay_microseconds);
 
  private:
+  struct ReadContext {
+    Connecting* self{nullptr};
+    std::array<struct iovec, 2> iov{};
+    size_t writable{0};
+    char extra_buffer[64 * 1024];
+    uint64_t key{0};
+    bool multishot{false};
+    uint16_t buf_id{0};
+  };
+
+  struct WriteContext {
+    Connecting* self{nullptr};
+    struct iovec iov{};
+    size_t to_send{0};
+    uint64_t key{0};
+  };
+
+  void SubmitReadOnce();
+  void SubmitWriteOnce();
+  static void OnReadComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op);
+  static void OnWriteComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op);
+  void CancelPendingIo();
+
   enum class ConnectionState {
     kDisconnected,
     kConnecting,
@@ -211,6 +225,12 @@ class Connecting : NonCopyableMovable {
 
   // Connection state (atomic)
   std::atomic<ConnectionState> state_;
+
+  bool read_in_flight_{false};
+  bool write_in_flight_{false};
+  uint64_t next_io_key_{1};
+  uint64_t read_cancel_key_{0};
+  uint64_t write_cancel_key_{0};
 
   // Context for any object bound
   std::any context_;

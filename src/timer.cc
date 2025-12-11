@@ -13,7 +13,7 @@
 
 #include <utility>
 
-using namespace taotu;
+namespace taotu {
 
 void Timer::AddTimeTask(const TimePoint& time_point, TimeCallback TimeTask) {
   LockGuard lock_guard(mutex_lock_);
@@ -45,3 +45,5 @@ Timer::ExpiredTimeTasks Timer::GetExpiredTimeTasks() {
   }
   return expired_time_tasks;
 }
+
+}  // namespace taotu

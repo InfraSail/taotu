@@ -32,8 +32,7 @@
 #include "logger.h"
 #include "rpc.pb.h"
 
-using namespace taotu;
-
+namespace taotu {
 namespace {
 
 int ProtobufVersionCheck() {
@@ -197,7 +196,7 @@ const std::string kUnknownMessageTypeStr = "UnknownMessageType";
 const std::string kParseErrorStr = "ParseError";
 const std::string kUnknownErrorStr = "UnknownError";
 
-}  // namespace
+}  // namespace taotu
 
 const std::string& RpcCodec::ErrorCode2String(ErrorCode error_code) {
   switch (error_code) {
@@ -285,3 +284,5 @@ void RpcCodec::SyncDefaultErrorCallback(int sock_fd, IoBuffer* io_buffer,
         sock_fd);
   }
 }
+
+}  // namespace taotu

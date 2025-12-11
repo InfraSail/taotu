@@ -38,7 +38,7 @@ class Timer : NonCopyableMovable {
   // Register a time task
   void AddTimeTask(const TimePoint& time_point, TimeCallback TimeTask);
 
-  // Get minimum time duration for next epoll waiting
+  // Get minimum time duration for next io_uring wait
   int GetMinTimeDuration() const;
 
   // Get a set of expired time tasks

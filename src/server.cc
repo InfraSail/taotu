@@ -16,7 +16,7 @@
 #include "logger.h"
 #include "reactor_manager.h"
 
-using namespace taotu;
+namespace taotu {
 
 Server::Server(EventManagers* event_managers, const NetAddress& listen_address,
                bool should_reuse_port)
@@ -76,3 +76,5 @@ void Server::DefaultOnMessageCallback(Connecting& connection,
                                       TimePoint time_point) {
   io_buffer->RefreshRW();
 }
+
+}  // namespace taotu

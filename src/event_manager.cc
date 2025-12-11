@@ -13,9 +13,7 @@
 
 #include <pthread.h>
 #include <stdlib.h>
-#ifdef __linux__
 #include <sys/eventfd.h>
-#endif
 #include <unistd.h>
 
 #include <string>
@@ -27,14 +25,12 @@
 #include "spin_lock.h"
 #include "timer.h"
 
-using namespace taotu;
+namespace taotu {
 
 EventManager::EventManager()
     : poller_(),
-      thread_()
-#ifdef __linux__
-      ,
-      wake_up_eventer_(
+      thread_(),
+  wake_up_eventer_(
           &poller_,
           []() -> int {
             int event_fd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -45,55 +41,34 @@ EventManager::EventManager()
             }
             return event_fd;
           }())
-#else
-      ,
-      wake_up_eventer_(nullptr)
-#endif
 {
-#ifdef __linux__
   wake_up_eventer_.RegisterReadCallback([this](const TimePoint&) {
-    uint64_t msg = 1;
-    ssize_t n = ::read(this->wake_up_eventer_.Fd(),
-                       reinterpret_cast<void*>(&msg), sizeof(msg));
-    if (n != sizeof(msg)) {
-      LOG_ERROR(
-          "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
-          "bytes!!!",
-          ::pthread_self(), msg);
+    // Drain eventfd to keep poll loop responsive.
+    while (true) {
+      uint64_t msg = 0;
+      ssize_t n = ::read(this->wake_up_eventer_.Fd(),
+                         reinterpret_cast<void*>(&msg), sizeof(msg));
+      if (n == sizeof(msg)) {
+        continue;
+      }
+      if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        break;
+      }
+      if (n != sizeof(msg)) {
+        LOG_ERROR(
+            "The wake_up_eventer in I/O thread(%lu) reads %lldbytes instead of "
+            "8 bytes!!!",
+            ::pthread_self(), static_cast<long long>(n < 0 ? -1 : n));
+      }
+      break;
     }
   });
   wake_up_eventer_.EnableReadEvents();
-#else
-  if (::socketpair(AF_UNIX, SOCK_STREAM, 0, wake_up_pipe_) < 0) {
-    LOG_ERROR("Fail in socketpair!!!");
-  }
-  wake_up_eventer_ = new Eventer(&poller_, wake_up_pipe_[0]);
-  wake_up_eventer_->RegisterReadCallback([this](const TimePoint&) {
-    uint64_t msg = 1;
-    ssize_t n = ::read(this->wake_up_pipe_[0], reinterpret_cast<void*>(&msg),
-                       sizeof(msg));
-    if (n != sizeof(msg)) {
-      LOG_ERROR(
-          "The wake_up_eventer in I/O thread(%lu) reads %llubytes instead of 8 "
-          "bytes!!!",
-          ::pthread_self(), msg);
-    }
-  });
-  wake_up_eventer_->EnableReadEvents();
-#endif
 }
 EventManager::~EventManager() {
-#ifdef __linux__
   wake_up_eventer_.DisableAllEvents();
   wake_up_eventer_.RemoveMyself();
   ::close(wake_up_eventer_.Fd());
-#else
-  wake_up_eventer_->DisableAllEvents();
-  wake_up_eventer_->RemoveMyself();
-  ::close(wake_up_pipe_[0]);
-  ::close(wake_up_pipe_[1]);
-  delete wake_up_eventer_;
-#endif
   if (thread_ && thread_->joinable()) {
     thread_->join();
   }
@@ -106,6 +81,12 @@ void EventManager::Loop() {
 }
 void EventManager::Work() {
   std::call_once(start_once_flag_, [this]() { this->Start(); });
+}
+
+void EventManager::Join() {
+  if (thread_ && thread_->joinable()) {
+    thread_->join();
+  }
 }
 
 Connecting* EventManager::InsertNewConnection(int socket_fd,
@@ -183,7 +164,6 @@ void EventManager::DeleteConnection(int fd) {
 }
 
 void EventManager::WakeUp() {
-#ifdef __linux__
   uint64_t msg = 1;
   ssize_t n = ::write(wake_up_eventer_.Fd(), reinterpret_cast<void*>(&msg),
                       sizeof(msg));
@@ -193,17 +173,6 @@ void EventManager::WakeUp() {
         "bytes!!!",
         ::pthread_self(), msg);
   }
-#else
-  uint64_t msg = 1;
-  ssize_t n =
-      ::write(wake_up_pipe_[1], reinterpret_cast<void*>(&msg), sizeof(msg));
-  if (n != sizeof(msg)) {
-    LOG_ERROR(
-        "The wake_up_eventer in I/O thread(%lu) writes %llubytes instead of 8 "
-        "bytes!!!",
-        ::pthread_self(), msg);
-  }
-#endif
 }
 
 void EventManager::Quit() {
@@ -281,3 +250,5 @@ void EventManager::DestroyClosedConnections() {
   }
   closed_fds_.clear();
 }
+
+}  // namespace taotu

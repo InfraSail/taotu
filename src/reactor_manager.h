@@ -152,6 +152,9 @@ class ClientReactorManager : NonCopyableMovable {
   void SetRetryOn(bool on) { should_retry_ = on; }
 
  private:
+  void DisconnectInLoop();
+  void StopInLoop();
+
   // Build a new TCP connection and insert it into the corresponding I/O thread
   void LaunchNewConnectionCallback(int socket_fd);
 

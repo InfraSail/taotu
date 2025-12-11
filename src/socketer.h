@@ -59,6 +59,10 @@ class Socketer : NonCopyableMovable {
   void SetReusePort(bool on) const;
   void SetKeepAlive(bool on) const;
 
+  // Helpers
+  static bool SetNonBlockAndCloexec(int fd);
+  static int CreateNonblockingTcpSocket(const NetAddress& address);
+
  private:
   void Close() const;
 

@@ -14,7 +14,7 @@
 #include "event_manager.h"
 #include "reactor_manager.h"
 
-using namespace taotu;
+namespace taotu {
 
 Balancer::Balancer(ServerReactorManager::EventManagers* event_managers,
                    int strategy)
@@ -45,3 +45,5 @@ EventManager* Balancer::PickOneEventManager() {
   }
   return (*event_managers_)[cursor_];
 }
+
+}  // namespace taotu

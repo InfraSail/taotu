@@ -11,6 +11,7 @@
 #include "connector.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,14 +25,12 @@
 #include "logger.h"
 #include "time_point.h"
 
-using namespace taotu;
+namespace taotu {
 namespace {
-enum {
-  kMaxRetryDelayMicroseconds = 30 * 1000 * 1000,
-  kInitRetryDelayMicroseconds = 500 * 1000,
-};
-}
-static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
+constexpr int kMaxRetryDelayMicroseconds = 30 * 1000 * 1000;
+constexpr int kInitRetryDelayMicroseconds = 500 * 1000;
+
+struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
@@ -41,7 +40,7 @@ static struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   }
   return local_addr;
 }
-static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
+struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
@@ -51,7 +50,7 @@ static struct sockaddr_in6 GetPeerSocketAddress6(int socket_fd) {
   }
   return local_addr;
 }
-static int GetSocketError(int socket_fd) {
+int GetSocketError(int socket_fd) {
   int socket_option;
   auto socket_option_length = static_cast<socklen_t>(sizeof(socket_option));
   if (::getsockopt(socket_fd, SOL_SOCKET, SO_ERROR, &socket_option,
@@ -61,6 +60,9 @@ static int GetSocketError(int socket_fd) {
     return socket_option;
   }
 }
+
+}  // namespace
+
 Connector::Connector(EventManager* event_manager,
                      const NetAddress& server_address)
     : event_manager_(event_manager),
@@ -95,14 +97,6 @@ void Connector::Connect() {
     LOG_ERROR("Fail to initialize for connector!!!");
     return;
   }
-#ifndef __linux__
-  int flags = ::fcntl(sock_fd, F_GETFL, 0);
-  flags |= O_NONBLOCK;
-  ::fcntl(sock_fd, F_SETFL, flags);
-  flags = ::fcntl(sock_fd, F_GETFD, 0);
-  flags |= FD_CLOEXEC;
-  ::fcntl(sock_fd, F_SETFD, flags);
-#endif
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
                          server_address_.GetSize());
   int saved_errno = (0 == status) ? 0 : errno;
@@ -226,3 +220,5 @@ int Connector::RemoveAndReset() {
   // eventer_.reset();  // Invalid
   return conn_fd;
 }
+
+}  // namespace taotu

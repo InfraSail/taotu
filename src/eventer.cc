@@ -19,7 +19,7 @@
 #define POLLRDHUP 0x0000
 #endif
 
-using namespace taotu;
+namespace taotu {
 
 Eventer::Eventer(Poller* poller, int fd)
     : poller_(poller),
@@ -110,4 +110,45 @@ void Eventer::RemoveMyself() {
   }
 }
 
+void Eventer::OnReadDone(const ReadResult& res, TimePoint tp) {
+  if (res.bytes > 0) {
+    if (ReadCallback_) {
+      ReadCallback_(tp);
+    }
+  } else if (res.bytes == 0) {
+    if (CloseCallback_) {
+      CloseCallback_();
+    }
+  } else {
+    if (res.err != EAGAIN && res.err != EWOULDBLOCK && res.err != EINTR &&
+        ErrorCallback_) {
+      ErrorCallback_();
+    }
+  }
+}
+
+void Eventer::OnWriteDone(const WriteResult& res) {
+  if (res.err != 0) {
+    if (res.err != EAGAIN && res.err != EWOULDBLOCK && res.err != EINTR &&
+        ErrorCallback_) {
+      ErrorCallback_();
+    }
+    return;
+  }
+  if (WriteCallback_) {
+    WriteCallback_();
+  }
+}
+
+void Eventer::OnAcceptDone(int fd, const struct sockaddr_storage*,
+                           socklen_t) {
+  if (fd < 0 && ErrorCallback_) {
+    ErrorCallback_();
+  } else if (ReadCallback_) {
+    ReadCallback_(TimePoint{});
+  }
+}
+
 void Eventer::UpdateEvents() { poller_->ModifyEventer(this); }
+
+}  // namespace taotu

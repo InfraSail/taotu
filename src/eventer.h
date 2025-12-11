@@ -35,6 +35,16 @@ class Eventer : NonCopyableMovable {
   typedef std::function<void()> NormalCallback;
   typedef std::function<void(TimePoint)> ReadCallback;
 
+  struct ReadResult {
+    ssize_t bytes{0};
+    int err{0};
+  };
+
+  struct WriteResult {
+    ssize_t bytes{0};
+    int err{0};
+  };
+
   Eventer(Poller* poller, int fd);
   ~Eventer();
 
@@ -51,6 +61,13 @@ class Eventer : NonCopyableMovable {
   void RegisterErrorCallback(NormalCallback cb) {
     ErrorCallback_ = std::move(cb);
   }
+
+  Poller* GetPoller() { return poller_; }
+
+  // io_uring 完成回调
+  void OnReadDone(const ReadResult& res, TimePoint tp);
+  void OnWriteDone(const WriteResult& res);
+  void OnAcceptDone(int fd, const struct sockaddr_storage* addr, socklen_t len);
 
   int Fd() const { return fd_; }
   uint32_t Events() const { return out_events_; }
@@ -72,16 +89,10 @@ class Eventer : NonCopyableMovable {
 
   void RemoveMyself();
 
-#ifndef __linux__
-  // For poll()
-  void SetIndex(int index) { index_ = index; }
-  int GetIndex() const { return index_; }
-#endif
-
  private:
   void UpdateEvents();
 
-  // In <poll.h> or <sys/epoll.h>
+  // Event masks (POLL*) used for io_uring poll/add
   enum {
     kNoEvent = 0x0000,
     kReadEvents = POLLIN | POLLPRI,
@@ -113,11 +124,6 @@ class Eventer : NonCopyableMovable {
 
   // Callback function which will be called when error happens
   NormalCallback ErrorCallback_;
-
-#ifndef __linux__
-  // For poll()
-  int index_ = -1;
-#endif
 };
 
 }  // namespace taotu

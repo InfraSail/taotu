@@ -15,7 +15,7 @@
 #include <thread>
 #include <utility>
 
-using namespace taotu;
+namespace taotu {
 
 ThreadPool::ThreadPool(size_t thread_amount)
     : que_pdt_idx_(0), should_stop_(false) {
@@ -74,3 +74,5 @@ ThreadPool::~ThreadPool() {
     }
   }
 }
+
+}  // namespace taotu

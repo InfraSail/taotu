@@ -17,7 +17,8 @@
 HttpResponse::HttpResponse(bool should_close)
     : major_version_(1),
       minor_version_(1),
-      status_(1000),
+      status_(200),
+      status_message_("OK"),
       should_close_(should_close) {}
 
 void HttpResponse::SetVersion(uint8_t major_version, uint8_t minor_version) {

@@ -12,14 +12,22 @@
 #include "socketer.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <netinet/tcp.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <string>
 
 #include "logger.h"
 
-using namespace taotu;
+namespace taotu {
+
+namespace {
+bool IsAccept4Unavailable(int err) {
+  return err == ENOSYS || err == EINVAL || err == EPERM;
+}
+}  // namespace
 
 Socketer::Socketer(int socket_fd) : socket_fd_(socket_fd) {}
 Socketer::~Socketer() { Close(); }
@@ -38,25 +46,6 @@ void Socketer::Listen() const {
   }
 }
 int Socketer::Accept(NetAddress* peer_address) const {
-#ifndef __linux__
-  struct sockaddr_in6 socket_address6 {};
-  struct sockaddr_in socket_address {};
-  auto addr_len = static_cast<socklen_t>(peer_address->GetSize());
-  void* sockaddr_ptr = nullptr;
-  if (peer_address->GetFamily() == AF_INET6) {
-    sockaddr_ptr = reinterpret_cast<void*>(&socket_address6);
-  } else {
-    sockaddr_ptr = reinterpret_cast<void*>(&socket_address);
-  }
-  int conn_fd = ::accept(
-      socket_fd_, static_cast<struct sockaddr*>(sockaddr_ptr), &addr_len);
-  int flags = ::fcntl(conn_fd, F_GETFL, 0);
-  flags |= O_NONBLOCK;
-  ::fcntl(conn_fd, F_SETFL, flags);
-  flags = ::fcntl(conn_fd, F_GETFD, 0);
-  flags |= FD_CLOEXEC;
-  ::fcntl(conn_fd, F_SETFD, flags);
-#else
   // Ignore whether IP address specification of client-end is IPv4 or IPv6
   struct sockaddr_in6 socket_address6 {};
   ::memset(&socket_address6, 0, sizeof(socket_address6));
@@ -65,7 +54,16 @@ int Socketer::Accept(NetAddress* peer_address) const {
       socket_fd_,
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
-#endif
+  if (conn_fd < 0 && IsAccept4Unavailable(errno)) {
+    conn_fd = ::accept(
+        socket_fd_,
+        static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
+        &addr_len);
+    if (conn_fd >= 0 && !SetNonBlockAndCloexec(conn_fd)) {
+      LOG_WARN("SocketFd(%d) accept: fallback set nonblock/cloexec failed.",
+               socket_fd_);
+    }
+  }
   if (conn_fd < 0) {  // Error occurs
     int saved_errno = errno;
     switch (saved_errno) {
@@ -148,6 +146,47 @@ void Socketer::SetKeepAlive(bool on) const {
   }
 }
 
+bool Socketer::SetNonBlockAndCloexec(int fd) {
+  int flags = ::fcntl(fd, F_GETFL, 0);
+  if (flags < 0) {
+    return false;
+  }
+  if (!(flags & O_NONBLOCK)) {
+    if (::fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+      return false;
+    }
+  }
+  flags = ::fcntl(fd, F_GETFD, 0);
+  if (flags < 0) {
+    return false;
+  }
+  if (!(flags & FD_CLOEXEC)) {
+    if (::fcntl(fd, F_SETFD, flags | FD_CLOEXEC) < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+int Socketer::CreateNonblockingTcpSocket(const NetAddress& address) {
+  int fd = ::socket(address.GetFamily(),
+                    SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+  if (fd >= 0) {
+    return fd;
+  }
+  int saved_errno = errno;
+  LOG_WARN("socket with flags failed (errno %d: %s), fallback to fcntl path.",
+           saved_errno, ::strerror(saved_errno));
+  fd = ::socket(address.GetFamily(), SOCK_STREAM, IPPROTO_TCP);
+  if (fd < 0) {
+    return fd;
+  }
+  if (!SetNonBlockAndCloexec(fd)) {
+    LOG_WARN("fcntl set nonblock/cloexec failed on fd(%d).", fd);
+  }
+  return fd;
+}
+
 void Socketer::Close() const {
   LOG_DEBUG("SocketFd(%d) is closing.", socket_fd_);
 
@@ -157,3 +196,5 @@ void Socketer::Close() const {
     socket_fd_ = -1;
   }
 }
+
+}  // namespace taotu

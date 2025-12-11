@@ -25,9 +25,10 @@
 #include "net_address.h"
 #include "spin_lock.h"
 
-using namespace taotu;
+namespace taotu {
 
-static NetAddress GetLocalAddress(int socket_fd) {
+namespace {
+NetAddress GetLocalAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
@@ -37,7 +38,7 @@ static NetAddress GetLocalAddress(int socket_fd) {
   }
   return NetAddress(local_addr);
 }
-static NetAddress GetPeerAddress(int socket_fd) {
+NetAddress GetPeerAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
   auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
@@ -47,6 +48,7 @@ static NetAddress GetPeerAddress(int socket_fd) {
   }
   return NetAddress(local_addr);
 }
+}  // namespace
 
 ServerReactorManager::ServerReactorManager(EventManagers* event_managers,
                                            const NetAddress& listen_address,
@@ -138,21 +140,35 @@ void ClientReactorManager::Connect() {
   LOG_DEBUG("Connect to [ IP(%s) Port(%u) ].",
             connector_.GetServerAddress().GetIp().c_str(),
             connector_.GetServerAddress().GetPort());
+  should_retry_ = false;  // 不在客户端场景自动重连，避免退出时死循环
   can_connect_ = true;
   connector_.Start();
 }
 void ClientReactorManager::Disconnect() {
+  event_manager_->RunSoon([this]() { this->DisconnectInLoop(); });
+}
+void ClientReactorManager::Stop() {
+  event_manager_->RunSoon([this]() { this->StopInLoop(); });
+}
+void ClientReactorManager::DisconnectInLoop() {
+  should_retry_ = false;
   can_connect_ = false;
+  connector_.Stop();
   {
     LockGuard lock_guard(connection_mutex_);
     if (connection_ != nullptr) {
-      connection_->ShutDownWrite();
+      connection_->ForceClose();
     }
   }
+  event_manager_->Quit();
+  event_manager_->WakeUp();
 }
-void ClientReactorManager::Stop() {
+void ClientReactorManager::StopInLoop() {
+  should_retry_ = false;
   can_connect_ = false;
   connector_.Stop();
+  event_manager_->Quit();
+  event_manager_->WakeUp();
 }
 
 void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
@@ -169,12 +185,6 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
       connection_ = nullptr;
     }
     connection.ForceClose();
-    if (this->should_retry_ && this->can_connect_) {
-      LOG_DEBUG("Reconnect to [ IP(%s), Port(%u) ].",
-                this->connector_.GetServerAddress().GetIp().c_str(),
-                this->connector_.GetServerAddress().GetPort());
-      this->connector_.Restart();
-    }
   });
   {
     LockGuard lock_guard(connection_mutex_);
@@ -182,3 +192,5 @@ void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   }
   new_connection->OnEstablishing();  // Set the status flag on and start reading
 }
+
+}  // namespace taotu
