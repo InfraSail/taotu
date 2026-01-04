@@ -10,3 +10,7 @@ GTEST_DISCOVER_TESTS(time_unittest TEST_LIST TimeTest)
 ADD_EXECUTABLE(lock_unittest lock_unittest.cc)
 TARGET_LINK_LIBRARIES(lock_unittest PUBLIC gtest gtest_main taotu-static)
 GTEST_DISCOVER_TESTS(lock_unittest TEST_LIST LockTest)
+
+ADD_EXECUTABLE(logger_test logger_test.cc)
+TARGET_LINK_LIBRARIES(logger_test PUBLIC gtest gtest_main taotu-static)
+GTEST_DISCOVER_TESTS(logger_test TEST_LIST LoggerTest)

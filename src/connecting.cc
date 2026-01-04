@@ -12,6 +12,7 @@
 #include "connecting.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -20,7 +21,6 @@
 #include "logger.h"
 
 namespace taotu {
-
 Connecting::Connecting(EventManager* event_manager, int socket_fd,
                        const NetAddress& local_address,
                        const NetAddress& peer_address)
@@ -69,7 +69,8 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
   if (res > 0) {
     // 更新输入缓冲区
     if (ctx->multishot && has_buffer) {
-      auto* buf = connecting->event_manager_->GetPoller()->GetBuffer(ctx->buf_id);
+      auto* buf =
+          connecting->event_manager_->GetPoller()->GetBuffer(ctx->buf_id);
       if (buf) {
         connecting->input_buffer_.Append(buf, static_cast<size_t>(res));
       } else {
@@ -100,13 +101,31 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
       if (!more) {
         connecting->SubmitReadOnce();
       }
+    } else if (err == ECONNRESET || err == ECONNABORTED || err == EPIPE) {
+      char errbuf[128];
+      const char* err_str = errbuf;
+#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
+      if (::strerror_r(err, errbuf, sizeof(errbuf)) != 0) {
+        ::snprintf(errbuf, sizeof(errbuf), "errno(%d)", err);
+      }
+#else
+      err_str = ::strerror_r(err, errbuf, sizeof(errbuf));
+#endif
+      if (err_str == nullptr || *err_str == '\0') {
+        err_str = "unknown";
+      }
+      LOG_INFO("Peer closed/reset the connection fd(%d) err(%d - %s)",
+               connecting->Fd(), err, err_str);
+      connecting->DoClosing();
     } else {
-      errno = err;
-      connecting->DoWithError();
+      LOG_ERROR("OnReadComplete error: fd(%d) res(%zd) err(%d)",
+                connecting->Fd(), res, err);
+      connecting->DoWithError(err);
     }
   }
   if (!more) {
     delete ctx;
+    op->context = nullptr;
   }
 }
 
@@ -124,12 +143,19 @@ void Connecting::OnWriteComplete(struct io_uring_cqe* cqe,
     if (connecting->output_buffer_.GetReadableBytes() > 0) {
       connecting->SubmitWriteOnce();
     } else {
+      if (connecting->pending_output_buffer_.GetReadableBytes() > 0) {
+        connecting->output_buffer_.Swap(connecting->pending_output_buffer_);
+        connecting->SubmitWriteOnce();
+        delete ctx;
+        return;
+      }
       if (connecting->WriteCompleteCallback_) {
         connecting->WriteCompleteCallback_(*connecting);
       }
       if (Connecting::ConnectionState::kDisconnecting ==
               connecting->state_.load() &&
-          connecting->output_buffer_.GetReadableBytes() == 0) {
+          connecting->output_buffer_.GetReadableBytes() == 0 &&
+          connecting->pending_output_buffer_.GetReadableBytes() == 0) {
         connecting->socketer_.ShutdownWrite();
       }
     }
@@ -137,11 +163,13 @@ void Connecting::OnWriteComplete(struct io_uring_cqe* cqe,
     if (err == EAGAIN || err == EWOULDBLOCK || err == EINTR) {
       connecting->SubmitWriteOnce();
     } else {
-      errno = err;
-      connecting->DoWithError();
+      LOG_ERROR("OnWriteComplete error: fd(%d) res(%zd) err(%d)",
+                connecting->Fd(), res, err);
+      connecting->DoWithError(err);
     }
   }
   delete ctx;
+  op->context = nullptr;
 }
 
 void Connecting::SubmitReadOnce() {
@@ -151,33 +179,31 @@ void Connecting::SubmitReadOnce() {
   auto* ctx = new ReadContext();
   ctx->self = this;
   ctx->writable = input_buffer_.GetWritableBytes();
-  ctx->iov[0].iov_base =
-      const_cast<char*>(input_buffer_.GetWritablePosition());
+  ctx->iov[0].iov_base = const_cast<char*>(input_buffer_.GetWritablePosition());
   ctx->iov[0].iov_len = ctx->writable;
   ctx->iov[1].iov_base = ctx->extra_buffer;
   ctx->iov[1].iov_len = sizeof(ctx->extra_buffer);
   int iovcnt = ctx->writable < sizeof(ctx->extra_buffer) ? 2 : 1;
-  ctx->key = next_io_key_++;
-  read_cancel_key_ = ctx->key;
+  // ctx->key = next_io_key_++; // Deprecated: let Poller generate key
+  // read_cancel_key_ = ctx->key; // Do not set yet
   read_in_flight_ = true;
 #ifdef IORING_OP_RECV_MULTISHOT
   if (event_manager_->GetPoller()->BuffersRegistered()) {
     ctx->multishot = true;
-    event_manager_->GetPoller()->SubmitReadMultishot(
-        &eventer_, Poller::kBufferGroupId, &Connecting::OnReadComplete, ctx,
-        ctx->key);
+    uint64_t key = event_manager_->GetPoller()->SubmitReadMultishot(
+        &eventer_, Poller::kBufferGroupId, &Connecting::OnReadComplete, ctx, 0,
+        [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+    ctx->key = key;
+    read_cancel_key_ = key;
     return;
   }
-#else
-  ctx->multishot = false;
-  event_manager_->GetPoller()->SubmitRead(&eventer_, ctx->iov.data(), iovcnt,
-                                          &Connecting::OnReadComplete, ctx,
-                                          ctx->key);
 #endif
   ctx->multishot = false;
-  event_manager_->GetPoller()->SubmitRead(&eventer_, ctx->iov.data(), iovcnt,
-                                          &Connecting::OnReadComplete, ctx,
-                                          ctx->key);
+  uint64_t key = event_manager_->GetPoller()->SubmitRead(
+      &eventer_, ctx->iov.data(), iovcnt, &Connecting::OnReadComplete, ctx, 0,
+      [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+  ctx->key = key;
+  read_cancel_key_ = key;
 }
 void Connecting::DoWriting() {
   if (!write_in_flight_ && output_buffer_.GetReadableBytes() > 0) {
@@ -191,15 +217,16 @@ void Connecting::SubmitWriteOnce() {
   auto* ctx = new WriteContext();
   ctx->self = this;
   ctx->to_send = output_buffer_.GetReadableBytes();
-  ctx->iov.iov_base =
-      const_cast<char*>(output_buffer_.GetReadablePosition());
+  ctx->iov.iov_base = const_cast<char*>(output_buffer_.GetReadablePosition());
   ctx->iov.iov_len = ctx->to_send;
-  ctx->key = next_io_key_++;
-  write_cancel_key_ = ctx->key;
+  // ctx->key = next_io_key_++; // Deprecated
+  // write_cancel_key_ = ctx->key;
   write_in_flight_ = true;
-  event_manager_->GetPoller()->SubmitWrite(&eventer_, &ctx->iov, 1,
-                                           &Connecting::OnWriteComplete, ctx,
-                                           ctx->key);
+  uint64_t key = event_manager_->GetPoller()->SubmitWrite(
+      &eventer_, &ctx->iov, 1, &Connecting::OnWriteComplete, ctx, 0,
+      [](void* ptr) { delete static_cast<WriteContext*>(ptr); });
+  ctx->key = key;
+  write_cancel_key_ = key;
 }
 void Connecting::DoClosing() {
   if (state_.load() != ConnectionState::kDisconnected) {
@@ -219,23 +246,43 @@ void Connecting::DoClosing() {
   }
 }
 void Connecting::DoWithError() const {
+  DoWithError(0);
+}
+
+void Connecting::DoWithError(int err) const {
 #ifdef __linux__
   int opt_val;
   auto opt_len = static_cast<socklen_t>(sizeof(opt_val));
   int saved_errno;
-  if (::getsockopt(Fd(), SOL_SOCKET, SO_ERROR,
-                   reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
+  if (err != 0) {
+    saved_errno = err;
+  } else if (::getsockopt(Fd(), SOL_SOCKET, SO_ERROR,
+                          reinterpret_cast<void*>(&opt_val), &opt_len) < 0) {
     saved_errno = errno;
   } else {
     saved_errno = opt_val;
   }
 #else
-  int saved_errno = errno;
+  int saved_errno = err != 0 ? err : errno;
 #endif
+  if (saved_errno == 0) {
+    LOG_WARN("Fd(%d) error callback but SO_ERROR=0", Fd());
+    return;
+  }
   char errno_info[512];
-  auto tmp = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
-  (void)tmp;
-  LOG_ERROR("Fd(%d) gets an error -- %s!!!", Fd(), errno_info);
+  const char* err_str = errno_info;
+#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
+  if (::strerror_r(saved_errno, errno_info, sizeof(errno_info)) != 0) {
+    ::snprintf(errno_info, sizeof(errno_info), "errno(%d)", saved_errno);
+  }
+#else
+  err_str = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
+#endif
+  if (err_str == nullptr || *err_str == '\0') {
+    err_str = "unknown";
+  }
+  LOG_ERROR("Fd(%d) gets an error -- errno(%d) -- %s!!!", Fd(), saved_errno,
+            err_str);
 }
 
 void Connecting::OnEstablishing() {
@@ -254,13 +301,18 @@ void Connecting::Send(const void* message, size_t msg_len) {
     return;
   }
   if (ConnectionState::kConnected == state_.load()) {
-    size_t prv_len = output_buffer_.GetReadableBytes();
-    if (HighWaterMarkCallback_ &&
-        prv_len + msg_len >= high_water_mark_ && prv_len < high_water_mark_) {
-      HighWaterMarkCallback_(*this, prv_len + msg_len);
+    size_t queued_len = output_buffer_.GetReadableBytes() +
+                        pending_output_buffer_.GetReadableBytes();
+    if (HighWaterMarkCallback_ && queued_len + msg_len >= high_water_mark_ &&
+        queued_len < high_water_mark_) {
+      HighWaterMarkCallback_(*this, queued_len + msg_len);
     }
-    output_buffer_.Append(message, msg_len);
-    SubmitWriteOnce();
+    if (write_in_flight_) {
+      pending_output_buffer_.Append(message, msg_len);
+    } else {
+      output_buffer_.Append(message, msg_len);
+      SubmitWriteOnce();
+    }
   }
 }
 void Connecting::Send(const std::string& message) {
@@ -302,12 +354,14 @@ void Connecting::CancelPendingIo() {
   if (read_in_flight_) {
     if (read_cancel_key_ != 0) {
       event_manager_->GetPoller()->CancelOp(read_cancel_key_);
+      read_cancel_key_ = 0;
     }
     read_in_flight_ = false;
   }
   if (write_in_flight_) {
     if (write_cancel_key_ != 0) {
       event_manager_->GetPoller()->CancelOp(write_cancel_key_);
+      write_cancel_key_ = 0;
     }
     write_in_flight_ = false;
   }

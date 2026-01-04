@@ -74,7 +74,7 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  Connect();
+  event_manager_->RunSoon([this]() { this->Connect(); });
 }
 void Connector::Restart() {
   SetState(ConnectState::kDisconnected);
@@ -86,7 +86,19 @@ void Connector::Stop() {
   can_connect_ = false;
   if (ConnectState::kConnecting == state_) {
     SetState(ConnectState::kDisconnected);
-    DoRetrying(RemoveAndReset());
+    int conn_fd = -1;
+    if (eventer_) {
+      conn_fd = eventer_->Fd();
+      // Wrap in shared_ptr to make lambda copy-constructible for std::function
+      std::shared_ptr<Eventer> shared_e = std::move(eventer_);
+      event_manager_->RunSoon([shared_e]() {
+        shared_e->DisableAllEvents();
+        shared_e->RemoveMyself();
+      });
+    }
+    if (conn_fd != -1) {
+      DoRetrying(conn_fd);
+    }
   }
 }
 void Connector::Connect() {
@@ -94,7 +106,21 @@ void Connector::Connect() {
       ::socket(server_address_.GetFamily(),
                SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
   if (sock_fd < 0) {
-    LOG_ERROR("Fail to initialize for connector!!!");
+    int saved_errno = errno;
+    char errbuf[128]{};
+    const char* err_str = errbuf;
+#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
+    if (::strerror_r(saved_errno, errbuf, sizeof(errbuf)) != 0) {
+      ::snprintf(errbuf, sizeof(errbuf), "errno(%d)", saved_errno);
+    }
+#else
+    err_str = ::strerror_r(saved_errno, errbuf, sizeof(errbuf));
+#endif
+    if (err_str == nullptr || *err_str == '\0') {
+      err_str = "unknown";
+    }
+    LOG_ERROR("Fail to initialize for connector!!! errno(%d - %s)",
+              saved_errno, err_str);
     return;
   }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
@@ -155,6 +181,9 @@ void Connector::DoRetrying(int conn_fd) {
   }
 }
 void Connector::DoWriting() {
+  if (!eventer_) {
+    return;
+  }
   LOG_DEBUG("Connector fd(%d) is writing.", eventer_->Fd());
   if (ConnectState::kConnecting == state_) {
     int conn_fd = RemoveAndReset();
@@ -199,6 +228,9 @@ void Connector::DoWriting() {
   }
 }
 void Connector::DoWithError() {
+  if (!eventer_) {
+    return;
+  }
   LOG_ERROR("Connector fd(%d) has the error with the state(%d).",
             eventer_->Fd(), state_);
   if (ConnectState::kConnecting == state_) {
@@ -212,11 +244,16 @@ void Connector::DoWithError() {
   }
 }
 int Connector::RemoveAndReset() {
+  if (!eventer_) {
+    return -1;
+  }
   eventer_->DisableAllEvents();
   eventer_->RemoveMyself();
   int conn_fd = eventer_->Fd();
   // eventer_->SetReadyDestroy();  // Set Eventer::is_handling_ flag off
-  event_manager_->RunSoon([this]() { this->eventer_.reset(); });
+  // Wrap in shared_ptr to make lambda copy-constructible for std::function
+  std::shared_ptr<Eventer> shared_e = std::move(eventer_);
+  event_manager_->RunSoon([shared_e]() {});
   // eventer_.reset();  // Invalid
   return conn_fd;
 }

@@ -99,15 +99,20 @@ void ServerReactorManager::Loop() {
 
 void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
-  auto new_connection = balancer_->PickOneEventManager()->InsertNewConnection(
-      socket_fd, GetLocalAddress(socket_fd),
-      peer_address);  // Pick a "Reactor" with the lowest load and insert the
-                      // new connection created just now into it
-  new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
-  new_connection->RegisterOnMessageCallback(MessageCallback_);
-  new_connection->RegisterWriteCallback(WriteCompleteCallback_);
-  new_connection->RegisterCloseCallback(CloseCallback_);
-  new_connection->OnEstablishing();  // Set the status flag on and start reading
+  auto* event_manager = balancer_->PickOneEventManager();
+  NetAddress local_address = GetLocalAddress(socket_fd);
+  event_manager->RunSoon([this, event_manager, socket_fd, local_address,
+                          peer_address]() {
+    auto new_connection = event_manager->InsertNewConnection(
+        socket_fd, local_address,
+        peer_address);  // Insert the new connection in its own I/O thread
+    new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+    new_connection->RegisterOnMessageCallback(MessageCallback_);
+    new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+    new_connection->RegisterCloseCallback(CloseCallback_);
+    new_connection
+        ->OnEstablishing();  // Set the status flag on and start reading
+  });
 }
 
 ClientReactorManager::ClientReactorManager(EventManager* event_manager,
@@ -122,18 +127,11 @@ ClientReactorManager::ClientReactorManager(EventManager* event_manager,
 }
 ClientReactorManager::~ClientReactorManager() {
   LOG_DEBUG("Client is destroying.");
-  Connecting* connection;
   {
     LockGuard lock_guard(connection_mutex_);
-    connection = connection_;
+    connection_ = nullptr;
   }
-  if (connection != nullptr) {
-    connection->RegisterCloseCallback(
-        [](Connecting& connection) { connection.ForceClose(); });
-    connection->ForceClose();
-  } else {
-    connector_.Stop();
-  }
+  connector_.Stop();
 }
 
 void ClientReactorManager::Connect() {
@@ -154,11 +152,16 @@ void ClientReactorManager::DisconnectInLoop() {
   should_retry_ = false;
   can_connect_ = false;
   connector_.Stop();
+  Connecting* connection_to_close = nullptr;
   {
     LockGuard lock_guard(connection_mutex_);
     if (connection_ != nullptr) {
-      connection_->ForceClose();
+      connection_to_close = connection_;
+      connection_ = nullptr;
     }
+  }
+  if (connection_to_close) {
+    connection_to_close->ForceClose();
   }
   event_manager_->Quit();
   event_manager_->WakeUp();
@@ -167,6 +170,17 @@ void ClientReactorManager::StopInLoop() {
   should_retry_ = false;
   can_connect_ = false;
   connector_.Stop();
+  Connecting* connection_to_close = nullptr;
+  {
+    LockGuard lock_guard(connection_mutex_);
+    if (connection_ != nullptr) {
+      connection_to_close = connection_;
+      connection_ = nullptr;
+    }
+  }
+  if (connection_to_close) {
+    connection_to_close->ForceClose();
+  }
   event_manager_->Quit();
   event_manager_->WakeUp();
 }

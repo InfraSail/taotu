@@ -17,7 +17,7 @@
 namespace taotu {
 namespace logger {
 
-bool Logger::is_initialized{false};
+std::atomic<bool> Logger::is_initialized{false};
 
 Logger* Logger::GetLogger(bool should_start) {
   // The unique actual "Logger" object
@@ -29,22 +29,30 @@ Logger* Logger::GetLogger(bool should_start) {
 }
 
 void Logger::EndLogger() {
-  is_stopping_ = true;
+  is_stopping_.store(true, std::memory_order_release);
   log_cond_var_.notify_one();
   if (thread_.joinable()) {
     thread_.join();
   }
   ::fclose(log_file_);
-  is_initialized = false;
+  is_initialized.store(false, std::memory_order_release);
 }
 
 void Logger::StartLogger(const std::string& log_file_name) {
   StartLogger(std::move(const_cast<std::string&>(log_file_name)));
 }
 void Logger::StartLogger(std::string&& log_file_name) {
-  if (!is_initialized) {
+  if (!is_initialized.load(std::memory_order_acquire)) {
     std::lock_guard<std::mutex> lock(log_mutex_);
-    if (!is_initialized) {
+    if (!is_initialized.load(std::memory_order_acquire)) {
+      is_stopping_.store(false, std::memory_order_release);
+      write_index_.store(0, std::memory_order_relaxed);
+      read_index_.store(0, std::memory_order_relaxed);
+      pending_.store(0, std::memory_order_relaxed);
+      for (size_t i = 0; i < kLogBufferSize; ++i) {
+        log_buffer_[i].seq.store(i, std::memory_order_relaxed);
+        log_buffer_[i].data.clear();
+      }
       log_file_name_ = log_file_name;
       // Use the name of the log tile given by the project instead of the
       // unavailable one given by user
@@ -60,7 +68,7 @@ void Logger::StartLogger(std::string&& log_file_name) {
       std::string file_header{"Current file sequence: 0\n"};
       ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       ::fflush(log_file_);
-      is_initialized = true;
+      is_initialized.store(true, std::memory_order_release);
       thread_ = std::thread([this]() { this->WriteDownLogs(); });
     }
   }
@@ -91,12 +99,11 @@ std::string Logger::UpdateLoggerTime() {
 
 void Logger::WriteDownLogs() {
   // Loop for flushing io buffer into disk
-  while (!is_stopping_ || read_index_ != wrote_index_) {
-    // Loop for flushing ring buffer into io buffer (flushing operation is
-    // very time-consuming so that something may happen in another thread
-    // during this time)
-    while (read_index_ < wrote_index_) {
-      int64_t cur_read_index = read_index_ + 1;
+  while (!is_stopping_.load(std::memory_order_acquire) ||
+         pending_.load(std::memory_order_acquire) != 0) {
+    // Drain available logs.
+    std::string tmp_buf;
+    while (Dequeue(&tmp_buf)) {
       // Change the log file to new one when the old is full (Always only
       // 2 log files in circulation)
       if (cur_log_file_byte_ >= kStandardLogFileByte) {
@@ -113,22 +120,19 @@ void Logger::WriteDownLogs() {
                                 std::to_string(cur_log_file_seq_) + "\n"};
         ::fwrite(file_header.c_str(), file_header.size(), 1, log_file_);
       }
-      // Copy the content of one bucket of ring buffer to io buffer
-      std::string& tmp_buf = log_buffer_[cur_read_index & (kLogBufferSize - 1)];
       size_t tmp_buf_len = tmp_buf.size();
       ::fwrite(tmp_buf.c_str(), tmp_buf_len, 1, log_file_);
       cur_log_file_byte_ += static_cast<int64_t>(tmp_buf_len);
       tmp_buf.clear();
-      // Update the index which was read last time
-      read_index_ = cur_read_index;
     }
     // Flush into disk (the status of ring buffer may change because of
     // spending much time here)
     ::fflush(log_file_);
     // Block when the buffer is empty
-    if (read_index_ == wrote_index_) {
+    if (pending_.load(std::memory_order_acquire) == 0) {
       std::unique_lock<std::mutex> lock(log_mutex_);
-      if (!is_stopping_ && read_index_ == wrote_index_) {
+      if (!is_stopping_.load(std::memory_order_acquire) &&
+          pending_.load(std::memory_order_acquire) == 0) {
         log_cond_var_.wait(lock);
       }
     }
@@ -143,13 +147,6 @@ void Logger::RecordLogs(const std::string& log_info) {
 }
 
 void Logger::RecordLogs(std::string&& log_info) {
-  // Give up recording this time because the logs which have been in the file
-  // are more valuable
-  if (write_index_.load() - read_index_ >= kLogBufferSize - 1) {
-    return;
-  }
-  // Update the index which can be written next time and get the previous value
-  const int64_t write_index = write_index_.fetch_add(1);
   // Splice this log record
   std::string time_now_str{UpdateLoggerTime()};
   std::string log_data(time_now_str.size() + log_info.size() + 2, ' ');
@@ -159,40 +156,83 @@ void Logger::RecordLogs(std::string&& log_info) {
                                    time_now_str.size() + 1),
            log_info.c_str(), log_info.size());
   log_data.back() = '\n';
-  // Put this log record into ring buffer
-  log_buffer_[write_index & (kLogBufferSize - 1)] = std::move(log_data);
-  // Block for a while if ring buffer is full (a small probability event)
-  while (write_index - 1L > wrote_index_) {
+  // Put this log record into ring buffer (drop if full)
+  (void)Enqueue(std::move(log_data));
+}
+
+bool Logger::Enqueue(std::string&& log_data) {
+  size_t pos = write_index_.load(std::memory_order_relaxed);
+  for (;;) {
+    LogSlot& slot = log_buffer_[pos & kLogBufferMask];
+    size_t seq = slot.seq.load(std::memory_order_acquire);
+    intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos);
+    if (diff == 0) {
+      if (write_index_.compare_exchange_weak(pos, pos + 1,
+                                             std::memory_order_relaxed)) {
+        slot.data = std::move(log_data);
+        slot.seq.store(pos + 1, std::memory_order_release);
+        size_t prev = pending_.fetch_add(1, std::memory_order_release);
+        if (prev == 0) {
+          std::lock_guard<std::mutex> lock(log_mutex_);
+          log_cond_var_.notify_one();
+        }
+        return true;
+      }
+    } else if (diff < 0) {
+      return false;  // queue full, drop log
+    } else {
+      pos = write_index_.load(std::memory_order_relaxed);
+    }
   }
-  // Update the index which was written last time
-  wrote_index_ = write_index;
-  // Awake flushing thread if ring buffer was empty before
-  if (write_index - 1L == read_index_) {
-    std::lock_guard<std::mutex> lock(log_mutex_);
-    log_cond_var_.notify_one();
+}
+
+bool Logger::Dequeue(std::string* out) {
+  size_t pos = read_index_.load(std::memory_order_relaxed);
+  for (;;) {
+    LogSlot& slot = log_buffer_[pos & kLogBufferMask];
+    size_t seq = slot.seq.load(std::memory_order_acquire);
+    intptr_t diff =
+        static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
+    if (diff == 0) {
+      if (read_index_.compare_exchange_weak(pos, pos + 1,
+                                            std::memory_order_relaxed)) {
+        out->swap(slot.data);
+        slot.data.clear();
+        slot.seq.store(pos + kLogBufferSize, std::memory_order_release);
+        pending_.fetch_sub(1, std::memory_order_release);
+        return true;
+      }
+    } else if (diff < 0) {
+      return false;  // queue empty
+    } else {
+      pos = read_index_.load(std::memory_order_relaxed);
+    }
   }
 }
 
 Logger::Logger()
     : is_stopping_(false),
-      read_index_(-1L),
       cur_log_file_byte_(0),
       cur_log_file_seq_(0),
-      wrote_index_(-1L),
       log_file_(NULL),
       time_now_sec_(0),
-      write_index_(0L) {
+      write_index_(0),
+      read_index_(0),
+      pending_(0) {
   (void)filler1_;
   (void)filler2_;
   (void)filler3_;
   (void)filler4_;
+  for (size_t i = 0; i < kLogBufferSize; ++i) {
+    log_buffer_[i].seq.store(i, std::memory_order_relaxed);
+  }
 }
 
 Logger::~Logger() {
   if (thread_.joinable()) {
     thread_.join();
   }
-  is_initialized = false;
+  is_initialized.store(false, std::memory_order_release);
 }
 
 }  // namespace logger

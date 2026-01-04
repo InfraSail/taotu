@@ -94,6 +94,7 @@ class Connecting : NonCopyableMovable {
 
   // Execute when error happens
   void DoWithError() const;
+  void DoWithError(int err) const;
 
   void StartReading() {
     SubmitReadOnce();
@@ -135,6 +136,7 @@ class Connecting : NonCopyableMovable {
   bool IsDisconnected() const {
     return ConnectionState::kDisconnected == state_.load();
   }
+  bool HasPendingIo() const { return read_in_flight_ || write_in_flight_; }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
@@ -222,6 +224,8 @@ class Connecting : NonCopyableMovable {
 
   // I/O buffer for output
   IoBuffer output_buffer_;
+  // Pending output while a write is in flight (avoid reallocating in-flight buf)
+  IoBuffer pending_output_buffer_;
 
   // Connection state (atomic)
   std::atomic<ConnectionState> state_;

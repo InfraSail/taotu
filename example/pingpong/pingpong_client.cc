@@ -41,10 +41,11 @@ PingpongClient::PingpongClient(const taotu::NetAddress& server_address,
   balancer_ = std::make_unique<taotu::Balancer>(&event_managers_, 0);
 }
 PingpongClient::~PingpongClient() {
+  sessions_.clear();
   size_t thread_count = event_managers_.size();
   for (size_t i = 1; i < thread_count; ++i) {
-    auto& event_manager = event_managers_[i];
-    event_manager->RunSoon([&event_manager]() { event_manager->Quit(); });
+    auto* event_manager = event_managers_[i];
+    event_manager->RunSoon([event_manager]() { event_manager->Quit(); });
   }
   for (size_t i = thread_count - 1; i > 0; --i) {
     delete event_managers_[i];
@@ -64,37 +65,75 @@ void PingpongClient::Start() {
   if (event_managers_.size() > 1) {
     event_managers_[1]->Work();
   }
+  for (size_t i = 2; i < event_managers_.size(); ++i) {
+    if (event_managers_[i]) {
+      event_managers_[i]->Quit();
+      event_managers_[i]->WakeUp();
+    }
+  }
+  for (size_t i = 2; i < event_managers_.size(); ++i) {
+    if (event_managers_[i]) {
+      event_managers_[i]->Join();
+    }
+  }
 }
 
 void PingpongClient::OnConnecting() {
   if (conn_num_.fetch_add(1) + 1 == session_count_) {
-    taotu::LOG_WARN("All connected!");
+    taotu::LOG_INFO("All connected!");
   }
 }
 
 void PingpongClient::OnDisconnecting(taotu::Connecting& connection) {
   if (conn_num_.fetch_sub(1) - 1 == 0) {
-    int64_t total_bytes_read = 0;
-    int64_t total_messages_read = 0;
-    for (const auto& session : sessions_) {
-      total_bytes_read += session->GetBytesRead();
-      total_messages_read += session->GetMessagesRead();
-    }
-    ::printf(
-        "Totally,\n%ldbytes read\nand %ldmessages read,\nthe average message "
-        "size is %lf,\nand the throughput is %lfMiB/s.\n",
-        total_bytes_read, total_messages_read,
-        static_cast<double>(total_bytes_read) /
-            static_cast<double>(total_messages_read),
-        static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
-    event_managers_[1]->RunSoon([this] { this->event_managers_[1]->Quit(); });
+    ReportStatsOnce();
+    RequestQuit();
   }
 }
 
 void PingpongClient::DoWithTimeout() {
-  taotu::LOG_WARN("All stopped!");
+  taotu::LOG_INFO("All stopped!");
+  // Print stats now, before attempting to disconnect (which may stall)
+  ReportStatsOnce();
+
+  // Stop sessions (best effort)
   for (auto& session : sessions_) {
     session->Stop();
+  }
+  // Force quit immediately - don't wait for disconnect callbacks
+  RequestQuit();
+}
+
+void PingpongClient::ReportStatsOnce() {
+  if (stats_reported_.exchange(true)) {
+    return;
+  }
+  int64_t total_bytes_read = 0;
+  int64_t total_messages_read = 0;
+  for (const auto& session : sessions_) {
+    total_bytes_read += session->GetBytesRead();
+    total_messages_read += session->GetMessagesRead();
+  }
+  ::printf(
+      "Totally,\n%ldbytes read\nand %ldmessages read,\nthe average message "
+      "size is %lf,\nand the throughput is %lfMiB/s.\n",
+      total_bytes_read, total_messages_read,
+      total_messages_read > 0 ? static_cast<double>(total_bytes_read) /
+                                    static_cast<double>(total_messages_read)
+                              : 0.0,
+      static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
+  ::fflush(stdout);
+}
+
+void PingpongClient::RequestQuit() {
+  if (quit_requested_.exchange(true)) {
+    return;
+  }
+  for (size_t i = 1; i < event_managers_.size(); ++i) {
+    if (event_managers_[i]) {
+      event_managers_[i]->Quit();
+      event_managers_[i]->WakeUp();
+    }
   }
 }
 
@@ -117,7 +156,7 @@ Session::Session(taotu::EventManager* event_manager,
 
 void Session::Start() { client_.Connect(); }
 
-void Session::Stop() { client_.Disconnect(); }
+void Session::Stop() { client_.Stop(); }
 
 void Session::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
