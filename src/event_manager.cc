@@ -262,6 +262,8 @@ void EventManager::DoExpiredTimeTasks(const TimePoint& return_time) {
 void EventManager::DestroyClosedConnections() {
   LockGuard lock_guard_cf(closed_fds_lock_);
   Fds remaining_fds;
+  static constexpr int kMaxPendingIoRetries = 1000;
+  static constexpr int kMaxPendingIoTimeoutMs = 2000;
   for (auto fd : closed_fds_) {
     std::unique_ptr<Connecting> connection_ptr;
     {
@@ -270,8 +272,15 @@ void EventManager::DestroyClosedConnections() {
       if (it != connection_map_.end() && it->second &&
           it->second->IsDisconnected()) {
         if (it->second->HasPendingIo()) {
-          remaining_fds.insert(fd);
-          continue;
+          int retries = it->second->GetPendingIoRetries();
+          int64_t waited_ms = it->second->GetPendingIoWaitMs();
+          if (retries < kMaxPendingIoRetries &&
+              waited_ms < kMaxPendingIoTimeoutMs) {
+            it->second->BumpPendingIoWait();
+            remaining_fds.insert(fd);
+            continue;
+          }
+          LOG_WARN("Force destroy connection fd(%d) after pending IO wait", fd);
         }
         connection_ptr = std::move(it->second);
         connection_map_.erase(it);

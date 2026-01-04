@@ -26,7 +26,9 @@ class HttpResponse {
 
   void SetContentType(const std::string& content_type);
 
-  void SetBody(const std::string& body) { body_ = body; }
+  void SetBody(const std::string& body);
+  void SetBodyLength(size_t length);
+  void SetIncludeBody(bool include);
 
   void AddHeaderField(const std::string& field_name,
                       const std::string& field_content);
@@ -47,6 +49,9 @@ class HttpResponse {
 
   bool should_close_;
   std::string body_;
+  bool include_body_;
+  bool has_content_length_override_;
+  size_t content_length_override_;
 };
 
 #endif  // !TAOTU_EXAMPLE_HTTP_SERVER_HTTP_RESPONSE_H_

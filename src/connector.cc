@@ -30,6 +30,25 @@ namespace {
 constexpr int kMaxRetryDelayMicroseconds = 30 * 1000 * 1000;
 constexpr int kInitRetryDelayMicroseconds = 500 * 1000;
 
+const char* StrError(int err, char* buf, size_t len) {
+#if defined(_GNU_SOURCE)
+  char* msg = ::strerror_r(err, buf, len);
+  if (msg == nullptr || *msg == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+    return buf;
+  }
+  return msg;
+#else
+  if (::strerror_r(err, buf, len) != 0) {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  if (*buf == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  return buf;
+#endif
+}
+
 struct sockaddr_in6 GetLocalSocketAddress6(int socket_fd) {
   struct sockaddr_in6 local_addr {};
   ::memset(&local_addr, 0, sizeof(local_addr));
@@ -108,14 +127,7 @@ void Connector::Connect() {
   if (sock_fd < 0) {
     int saved_errno = errno;
     char errbuf[128]{};
-    const char* err_str = errbuf;
-#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
-    if (::strerror_r(saved_errno, errbuf, sizeof(errbuf)) != 0) {
-      ::snprintf(errbuf, sizeof(errbuf), "errno(%d)", saved_errno);
-    }
-#else
-    err_str = ::strerror_r(saved_errno, errbuf, sizeof(errbuf));
-#endif
+    const char* err_str = StrError(saved_errno, errbuf, sizeof(errbuf));
     if (err_str == nullptr || *err_str == '\0') {
       err_str = "unknown";
     }
@@ -190,9 +202,9 @@ void Connector::DoWriting() {
     int error = GetSocketError(conn_fd);
     if (error) {
       char errno_info[512];
-      auto tmp = ::strerror_r(error, errno_info, sizeof(errno_info));
-      LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd, errno_info);
-      (void)tmp;
+      const char* err_str = StrError(error, errno_info, sizeof(errno_info));
+      LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
+               err_str ? err_str : errno_info);
       DoRetrying(conn_fd);
     } else if ([](int conn_fd) -> bool {
                  struct sockaddr_in6 local_address =
@@ -237,9 +249,9 @@ void Connector::DoWithError() {
     int conn_fd = RemoveAndReset();
     int error = GetSocketError(conn_fd);
     char errno_info[512];
-    auto tmp = ::strerror_r(error, errno_info, sizeof(errno_info));
-    (void)tmp;
-    LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd, errno_info);
+    const char* err_str = StrError(error, errno_info, sizeof(errno_info));
+    LOG_WARN("Connector fd(%d) has the error(%s)!", conn_fd,
+             err_str ? err_str : errno_info);
     DoRetrying(conn_fd);
   }
 }

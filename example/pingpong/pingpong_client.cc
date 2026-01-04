@@ -121,7 +121,9 @@ void PingpongClient::ReportStatsOnce() {
       total_messages_read > 0 ? static_cast<double>(total_bytes_read) /
                                     static_cast<double>(total_messages_read)
                               : 0.0,
-      static_cast<double>(total_bytes_read) / (timeout_ * 1024 * 1024));
+      timeout_ > 0 ? static_cast<double>(total_bytes_read) /
+                         (static_cast<double>(timeout_) * 1024 * 1024)
+                   : 0.0);
   ::fflush(stdout);
 }
 

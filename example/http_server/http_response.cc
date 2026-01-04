@@ -19,7 +19,10 @@ HttpResponse::HttpResponse(bool should_close)
       minor_version_(1),
       status_(200),
       status_message_("OK"),
-      should_close_(should_close) {}
+      should_close_(should_close),
+      include_body_(true),
+      has_content_length_override_(false),
+      content_length_override_(0) {}
 
 void HttpResponse::SetVersion(uint8_t major_version, uint8_t minor_version) {
   major_version_ = major_version;
@@ -35,6 +38,19 @@ void HttpResponse::SetStatus(uint16_t status,
 void HttpResponse::SetContentType(const std::string& content_type) {
   header_fields_["Content-Type"] = content_type;
 }
+
+void HttpResponse::SetBody(const std::string& body) {
+  body_ = body;
+  include_body_ = true;
+  has_content_length_override_ = false;
+}
+
+void HttpResponse::SetBodyLength(size_t length) {
+  content_length_override_ = length;
+  has_content_length_override_ = true;
+}
+
+void HttpResponse::SetIncludeBody(bool include) { include_body_ = include; }
 
 void HttpResponse::AddHeaderField(const std::string& field_name,
                                   const std::string& field_content) {
@@ -52,7 +68,9 @@ void HttpResponse::AppendToIoBuffer(taotu::IoBuffer* io_buffer) {
   if (should_close_) {
     io_buffer->Append("Connection: close\r\n", 19);
   } else {
-    ::snprintf(buf, sizeof(buf), "Content-Length: %zd\r\n", body_.size());
+    size_t content_length =
+        has_content_length_override_ ? content_length_override_ : body_.size();
+    ::snprintf(buf, sizeof(buf), "Content-Length: %zd\r\n", content_length);
     io_buffer->Append(buf, ::strlen(buf));
     io_buffer->Append("Connection: keep-alive\r\n", 24);
   }
@@ -65,5 +83,7 @@ void HttpResponse::AppendToIoBuffer(taotu::IoBuffer* io_buffer) {
   }
 
   io_buffer->Append("\r\n", 2);
-  io_buffer->Append(body_.c_str(), body_.size());
+  if (include_body_) {
+    io_buffer->Append(body_.c_str(), body_.size());
+  }
 }

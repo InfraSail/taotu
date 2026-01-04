@@ -13,6 +13,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -21,6 +22,27 @@
 #include "logger.h"
 
 namespace taotu {
+namespace {
+const char* StrError(int err, char* buf, size_t len) {
+#if defined(_GNU_SOURCE)
+  char* msg = ::strerror_r(err, buf, len);
+  if (msg == nullptr || *msg == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+    return buf;
+  }
+  return msg;
+#else
+  if (::strerror_r(err, buf, len) != 0) {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  if (*buf == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  return buf;
+#endif
+}
+}  // namespace
+
 Connecting::Connecting(EventManager* event_manager, int socket_fd,
                        const NetAddress& local_address,
                        const NetAddress& peer_address)
@@ -63,6 +85,12 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
   if (ctx->multishot && has_buffer) {
     ctx->buf_id = static_cast<uint16_t>(cqe->flags >> IORING_CQE_BUFFER_SHIFT);
   }
+  if (ctx->multishot && !more && !has_buffer) {
+    connecting->read_in_flight_ = false;
+    delete ctx;
+    op->context = nullptr;
+    return;
+  }
   if (!more) {
     connecting->read_in_flight_ = false;
   }
@@ -104,14 +132,7 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
       }
     } else if (err == ECONNRESET || err == ECONNABORTED || err == EPIPE) {
       char errbuf[128];
-      const char* err_str = errbuf;
-#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
-      if (::strerror_r(err, errbuf, sizeof(errbuf)) != 0) {
-        ::snprintf(errbuf, sizeof(errbuf), "errno(%d)", err);
-      }
-#else
-      err_str = ::strerror_r(err, errbuf, sizeof(errbuf));
-#endif
+      const char* err_str = StrError(err, errbuf, sizeof(errbuf));
       if (err_str == nullptr || *err_str == '\0') {
         err_str = "unknown";
       }
@@ -184,7 +205,13 @@ void Connecting::SubmitReadOnce() {
   ctx->iov[0].iov_len = ctx->writable;
   ctx->iov[1].iov_base = ctx->extra_buffer;
   ctx->iov[1].iov_len = sizeof(ctx->extra_buffer);
-  int iovcnt = ctx->writable < sizeof(ctx->extra_buffer) ? 2 : 1;
+  int iovcnt;
+  if (ctx->writable == 0) {
+    iovcnt = 1;
+    ctx->iov[0] = ctx->iov[1];
+  } else {
+    iovcnt = ctx->writable < sizeof(ctx->extra_buffer) ? 2 : 1;
+  }
   // ctx->key = next_io_key_++; // Deprecated: let Poller generate key
   // read_cancel_key_ = ctx->key; // Do not set yet
   read_in_flight_ = true;
@@ -194,6 +221,12 @@ void Connecting::SubmitReadOnce() {
     uint64_t key = event_manager_->GetPoller()->SubmitReadMultishot(
         &eventer_, Poller::kBufferGroupId, &Connecting::OnReadComplete, ctx, 0,
         [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+    if (key == 0) {
+      read_in_flight_ = false;
+      read_cancel_key_ = 0;
+      delete ctx;
+      return;
+    }
     ctx->key = key;
     read_cancel_key_ = key;
     return;
@@ -203,6 +236,12 @@ void Connecting::SubmitReadOnce() {
   uint64_t key = event_manager_->GetPoller()->SubmitRead(
       &eventer_, ctx->iov.data(), iovcnt, &Connecting::OnReadComplete, ctx, 0,
       [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+  if (key == 0) {
+    read_in_flight_ = false;
+    read_cancel_key_ = 0;
+    delete ctx;
+    return;
+  }
   ctx->key = key;
   read_cancel_key_ = key;
 }
@@ -226,6 +265,12 @@ void Connecting::SubmitWriteOnce() {
   uint64_t key = event_manager_->GetPoller()->SubmitWrite(
       &eventer_, &ctx->iov, 1, &Connecting::OnWriteComplete, ctx, 0,
       [](void* ptr) { delete static_cast<WriteContext*>(ptr); });
+  if (key == 0) {
+    write_in_flight_ = false;
+    write_cancel_key_ = 0;
+    delete ctx;
+    return;
+  }
   ctx->key = key;
   write_cancel_key_ = key;
 }
@@ -269,14 +314,7 @@ void Connecting::DoWithError(int err) const {
     return;
   }
   char errno_info[512];
-  const char* err_str = errno_info;
-#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
-  if (::strerror_r(saved_errno, errno_info, sizeof(errno_info)) != 0) {
-    ::snprintf(errno_info, sizeof(errno_info), "errno(%d)", saved_errno);
-  }
-#else
-  err_str = ::strerror_r(saved_errno, errno_info, sizeof(errno_info));
-#endif
+  const char* err_str = StrError(saved_errno, errno_info, sizeof(errno_info));
   if (err_str == nullptr || *err_str == '\0') {
     err_str = "unknown";
   }
