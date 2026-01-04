@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cstring>
 #include <string>
 
 #include "logger.h"
@@ -27,6 +28,18 @@
 namespace taotu {
 namespace {
 constexpr int kMaxEventAmount = 600000;
+
+NetAddress GetPeerAddress(int socket_fd) {
+  struct sockaddr_in6 local_addr;
+  ::memset(&local_addr, 0, sizeof(local_addr));
+  auto addr_len = static_cast<socklen_t>(sizeof(local_addr));
+  if (::getpeername(socket_fd, reinterpret_cast<struct sockaddr*>(&local_addr),
+                    &addr_len) < 0) {
+    LOG_ERROR("Fail to get local network info when accepting!!!");
+  }
+  return NetAddress(local_addr);
+}
+
 }  // namespace
 
 Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
@@ -62,9 +75,7 @@ void Acceptor::Listen() {
   LOG_DEBUG("Acceptor with fd(%d) is listening.", accept_socketer_.Fd());
 }
 
-void Acceptor::DoReading() {
-  SubmitAcceptOnce();
-}
+void Acceptor::DoReading() { SubmitAcceptOnce(); }
 
 void Acceptor::SubmitAcceptOnce() {
   if (!is_listening_) {
@@ -72,28 +83,30 @@ void Acceptor::SubmitAcceptOnce() {
   }
   auto* ctx = new AcceptContext();
   ctx->self = this;
-  ctx->len = sizeof(ctx->addr);
+  // Multishot requests with shared buffer are dangerous for address.
+  // We pass nullptr and retrieve address via getpeername() on completion.
   accept_eventer_.GetPoller()->SubmitAccept(
-      accept_socketer_.Fd(),
-      reinterpret_cast<struct sockaddr*>(&ctx->addr), &ctx->len, ctx,
-      &Acceptor::OnAcceptComplete, static_cast<uint64_t>(accept_socketer_.Fd()),
-      true /*multishot*/);
+      accept_socketer_.Fd(), nullptr, nullptr, ctx, &Acceptor::OnAcceptComplete,
+      0, true /*multishot*/, [](void* ptr) {
+        delete static_cast<AcceptContext*>(ptr);
+      });
   LOG_DEBUG("Submit accept on fd(%d)", accept_socketer_.Fd());
 }
 
-void Acceptor::OnAcceptComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op) {
+void Acceptor::OnAcceptComplete(struct io_uring_cqe* cqe,
+                                Poller::IoUringOp* op) {
   auto* ctx = static_cast<AcceptContext*>(op->context);
   auto* self = ctx->self;
   int conn_fd = static_cast<int>(cqe->res);
   if (conn_fd >= 0 && conn_fd <= kMaxEventAmount) {
-    NetAddress peer_address;
-    peer_address.SetRawAddr(ctx->addr);
     LOG_DEBUG("Accept fd(%d) -> new fd(%d)", self->accept_socketer_.Fd(),
               conn_fd);
     if (self->NewConnectionCallback_) {
+      NetAddress peer_address = GetPeerAddress(conn_fd);
       self->NewConnectionCallback_(conn_fd, peer_address);
     } else {
-      LOG_ERROR("Acceptor with fd(%d) is closing!!!", self->accept_socketer_.Fd());
+      LOG_ERROR("Acceptor with fd(%d) is closing!!!",
+                self->accept_socketer_.Fd());
       ::close(conn_fd);
     }
   } else {
@@ -102,7 +115,11 @@ void Acceptor::OnAcceptComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op)
     if (saved_errno != EAGAIN && saved_errno != EWOULDBLOCK &&
         saved_errno != EINTR) {
       char errbuf[128]{};
+#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
       (void)::strerror_r(saved_errno, errbuf, sizeof(errbuf));
+#else
+      (void)::strerror_r(saved_errno, errbuf, sizeof(errbuf));
+#endif
       LOG_ERROR(
           "Acceptor with Fd(%d) failed to accept a new TCP connection!!! "
           "errno(%d): %s",

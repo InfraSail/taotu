@@ -100,7 +100,7 @@ class EventManager : NonCopyableMovable {
   void Quit();
 
  private:
-  typedef std::unordered_map<int, Connecting*> ConnectionMap;
+  typedef std::unordered_map<int, std::unique_ptr<Connecting>> ConnectionMap;
   typedef std::unordered_set<int> Fds;
 
   // Only called by Work() or Loop()

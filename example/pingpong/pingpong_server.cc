@@ -11,10 +11,14 @@
 #include "pingpong_server.h"
 
 PingpongServer::PingpongServer(const taotu::NetAddress& listen_address,
-                               bool should_reuse_port, size_t io_thread_amount)
-    : event_managers_(io_thread_amount, new taotu::EventManager),
-      server_(std::make_unique<taotu::Server>(&event_managers_, listen_address,
-                                              should_reuse_port)) {
+                               bool should_reuse_port,
+                               size_t io_thread_amount) {
+  event_managers_.reserve(io_thread_amount + 1);
+  for (size_t i = 0; i < io_thread_amount + 1; ++i) {
+    event_managers_.push_back(new taotu::EventManager);
+  }
+  server_ = std::make_unique<taotu::Server>(&event_managers_, listen_address,
+                                            should_reuse_port);
   server_->SetConnectionCallback([this](taotu::Connecting& connection) {
     this->OnConnectionCallback(connection);
   });

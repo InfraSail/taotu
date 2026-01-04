@@ -44,6 +44,8 @@ class PingpongClient : public std::enable_shared_from_this<PingpongClient>,
   typedef std::vector<taotu::EventManager*> EventManagers;
 
   void DoWithTimeout();
+  void ReportStatsOnce();
+  void RequestQuit();
 
   EventManagers event_managers_;
   taotu::NetAddress server_address_;
@@ -52,6 +54,8 @@ class PingpongClient : public std::enable_shared_from_this<PingpongClient>,
   std::vector<std::unique_ptr<Session>> sessions_;
   std::vector<char> message_;
   std::atomic_size_t conn_num_;
+  std::atomic_bool stats_reported_{false};
+  std::atomic_bool quit_requested_{false};
   std::unique_ptr<taotu::Balancer> balancer_;
 };
 
