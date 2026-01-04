@@ -48,9 +48,24 @@ jobs:
         npm install
         make
         sudo make install
+        sudo mkdir -p /usr/local/lib/pkgconfig
+        cat <<'EOF' | sudo tee /usr/local/lib/pkgconfig/libllhttp.pc >/dev/null
+        prefix=/usr/local
+        exec_prefix=${prefix}
+        libdir=${prefix}/lib
+        includedir=${prefix}/include
+
+        Name: libllhttp
+        Description: llhttp parser
+        Version: 1.0.0
+        Libs: -L${libdir} -L${prefix}/lib64 -lllhttp
+        Cflags: -I${includedir}
+        EOF
     - name: cmake
       working-directory: build
-      run: cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release -G Ninja  ..
+      run: |
+        export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+        cmake -DProtobuf_DIR=`pkg-config --variable=prefix protobuf` -DCMAKE_BUILD_TYPE=Release -G Ninja  ..
     - name: ninja
       working-directory: build
       run: ninja
