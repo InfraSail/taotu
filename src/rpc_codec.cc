@@ -196,7 +196,7 @@ const std::string kUnknownMessageTypeStr = "UnknownMessageType";
 const std::string kParseErrorStr = "ParseError";
 const std::string kUnknownErrorStr = "UnknownError";
 
-}  // namespace taotu
+}  // namespace
 
 const std::string& RpcCodec::ErrorCode2String(ErrorCode error_code) {
   switch (error_code) {

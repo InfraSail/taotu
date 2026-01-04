@@ -64,7 +64,7 @@ class Eventer : NonCopyableMovable {
 
   Poller* GetPoller() { return poller_; }
 
-  // io_uring 完成回调
+  // io_uring completion callback.
   void OnReadDone(const ReadResult& res, TimePoint tp);
   void OnWriteDone(const WriteResult& res);
   void OnAcceptDone(int fd, const struct sockaddr_storage* addr, socklen_t len);

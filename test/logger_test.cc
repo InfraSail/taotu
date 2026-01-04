@@ -1,3 +1,5 @@
+#include "../src/logger.h"
+
 #include <gtest/gtest.h>
 
 #include <atomic>
@@ -7,7 +9,6 @@
 #include <vector>
 
 #include "../src/event_manager.h"
-#include "../src/logger.h"
 
 namespace {
 

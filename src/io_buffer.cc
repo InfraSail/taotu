@@ -252,7 +252,7 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   ssize_t n = ::recvmsg(fd, &message, MSG_NOSIGNAL);
   if (n < 0) {
     *tmp_errno = errno;
-    // EAGAIN/EWOULDBLOCK/EINTR 属于可忽略的非致命情况
+    // EAGAIN/EWOULDBLOCK/EINTR are ignorable, non-fatal conditions.
     if (*tmp_errno != EAGAIN && *tmp_errno != EWOULDBLOCK &&
         *tmp_errno != EINTR) {
       char errbuf[128];

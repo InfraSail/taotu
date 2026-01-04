@@ -38,7 +38,7 @@ EventManager::EventManager()
         return event_fd;
       }()) {
   wake_up_eventer_.RegisterReadCallback([this](const TimePoint&) {
-    // Drain eventfd to keep poll loop responsive.
+    // Drain eventfd to keep event loop responsive.
     while (true) {
       uint64_t msg = 0;
       ssize_t n = ::read(this->wake_up_eventer_.Fd(),

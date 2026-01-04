@@ -67,7 +67,7 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
     connecting->read_in_flight_ = false;
   }
   if (res > 0) {
-    // 更新输入缓冲区
+    // Update the input buffer.
     if (ctx->multishot && has_buffer) {
       auto* buf =
           connecting->event_manager_->GetPoller()->GetBuffer(ctx->buf_id);
@@ -90,11 +90,12 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
       connecting->OnMessageCallback_(*connecting, &connecting->input_buffer_,
                                      TimePoint{});
     }
-    // 连续提交下一次读（单次或 multishot 完结时重新投递）
+    // Submit the next read continuously (re-armed after one-shot or
+    // when multishot completes).
     if (!more) {
       connecting->SubmitReadOnce();
     }
-  } else if (res == 0) {  // 对端关闭
+  } else if (res == 0) {  // Peer closed.
     connecting->DoClosing();
   } else {  // res < 0
     if (err == EAGAIN || err == EWOULDBLOCK || err == EINTR) {
@@ -245,9 +246,7 @@ void Connecting::DoClosing() {
         Fd());  // Postpone the real destroying to the end of this loop
   }
 }
-void Connecting::DoWithError() const {
-  DoWithError(0);
-}
+void Connecting::DoWithError() const { DoWithError(0); }
 
 void Connecting::DoWithError(int err) const {
 #ifdef __linux__

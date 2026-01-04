@@ -24,7 +24,7 @@ jobs:
 
     - name: Install protobuf manually
       run: |
-        sudo apt-get install libtool pkg-config wget git ninja-build liburing-dev
+        sudo apt-get install libtool pkg-config wget git ninja-build liburing-dev clang-format clang-tidy
         git clone --recursive https://github.com/protocolbuffers/protobuf.git
         cd protobuf
         git checkout tags/v24.2
@@ -74,7 +74,11 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
         export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig:${PKG_CONFIG_PATH}"
-        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja 
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G Ninja \
+          -DTAOTU_ENABLE_CLANG_FORMAT=ON -DTAOTU_ENABLE_CLANG_TIDY=ON
+
+    - name: Clang format
+      run: cmake --build ${{github.workspace}}/build --target clang-format
 
     - name: Build
       # Build your program with the given configuration

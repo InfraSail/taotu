@@ -55,10 +55,10 @@ int Socketer::Accept(NetAddress* peer_address) const {
       static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
       &addr_len, SOCK_NONBLOCK | SOCK_CLOEXEC);
   if (conn_fd < 0 && IsAccept4Unavailable(errno)) {
-    conn_fd = ::accept(
-        socket_fd_,
-        static_cast<struct sockaddr*>(reinterpret_cast<void*>(&socket_address6)),
-        &addr_len);
+    conn_fd = ::accept(socket_fd_,
+                       static_cast<struct sockaddr*>(
+                           reinterpret_cast<void*>(&socket_address6)),
+                       &addr_len);
     if (conn_fd >= 0 && !SetNonBlockAndCloexec(conn_fd)) {
       LOG_WARN("SocketFd(%d) accept: fallback set nonblock/cloexec failed.",
                socket_fd_);

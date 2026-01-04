@@ -1,4 +1,5 @@
-# 优先使用带 ProtobufConfig.cmake 的安装，找不到再回退到模块模式（兼容 Ubuntu apt 包）
+# Prefer an installation that provides ProtobufConfig.cmake
+# If it’s not found, fall back to module mode (compatible with Ubuntu apt packages)
 FIND_PACKAGE(Protobuf CONFIG QUIET)
 IF(NOT Protobuf_FOUND)
   FIND_PACKAGE(Protobuf REQUIRED)
@@ -21,6 +22,9 @@ ADD_CUSTOM_COMMAND(
   DEPENDS ${TIME_PROTO}
 )
 
+SET_SOURCE_FILES_PROPERTIES(${TIME_SERVICE_PB_CPP_FILE}
+                             PROPERTIES SKIP_LINTING ON)
+
 SET(TIME_SERVICE_SYNC_CLIENT_SOURCE
   sync_client_main.cc
   ${TIME_SERVICE_PB_CPP_FILE}
@@ -30,6 +34,11 @@ SET(TIME_SERVICE_SERVER_SOURCE
   server_main.cc
   ${TIME_SERVICE_PB_CPP_FILE}
 )
+
+SET_SOURCE_FILES_PROPERTIES(
+  sync_client_main.cc
+  server_main.cc
+  PROPERTIES SKIP_LINTING ON)
 
 ADD_EXECUTABLE(time_service_sync_client ${TIME_SERVICE_SYNC_CLIENT_SOURCE})
 TARGET_LINK_LIBRARIES(time_service_sync_client PUBLIC protobuf::libprotobuf)

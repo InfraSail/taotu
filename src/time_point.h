@@ -29,7 +29,7 @@ class TimePoint {
   // Current time point
   TimePoint();
 
-  TimePoint(int64_t duration_microseconds, bool repeated = false);
+  explicit TimePoint(int64_t duration_microseconds, bool repeated = false);
 
   TimePoint(int64_t duration_microseconds, const TimePoint& start_time_point,
             bool repeated = false);

@@ -1,7 +1,7 @@
 /**
  * @file poller.cc
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief io_uring 版 I/O 复用实现。
+ * @brief io_uring-based I/O multiplexing implementation.
  * @date 2024-xx-xx
  *
  * @copyright Copyright (c) 2021 Sigma711
@@ -16,6 +16,7 @@
 #include <sys/eventfd.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <string>
 
 #include "eventer.h"
@@ -32,7 +33,7 @@ uint32_t GetIoUringEntries() {
     return kDefaultEntries;
   }
   char* end = nullptr;
-  unsigned long val = ::strtoul(env, &end, 10);
+  uint64_t val = ::strtoull(env, &end, 10);
   if (end == env || val == 0) {
     return kDefaultEntries;
   }
@@ -97,14 +98,14 @@ Poller::Poller() {
 }
 
 Poller::~Poller() {
-  // 清理仍在队列里的用户态操作对象，防止提前退出时泄漏。
+  // Clean up user-space ops still in the queue to avoid leaks on early exit.
   LOG_DEBUG("Destroying Poller, pending ops: %zu", ops_.size());
   {
     std::lock_guard<std::mutex> lock(ops_mutex_);
     for (auto& item : ops_) {
       CleanupOpContext(item.second.get());
     }
-    ops_.clear();  // unique_ptr 自动释放
+    ops_.clear();  // unique_ptr releases automatically.
   }
   UnregisterBuffers();
   ::io_uring_queue_exit(&ring_);
@@ -169,9 +170,9 @@ uint64_t Poller::SubmitRead(Eventer* eventer, struct iovec* iov, int iovcnt,
     LOG_ERROR("io_uring_get_sqe failed when submit read fd(%d)", eventer->Fd());
     return 0;
   }
-  auto op = std::make_unique<IoUringOp>(
-      IoUringOp{OpType::kRead, eventer, ctx, eventer->Fd(), completion, key,
-                context_deleter});
+  auto op = std::make_unique<IoUringOp>(IoUringOp{OpType::kRead, eventer, ctx,
+                                                  eventer->Fd(), completion,
+                                                  key, context_deleter});
   {
     std::lock_guard<std::mutex> lock(ops_mutex_);
     ops_[key] = std::move(op);
@@ -194,9 +195,9 @@ uint64_t Poller::SubmitReadMultishot(Eventer* eventer, int buf_group,
               eventer->Fd());
     return 0;
   }
-  auto op = std::make_unique<IoUringOp>(
-      IoUringOp{OpType::kRead, eventer, ctx, eventer->Fd(), completion, key,
-                context_deleter});
+  auto op = std::make_unique<IoUringOp>(IoUringOp{OpType::kRead, eventer, ctx,
+                                                  eventer->Fd(), completion,
+                                                  key, context_deleter});
   {
     std::lock_guard<std::mutex> lock(ops_mutex_);
     ops_[key] = std::move(op);
@@ -228,9 +229,9 @@ uint64_t Poller::SubmitWrite(Eventer* eventer, struct iovec* iov, int iovcnt,
               eventer->Fd());
     return 0;
   }
-  auto op = std::make_unique<IoUringOp>(
-      IoUringOp{OpType::kWrite, eventer, ctx, eventer->Fd(), completion, key,
-                context_deleter});
+  auto op = std::make_unique<IoUringOp>(IoUringOp{OpType::kWrite, eventer, ctx,
+                                                  eventer->Fd(), completion,
+                                                  key, context_deleter});
   {
     std::lock_guard<std::mutex> lock(ops_mutex_);
     ops_[key] = std::move(op);
@@ -250,9 +251,8 @@ uint64_t Poller::SubmitAccept(int fd, struct sockaddr* addr, socklen_t* addrlen,
     LOG_ERROR("io_uring_get_sqe failed when submit accept fd(%d)", fd);
     return 0;
   }
-  auto op = std::make_unique<IoUringOp>(
-      IoUringOp{OpType::kAccept, nullptr, ctx, fd, completion, key,
-                context_deleter});
+  auto op = std::make_unique<IoUringOp>(IoUringOp{
+      OpType::kAccept, nullptr, ctx, fd, completion, key, context_deleter});
   {
     std::lock_guard<std::mutex> lock(ops_mutex_);
     ops_[key] = std::move(op);
@@ -294,7 +294,7 @@ void Poller::CancelOp(uint64_t user_data_key) {
     return;
   }
   ::io_uring_prep_cancel64(sqe, user_data_key, 0);
-  ::io_uring_sqe_set_data64(sqe, 0);  // cancellation CQE 不需要处理
+  ::io_uring_sqe_set_data64(sqe, 0);  // Cancellation CQE needs no handling.
   SubmitPending();
 }
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
@@ -322,7 +322,7 @@ TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   HandleCqe(cqe, active_eventers);
   ::io_uring_cqe_seen(&ring_, cqe);
 
-  // 继续拉取所有已经完成的 CQE
+  // Continue draining all completed CQEs.
   const size_t limit = cqe_batch_limit_;
   const int64_t budget_us = cqe_time_budget_us_;
   size_t handled = 1;
@@ -482,7 +482,7 @@ void Poller::CancelPoll(Eventer* eventer) {
     return;
   }
   ::io_uring_prep_poll_remove(sqe, itr->second.poll_key);
-  ::io_uring_sqe_set_data(sqe, nullptr);  // 忽略取消结果
+  ::io_uring_sqe_set_data(sqe, nullptr);  // Ignore cancellation result.
   itr->second.armed = false;
   itr->second.poll_key = 0;
 }

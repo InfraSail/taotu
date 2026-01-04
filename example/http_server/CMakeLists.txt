@@ -7,7 +7,7 @@ SET(HTTP_SERVER_SOURCE
 
 
 FIND_PACKAGE(PkgConfig REQUIRED)
-# Ubuntu 提供的 pkg-config 名称为 libllhttp
+# On Ubuntu, the pkg-config package is named libllhttp
 PKG_CHECK_MODULES(LLHTTP REQUIRED libllhttp)
 
 ADD_EXECUTABLE(http_server ${HTTP_SERVER_SOURCE})

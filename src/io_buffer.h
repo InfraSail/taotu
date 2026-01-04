@@ -33,16 +33,6 @@
 
 namespace taotu {
 
-namespace {
-
-enum {
-  kReservedCapacity = 8,  // vacates 8 bytes in the front of the buffer as an
-                          // optional message header
-  kInitialCapacity = 1024,
-};
-
-}  // namespace
-
 #if defined(__clang__) || __GNUC_MINOR__ >= 6
 #pragma GCC diagnostic push
 #endif
@@ -58,6 +48,9 @@ enum {
  */
 class IoBuffer {
  public:
+  static constexpr size_t kReservedCapacity = 8;  // Optional header bytes.
+  static constexpr size_t kInitialCapacity = 1024;
+
   explicit IoBuffer(size_t initial_capacity = kInitialCapacity);
 
   void Swap(IoBuffer& io_buffer);

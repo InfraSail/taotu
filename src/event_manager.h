@@ -83,7 +83,7 @@ class EventManager : NonCopyableMovable {
   // Register a time task which should be done at certain intervals
   void RunEveryUntil(
       int64_t interval_microseconds, Timer::TimeCallback TimeTask,
-      const TimePoint& start_time_point = TimePoint::FNow(),
+      const TimePoint& start_time_point = TimePoint(TimePoint::FNow()),
       std::function<bool()> IsContinue = std::function<bool()>{});
 
   // Register a time task which should be done as soon as possible

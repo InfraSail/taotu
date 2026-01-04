@@ -191,8 +191,7 @@ bool Logger::Dequeue(std::string* out) {
   for (;;) {
     LogSlot& slot = log_buffer_[pos & kLogBufferMask];
     size_t seq = slot.seq.load(std::memory_order_acquire);
-    intptr_t diff =
-        static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
+    intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
     if (diff == 0) {
       if (read_index_.compare_exchange_weak(pos, pos + 1,
                                             std::memory_order_relaxed)) {

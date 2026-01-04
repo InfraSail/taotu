@@ -1,7 +1,7 @@
 /**
  * @file poller.h
  * @author Sigma711 (sigma711 at foxmail dot com)
- * @brief io_uring 版 I/O 复用封装。
+ * @brief io_uring-based I/O multiplexing wrapper.
  * @date 2024-xx-xx
  *
  * Copyright (c) 2021 Sigma711
@@ -56,14 +56,14 @@ class Poller : NonCopyableMovable {
   Poller();
   ~Poller();
 
-  // 轮询完成队列，返回当前时间点并填充活跃的 Eventer 列表
+  // Poll the completion queue, return current time, and fill active Eventers.
   TimePoint Poll(int timeout, EventerList* active_eventers);
 
   void AddEventer(Eventer* eventer);
   void ModifyEventer(Eventer* eventer);
   void RemoveEventer(Eventer* eventer);
 
-  // 直接提交 IO 操作
+  // Submit I/O operations directly.
   uint64_t SubmitRead(Eventer* eventer, struct iovec* iov, int iovcnt,
                       CompletionFn completion = nullptr, void* ctx = nullptr,
                       uint64_t key = 0,
@@ -100,8 +100,8 @@ class Poller : NonCopyableMovable {
 
  private:
   struct EventerState {
-    uint32_t mask{0};   // 关注的事件掩码（POLLIN/POLLOUT）
-    bool armed{false};  // 是否已有 pending 的 poll 请求
+    uint32_t mask{0};   // Event mask of interest (POLLIN/POLLOUT).
+    bool armed{false};  // Whether a poll request is already pending.
     uint64_t poll_key{0};
   };
 
