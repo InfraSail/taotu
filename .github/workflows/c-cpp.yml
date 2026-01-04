@@ -23,6 +23,7 @@ jobs:
         git clone --recursive https://github.com/protocolbuffers/protobuf.git
         cd protobuf
         git checkout tags/v24.2
+        git submodule update --init --recursive
         mkdir build
         cd build
         cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -G Ninja ..
