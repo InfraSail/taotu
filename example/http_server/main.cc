@@ -22,33 +22,34 @@ void OnRequest(const HttpParser& http_parser, HttpResponse* http_response) {
   const std::string method = http_parser.GetMethod();
   const bool is_head = method == "HEAD";
   if (method == "GET" || is_head) {
+    std::string body;
     if (http_parser.GetUrl() == "/") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html;charset=UTF-8");
-      if (!is_head) {
-        http_response->SetBody(
-            "<!DOCTYPE "
-            "html><html><head><title>taotu</title></head><body><h1>Hello</"
-            "h1>Welcome to taotu!</body></html>");
-      }
+      body =
+          "<!DOCTYPE "
+          "html><html><head><title>taotu</title></head><body><h1>Hello</"
+          "h1>Welcome to taotu!</body></html>";
     } else if (http_parser.GetUrl() == "/hello") {
       http_response->SetStatus(200, "OK");
       http_response->SetContentType("text/html;charset=UTF-8");
-      if (!is_head) {
-        http_response->SetBody(
-            "<!DOCTYPE "
-            "html><html><head><title>taotu</title></head><body><h1>Hello</"
-            "h1>Hello, taotu!</body></html>");
-      }
+      body =
+          "<!DOCTYPE "
+          "html><html><head><title>taotu</title></head><body><h1>Hello</"
+          "h1>Hello, taotu!</body></html>";
     } else {
       http_response->SetStatus(404, "Not Found");
       http_response->SetContentType("text/html;charset=UTF-8");
-      if (!is_head) {
-        http_response->SetBody(
-            "<!DOCTYPE "
-            "html><html><head><title>404</title></head><body><h1>Not "
-            "Found</h1></body></html>");
-      }
+      body =
+          "<!DOCTYPE "
+          "html><html><head><title>404</title></head><body><h1>Not "
+          "Found</h1></body></html>";
+    }
+    if (is_head) {
+      http_response->SetBodyLength(body.size());
+      http_response->SetIncludeBody(false);
+    } else {
+      http_response->SetBody(body);
     }
   } else {
     http_response->SetStatus(405, "Method Not Allowed");

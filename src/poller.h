@@ -93,6 +93,7 @@ class Poller : NonCopyableMovable {
   bool UseMultishotAccept() const { return use_multishot_accept_; }
   bool BuffersRegistered() const { return buffers_registered_; }
   size_t BufferCount() const { return kBufCount; }
+  // The buffer pointer is only valid during the completion callback.
   char* GetBuffer(uint16_t id);
   static constexpr int kBufferGroupId = 1;
   static constexpr size_t kBufSize = 64 * 1024;

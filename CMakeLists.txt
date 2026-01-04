@@ -9,16 +9,12 @@ OPTION(TAOTU_ENABLE_CLANG_TIDY "Enable clang-tidy checks." OFF)
 
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
-SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -fsanitize=leak -DTAOTU_DEBUG")
+SET(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -fsanitize=address -DTAOTU_DEBUG")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   message(STATUS "Darwin detected, not using -fsanitize=leak")
 else()
-  # The above SET(CMAKE_CXX_FLAGS_DEBUG ...) already includes -fsanitize=leak,
-  # so this conditional addition is now redundant if the intent is to always include it.
-  # If the intent was to *only* include it conditionally, the above line should be adjusted.
-  # For now, keeping the original conditional structure but noting the redundancy.
-  # set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=leak")
 endif()
 
 ADD_DEFINITIONS(-Wno-format-security)

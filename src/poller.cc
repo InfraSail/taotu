@@ -364,6 +364,13 @@ void Poller::HandleCqe(struct io_uring_cqe* cqe, EventerList* active_eventers) {
             reinterpret_cast<void*>(op_ptr->completion));
   bool keep_op = (cqe->flags & IORING_CQE_F_MORE) != 0;
   if (op_ptr->completion) {
+    if ((op_ptr->type == OpType::kRead || op_ptr->type == OpType::kWrite) &&
+        (op_ptr->eventer == nullptr ||
+         states_.find(op_ptr->eventer) == states_.end())) {
+      CleanupOpContext(op_ptr);
+      ReleaseBufferFromCqe(cqe);
+      return;
+    }
     LOG_DEBUG("Call completion for type(%d)", static_cast<int>(op_ptr->type));
     op_ptr->completion(cqe, op_ptr);
     ReleaseBufferFromCqe(cqe);

@@ -107,7 +107,7 @@ TEST(LoggerIntegration, LogsFromEventManagerThread) {
   std::remove(log_path.c_str());
 }
 
-TEST(LoggerRegression, ConcurrentStartIsSafe) {
+TEST(LoggerRegression, ConcurrentImplicitStartIsSafe) {
   const std::string log_path = "log.txt";
   std::remove(log_path.c_str());
 

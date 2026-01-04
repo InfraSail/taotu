@@ -127,6 +127,12 @@ class Connecting : NonCopyableMovable {
     return ConnectionState::kDisconnected == state_.load();
   }
   bool HasPendingIo() const { return read_in_flight_ || write_in_flight_; }
+  int GetPendingIoWaitMs() const { return pending_io_wait_ms_; }
+  int GetPendingIoRetries() const { return pending_io_retries_; }
+  void BumpPendingIoWait(int delta_ms = 1) {
+    pending_io_wait_ms_ += delta_ms;
+    ++pending_io_retries_;
+  }
 
   void SetTcpNoDelay(bool on) { socketer_.SetTcpNoDelay(on); }
 
@@ -226,6 +232,8 @@ class Connecting : NonCopyableMovable {
   uint64_t next_io_key_{1};
   uint64_t read_cancel_key_{0};
   uint64_t write_cancel_key_{0};
+  int pending_io_wait_ms_{0};
+  int pending_io_retries_{0};
 
   // Context for any object bound
   std::any context_;

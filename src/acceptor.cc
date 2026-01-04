@@ -29,6 +29,25 @@ namespace taotu {
 namespace {
 constexpr int kMaxEventAmount = 600000;
 
+const char* StrError(int err, char* buf, size_t len) {
+#if defined(_GNU_SOURCE)
+  char* msg = ::strerror_r(err, buf, len);
+  if (msg == nullptr || *msg == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+    return buf;
+  }
+  return msg;
+#else
+  if (::strerror_r(err, buf, len) != 0) {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  if (*buf == '\0') {
+    ::snprintf(buf, len, "errno(%d)", err);
+  }
+  return buf;
+#endif
+}
+
 NetAddress GetPeerAddress(int socket_fd) {
   struct sockaddr_in6 local_addr;
   ::memset(&local_addr, 0, sizeof(local_addr));
@@ -85,10 +104,15 @@ void Acceptor::SubmitAcceptOnce() {
   ctx->self = this;
   // Multishot requests with shared buffer are dangerous for address.
   // We pass nullptr and retrieve address via getpeername() on completion.
-  accept_eventer_.GetPoller()->SubmitAccept(
+  uint64_t key = accept_eventer_.GetPoller()->SubmitAccept(
       accept_socketer_.Fd(), nullptr, nullptr, ctx, &Acceptor::OnAcceptComplete,
       0, true /*multishot*/,
       [](void* ptr) { delete static_cast<AcceptContext*>(ptr); });
+  if (key == 0) {
+    delete ctx;
+    LOG_ERROR("Submit accept failed on fd(%d)", accept_socketer_.Fd());
+    return;
+  }
   LOG_DEBUG("Submit accept on fd(%d)", accept_socketer_.Fd());
 }
 
@@ -114,15 +138,14 @@ void Acceptor::OnAcceptComplete(struct io_uring_cqe* cqe,
     if (saved_errno != EAGAIN && saved_errno != EWOULDBLOCK &&
         saved_errno != EINTR) {
       char errbuf[128]{};
-#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
-      (void)::strerror_r(saved_errno, errbuf, sizeof(errbuf));
-#else
-      (void)::strerror_r(saved_errno, errbuf, sizeof(errbuf));
-#endif
+      const char* err_str = StrError(saved_errno, errbuf, sizeof(errbuf));
+      if (err_str == nullptr || *err_str == '\0') {
+        err_str = "unknown";
+      }
       LOG_ERROR(
           "Acceptor with Fd(%d) failed to accept a new TCP connection!!! "
           "errno(%d): %s",
-          self->accept_socketer_.Fd(), saved_errno, errbuf);
+          self->accept_socketer_.Fd(), saved_errno, err_str);
       if (saved_errno == EMFILE) {
         ::close(self->idle_fd_);
         self->idle_fd_ = ::accept(self->accept_socketer_.Fd(), NULL, NULL);
