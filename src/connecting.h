@@ -96,21 +96,11 @@ class Connecting : NonCopyableMovable {
   void DoWithError() const;
   void DoWithError(int err) const;
 
-  void StartReading() {
-    SubmitReadOnce();
-  }
-  void StopReading() {
-    CancelPendingIo();
-  }
-  void StartWriting() {
-    SubmitWriteOnce();
-  }
-  void StopWriting() {
-    CancelPendingIo();
-  }
-  void StopReadingWriting() {
-    CancelPendingIo();
-  }
+  void StartReading() { SubmitReadOnce(); }
+  void StopReading() { CancelPendingIo(); }
+  void StartWriting() { SubmitWriteOnce(); }
+  void StopWriting() { CancelPendingIo(); }
+  void StopReadingWriting() { CancelPendingIo(); }
 
   IoBuffer* GetInputBuffer() { return &input_buffer_; }
   IoBuffer* GetOutputBuffer() { return &output_buffer_; }
@@ -158,7 +148,7 @@ class Connecting : NonCopyableMovable {
 
   struct WriteContext {
     Connecting* self{nullptr};
-    struct iovec iov{};
+    struct iovec iov {};
     size_t to_send{0};
     uint64_t key{0};
   };
@@ -224,7 +214,8 @@ class Connecting : NonCopyableMovable {
 
   // I/O buffer for output
   IoBuffer output_buffer_;
-  // Pending output while a write is in flight (avoid reallocating in-flight buf)
+  // Pending output while a write is in flight (avoid reallocating in-flight
+  // buf)
   IoBuffer pending_output_buffer_;
 
   // Connection state (atomic)

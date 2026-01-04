@@ -140,8 +140,7 @@ void Eventer::OnWriteDone(const WriteResult& res) {
   }
 }
 
-void Eventer::OnAcceptDone(int fd, const struct sockaddr_storage*,
-                           socklen_t) {
+void Eventer::OnAcceptDone(int fd, const struct sockaddr_storage*, socklen_t) {
   if (fd < 0 && ErrorCallback_) {
     ErrorCallback_();
   } else if (ReadCallback_) {

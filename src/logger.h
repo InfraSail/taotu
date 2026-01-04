@@ -74,18 +74,8 @@ enum LogLevel {
   kDebug,
 };
 
-namespace {
-
-enum {
-
-  // 2GB
-  kLogFileMaxByte = 1024 * 1024 * 1024,
-
-  // Should be the Nth power of 2 (for "Disruptor")
-  kLogBufferSize = 1024 * 1024 * 16,
-};
-
-}  // namespace
+constexpr int64_t kLogFileMaxByte = 1024 * 1024 * 1024;  // 2GB
+constexpr size_t kLogBufferSize = 1024 * 1024 * 16;      // Power of two.
 
 // The file name of the log
 static const std::string kLogName{"log.txt"};

@@ -101,18 +101,18 @@ void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto* event_manager = balancer_->PickOneEventManager();
   NetAddress local_address = GetLocalAddress(socket_fd);
-  event_manager->RunSoon([this, event_manager, socket_fd, local_address,
-                          peer_address]() {
-    auto new_connection = event_manager->InsertNewConnection(
-        socket_fd, local_address,
-        peer_address);  // Insert the new connection in its own I/O thread
-    new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
-    new_connection->RegisterOnMessageCallback(MessageCallback_);
-    new_connection->RegisterWriteCallback(WriteCompleteCallback_);
-    new_connection->RegisterCloseCallback(CloseCallback_);
-    new_connection
-        ->OnEstablishing();  // Set the status flag on and start reading
-  });
+  event_manager->RunSoon(
+      [this, event_manager, socket_fd, local_address, peer_address]() {
+        auto new_connection = event_manager->InsertNewConnection(
+            socket_fd, local_address,
+            peer_address);  // Insert the new connection in its own I/O thread
+        new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
+        new_connection->RegisterOnMessageCallback(MessageCallback_);
+        new_connection->RegisterWriteCallback(WriteCompleteCallback_);
+        new_connection->RegisterCloseCallback(CloseCallback_);
+        new_connection
+            ->OnEstablishing();  // Set the status flag on and start reading
+      });
 }
 
 ClientReactorManager::ClientReactorManager(EventManager* event_manager,
@@ -138,7 +138,7 @@ void ClientReactorManager::Connect() {
   LOG_DEBUG("Connect to [ IP(%s) Port(%u) ].",
             connector_.GetServerAddress().GetIp().c_str(),
             connector_.GetServerAddress().GetPort());
-  should_retry_ = false;  // 不在客户端场景自动重连，避免退出时死循环
+  should_retry_ = false;  // No auto-reconnect for client mode to avoid loops.
   can_connect_ = true;
   connector_.Start();
 }

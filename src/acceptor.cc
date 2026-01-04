@@ -59,7 +59,7 @@ Acceptor::Acceptor(Poller* poller, const NetAddress& listen_address,
   accept_socketer_.BindAddress(listen_address);
   accept_eventer_.RegisterReadCallback([this](const TimePoint&) {
     this->SubmitAcceptOnce();
-  });  // 用来触发一次提交，真正 accept 走 io_uring
+  });  // Trigger one submission; the actual accept goes through io_uring.
   LOG_DEBUG("Acceptor init on fd(%d)", accept_socketer_.Fd());
 }
 Acceptor::~Acceptor() {
@@ -87,9 +87,8 @@ void Acceptor::SubmitAcceptOnce() {
   // We pass nullptr and retrieve address via getpeername() on completion.
   accept_eventer_.GetPoller()->SubmitAccept(
       accept_socketer_.Fd(), nullptr, nullptr, ctx, &Acceptor::OnAcceptComplete,
-      0, true /*multishot*/, [](void* ptr) {
-        delete static_cast<AcceptContext*>(ptr);
-      });
+      0, true /*multishot*/,
+      [](void* ptr) { delete static_cast<AcceptContext*>(ptr); });
   LOG_DEBUG("Submit accept on fd(%d)", accept_socketer_.Fd());
 }
 

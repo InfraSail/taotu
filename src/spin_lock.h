@@ -46,7 +46,7 @@ class MutexLock : NonCopyableMovable {
  */
 class LockGuard : NonCopyableMovable {
  public:
-  LockGuard(MutexLock& mutex_lock) : mutex_lock_(mutex_lock) {
+  explicit LockGuard(MutexLock& mutex_lock) : mutex_lock_(mutex_lock) {
     mutex_lock_.Lock();
   }
   ~LockGuard() { mutex_lock_.Unlock(); }

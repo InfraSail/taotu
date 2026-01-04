@@ -119,8 +119,8 @@ void Connector::Connect() {
     if (err_str == nullptr || *err_str == '\0') {
       err_str = "unknown";
     }
-    LOG_ERROR("Fail to initialize for connector!!! errno(%d - %s)",
-              saved_errno, err_str);
+    LOG_ERROR("Fail to initialize for connector!!! errno(%d - %s)", saved_errno,
+              err_str);
     return;
   }
   int status = ::connect(sock_fd, server_address_.GetNetAddress(),
