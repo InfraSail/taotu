@@ -93,7 +93,14 @@ Connector::Connector(EventManager* event_manager,
 
 void Connector::Start() {
   can_connect_ = true;
-  event_manager_->RunSoon([this]() { this->Connect(); });
+  std::weak_ptr<Connector> weak_self = shared_from_this();
+  event_manager_->RunSoon([weak_self]() {
+    if (auto self = weak_self.lock()) {
+      if (self->can_connect_) {
+        self->Connect();
+      }
+    }
+  });
 }
 void Connector::Restart() {
   SetState(ConnectState::kDisconnected);
@@ -183,8 +190,14 @@ void Connector::DoRetrying(int conn_fd) {
   SetState(ConnectState::kDisconnected);
   if (can_connect_) {
     LOG_DEBUG("Connector fd(%d) is retrying to connect.", conn_fd);
-    event_manager_->RunAfter(retry_delay_microseconds_,
-                             [this]() { this->Start(); });
+    std::weak_ptr<Connector> weak_self = shared_from_this();
+    event_manager_->RunAfter(retry_delay_microseconds_, [weak_self]() {
+      if (auto self = weak_self.lock()) {
+        if (self->can_connect_) {
+          self->Start();
+        }
+      }
+    });
     retry_delay_microseconds_ =
         std::min(retry_delay_microseconds_ * 2,
                  static_cast<int>(kMaxRetryDelayMicroseconds));

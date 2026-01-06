@@ -95,12 +95,10 @@ void PingpongClient::DoWithTimeout() {
   taotu::LOG_INFO("All stopped!");
   // Print stats now, before attempting to disconnect (which may stall)
   ReportStatsOnce();
-
   // Stop sessions (best effort)
   for (auto& session : sessions_) {
     session->Stop();
   }
-  // Force quit immediately - don't wait for disconnect callbacks
   RequestQuit();
 }
 
@@ -143,9 +141,7 @@ Session::Session(taotu::EventManager* event_manager,
                  const taotu::NetAddress& server_address,
                  const std::shared_ptr<PingpongClient>& master_client)
     : client_(event_manager, server_address, true),
-      master_client_(master_client),
-      bytes_read_(0),
-      messages_read_(0) {
+      master_client_(master_client) {
   client_.SetConnectionCallback([this](taotu::Connecting& connection) {
     this->OnConnectionCallback(connection);
   });
@@ -158,7 +154,7 @@ Session::Session(taotu::EventManager* event_manager,
 
 void Session::Start() { client_.Connect(); }
 
-void Session::Stop() { client_.Stop(); }
+void Session::Stop() { client_.StopWithoutQuit(); }
 
 void Session::OnConnectionCallback(taotu::Connecting& connection) {
   if (connection.IsConnected()) {
@@ -179,7 +175,8 @@ void Session::OnConnectionCallback(taotu::Connecting& connection) {
 
 void Session::OnMessageCallback(taotu::Connecting& connection,
                                 taotu::IoBuffer* io_buffer, taotu::TimePoint) {
-  ++messages_read_;
-  bytes_read_ += static_cast<int64_t>(io_buffer->GetReadableBytes());
+  messages_read_.fetch_add(1, std::memory_order_relaxed);
+  bytes_read_.fetch_add(static_cast<int64_t>(io_buffer->GetReadableBytes()),
+                        std::memory_order_relaxed);
   connection.Send(io_buffer);
 }

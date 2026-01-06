@@ -232,6 +232,9 @@ void IoBuffer::ShrinkWritableSpace(size_t len) {
 }
 
 ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
+  if (tmp_errno) {
+    *tmp_errno = 0;
+  }
   char extra_buffer[64 * 1024];  // 64k bytes
   struct iovec discrete_buffers[2];
   int writable_bytes = GetWritableBytes();
@@ -251,19 +254,28 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
   message.msg_iovlen = iov_seq;
   ssize_t n = ::recvmsg(fd, &message, MSG_NOSIGNAL);
   if (n < 0) {
-    *tmp_errno = errno;
+    int err = errno;
+    if (tmp_errno) {
+      *tmp_errno = err;
+    }
     // EAGAIN/EWOULDBLOCK/EINTR are ignorable, non-fatal conditions.
-    if (*tmp_errno != EAGAIN && *tmp_errno != EWOULDBLOCK &&
-        *tmp_errno != EINTR) {
+    if (err != EAGAIN && err != EWOULDBLOCK && err != EINTR) {
       char errbuf[128];
       errbuf[0] = '\0';
-      (void)::strerror_r(*tmp_errno, errbuf, sizeof(errbuf));
-      LOG_ERROR("Discrete reading in Fd(%d) failed!!! errno(%d): %s", fd,
-                *tmp_errno, errbuf);
+      char* msg = ::strerror_r(err, errbuf, sizeof(errbuf));
+      (void)msg;
+      LOG_ERROR("Discrete reading in Fd(%d) failed!!! errno(%d): %s", fd, err,
+                errbuf);
     }
   } else if (static_cast<size_t>(n) <= static_cast<size_t>(writable_bytes)) {
+    if (tmp_errno) {
+      *tmp_errno = 0;
+    }
     writing_index_ += n;
   } else {
+    if (tmp_errno) {
+      *tmp_errno = 0;
+    }
     writing_index_ = buffer_.size();
     Append(static_cast<const void*>(extra_buffer),
            static_cast<size_t>(n - writable_bytes));
@@ -273,13 +285,47 @@ ssize_t IoBuffer::ReadFromFd(int fd, int* tmp_errno) {
 ssize_t IoBuffer::ReadFromFd(int fd, size_t read_len, int* tmp_errno) {
   EnsureWritableSpace(read_len);
   ssize_t res = 0;
+  if (tmp_errno) {
+    *tmp_errno = 0;
+  }
   while (read_len > 0) {
     auto bytes_read =
         ::recv(fd, static_cast<void*>(const_cast<char*>(GetWritablePosition())),
                read_len, MSG_NOSIGNAL);
-    read_len -= bytes_read;
-    writing_index_ += bytes_read;
-    res += bytes_read;
+    if (bytes_read > 0) {
+      read_len -= static_cast<size_t>(bytes_read);
+      writing_index_ += static_cast<size_t>(bytes_read);
+      res += bytes_read;
+      if (tmp_errno) {
+        *tmp_errno = 0;
+      }
+      continue;
+    }
+    if (bytes_read == 0) {
+      if (tmp_errno) {
+        *tmp_errno = 0;
+      }
+      break;
+    }
+    int err = errno;
+    if (err == EINTR) {
+      if (tmp_errno) {
+        *tmp_errno = 0;
+      }
+      continue;
+    }
+    if (tmp_errno) {
+      *tmp_errno = err;
+    }
+    if (err == EAGAIN || err == EWOULDBLOCK) {
+      break;
+    }
+    char errbuf[128];
+    errbuf[0] = '\0';
+    char* msg = ::strerror_r(err, errbuf, sizeof(errbuf));
+    (void)msg;
+    LOG_ERROR("ReadFromFd(%d) failed!!! errno(%d): %s", fd, err, errbuf);
+    break;
   }
   return res;
 }

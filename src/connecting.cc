@@ -75,6 +75,11 @@ void Connecting::DoReading(TimePoint receive_time) {
 void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
                                 Poller::IoUringOp* op) {
   auto* ctx = static_cast<ReadContext*>(op->context);
+  if (!ctx || ctx->self == nullptr) {
+    delete ctx;
+    op->context = nullptr;
+    return;
+  }
   auto* connecting = ctx->self;
   ssize_t res = cqe->res;
   int err = res < 0 ? -res : 0;
@@ -87,6 +92,10 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
   }
   if (ctx->multishot && !more && !has_buffer) {
     connecting->read_in_flight_ = false;
+    connecting->CompletePendingIo();
+    if (connecting->read_ctx_ == ctx) {
+      connecting->read_ctx_ = nullptr;
+    }
     delete ctx;
     op->context = nullptr;
     return;
@@ -146,6 +155,10 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
     }
   }
   if (!more) {
+    connecting->CompletePendingIo();
+    if (connecting->read_ctx_ == ctx) {
+      connecting->read_ctx_ = nullptr;
+    }
     delete ctx;
     op->context = nullptr;
   }
@@ -154,6 +167,11 @@ void Connecting::OnReadComplete(struct io_uring_cqe* cqe,
 void Connecting::OnWriteComplete(struct io_uring_cqe* cqe,
                                  Poller::IoUringOp* op) {
   auto* ctx = static_cast<WriteContext*>(op->context);
+  if (!ctx || ctx->self == nullptr) {
+    delete ctx;
+    op->context = nullptr;
+    return;
+  }
   auto* connecting = ctx->self;
   connecting->write_in_flight_ = false;
   ssize_t res = cqe->res;
@@ -168,6 +186,10 @@ void Connecting::OnWriteComplete(struct io_uring_cqe* cqe,
       if (connecting->pending_output_buffer_.GetReadableBytes() > 0) {
         connecting->output_buffer_.Swap(connecting->pending_output_buffer_);
         connecting->SubmitWriteOnce();
+        connecting->CompletePendingIo();
+        if (connecting->write_ctx_ == ctx) {
+          connecting->write_ctx_ = nullptr;
+        }
         delete ctx;
         return;
       }
@@ -190,6 +212,10 @@ void Connecting::OnWriteComplete(struct io_uring_cqe* cqe,
       connecting->DoWithError(err);
     }
   }
+  connecting->CompletePendingIo();
+  if (connecting->write_ctx_ == ctx) {
+    connecting->write_ctx_ = nullptr;
+  }
   delete ctx;
   op->context = nullptr;
 }
@@ -200,6 +226,7 @@ void Connecting::SubmitReadOnce() {
   }
   auto* ctx = new ReadContext();
   ctx->self = this;
+  read_ctx_ = ctx;
   ctx->writable = input_buffer_.GetWritableBytes();
   ctx->iov[0].iov_base = const_cast<char*>(input_buffer_.GetWritablePosition());
   ctx->iov[0].iov_len = ctx->writable;
@@ -220,7 +247,13 @@ void Connecting::SubmitReadOnce() {
     ctx->multishot = true;
     uint64_t key = event_manager_->GetPoller()->SubmitReadMultishot(
         &eventer_, Poller::kBufferGroupId, &Connecting::OnReadComplete, ctx, 0,
-        [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+        [](void* ptr) {
+          auto* ctx = static_cast<ReadContext*>(ptr);
+          if (ctx && ctx->self) {
+            ctx->self->CompletePendingIo();
+          }
+          delete ctx;
+        });
     if (key == 0) {
       read_in_flight_ = false;
       read_cancel_key_ = 0;
@@ -229,13 +262,20 @@ void Connecting::SubmitReadOnce() {
     }
     ctx->key = key;
     read_cancel_key_ = key;
+    BumpPendingIo();
     return;
   }
 #endif
   ctx->multishot = false;
   uint64_t key = event_manager_->GetPoller()->SubmitRead(
       &eventer_, ctx->iov.data(), iovcnt, &Connecting::OnReadComplete, ctx, 0,
-      [](void* ptr) { delete static_cast<ReadContext*>(ptr); });
+      [](void* ptr) {
+        auto* ctx = static_cast<ReadContext*>(ptr);
+        if (ctx && ctx->self) {
+          ctx->self->CompletePendingIo();
+        }
+        delete ctx;
+      });
   if (key == 0) {
     read_in_flight_ = false;
     read_cancel_key_ = 0;
@@ -244,6 +284,7 @@ void Connecting::SubmitReadOnce() {
   }
   ctx->key = key;
   read_cancel_key_ = key;
+  BumpPendingIo();
 }
 void Connecting::DoWriting() {
   if (!write_in_flight_ && output_buffer_.GetReadableBytes() > 0) {
@@ -256,6 +297,7 @@ void Connecting::SubmitWriteOnce() {
   }
   auto* ctx = new WriteContext();
   ctx->self = this;
+  write_ctx_ = ctx;
   ctx->to_send = output_buffer_.GetReadableBytes();
   ctx->iov.iov_base = const_cast<char*>(output_buffer_.GetReadablePosition());
   ctx->iov.iov_len = ctx->to_send;
@@ -264,7 +306,13 @@ void Connecting::SubmitWriteOnce() {
   write_in_flight_ = true;
   uint64_t key = event_manager_->GetPoller()->SubmitWrite(
       &eventer_, &ctx->iov, 1, &Connecting::OnWriteComplete, ctx, 0,
-      [](void* ptr) { delete static_cast<WriteContext*>(ptr); });
+      [](void* ptr) {
+        auto* ctx = static_cast<WriteContext*>(ptr);
+        if (ctx && ctx->self) {
+          ctx->self->CompletePendingIo();
+        }
+        delete ctx;
+      });
   if (key == 0) {
     write_in_flight_ = false;
     write_cancel_key_ = 0;
@@ -273,6 +321,7 @@ void Connecting::SubmitWriteOnce() {
   }
   ctx->key = key;
   write_cancel_key_ = key;
+  BumpPendingIo();
 }
 void Connecting::DoClosing() {
   if (state_.load() != ConnectionState::kDisconnected) {
@@ -390,16 +439,26 @@ void Connecting::ForceCloseAfter(int64_t delay_microseconds) {
 void Connecting::CancelPendingIo() {
   if (read_in_flight_) {
     if (read_cancel_key_ != 0) {
-      event_manager_->GetPoller()->CancelOp(read_cancel_key_);
+      (void)event_manager_->GetPoller()->CancelOp(read_cancel_key_);
       read_cancel_key_ = 0;
     }
+    if (read_ctx_) {
+      read_ctx_->self = nullptr;
+      read_ctx_ = nullptr;
+    }
+    CompletePendingIo();
     read_in_flight_ = false;
   }
   if (write_in_flight_) {
     if (write_cancel_key_ != 0) {
-      event_manager_->GetPoller()->CancelOp(write_cancel_key_);
+      (void)event_manager_->GetPoller()->CancelOp(write_cancel_key_);
       write_cancel_key_ = 0;
     }
+    if (write_ctx_) {
+      write_ctx_->self = nullptr;
+      write_ctx_ = nullptr;
+    }
+    CompletePendingIo();
     write_in_flight_ = false;
   }
 }

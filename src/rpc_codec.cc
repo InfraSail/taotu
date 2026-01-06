@@ -122,11 +122,15 @@ void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
   const ssize_t min_header_len =
       static_cast<ssize_t>(kMinMessageLength + kHeaderLength);
   while (static_cast<size_t>(min_header_len) > io_buffer->GetReadableBytes()) {
-    io_buffer->ReadFromFd(
+    ssize_t n = io_buffer->ReadFromFd(
         sock_fd, min_header_len - io_buffer->GetReadableBytes(), &saved_errno);
+    if (n <= 0) {
+      return;
+    }
     if (saved_errno != 0) {
       LOG_ERROR("RpcCodec::OnMessage() - Fd(%d) with errno(%d)", sock_fd,
                 saved_errno);
+      return;
     }
   }
   const int32_t len = io_buffer->GetReadableInt32();
@@ -137,10 +141,18 @@ void RpcCodec::OnMessage(int sock_fd, IoBuffer* io_buffer,
   }
   while (static_cast<size_t>(kHeaderLength + len) >
          io_buffer->GetReadableBytes()) {
-    io_buffer->ReadFromFd(sock_fd,
-                          static_cast<size_t>(kHeaderLength + len) -
-                              io_buffer->GetReadableBytes(),
-                          &saved_errno);
+    ssize_t n = io_buffer->ReadFromFd(sock_fd,
+                                      static_cast<size_t>(kHeaderLength + len) -
+                                          io_buffer->GetReadableBytes(),
+                                      &saved_errno);
+    if (n <= 0) {
+      return;
+    }
+    if (saved_errno != 0) {
+      LOG_ERROR("RpcCodec::OnMessage() - Fd(%d) with errno(%d)", sock_fd,
+                saved_errno);
+      return;
+    }
   }
   if (AsyncRawCallback_ &&
       !SyncRawCallback_(sock_fd,

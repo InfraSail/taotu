@@ -18,11 +18,11 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
-#include <mutex>
 #include <unordered_map>
 #include <vector>
 
 #include "non_copyable_movable.h"
+#include "spin_lock.h"
 #include "time_point.h"
 
 #ifndef __linux__
@@ -81,7 +81,7 @@ class Poller : NonCopyableMovable {
                         uint64_t key = 0, bool multishot = false,
                         ContextDeleter context_deleter = nullptr);
 
-  void CancelOp(uint64_t user_data_key);
+  bool CancelOp(uint64_t user_data_key);
 
   // Limit CQE handling per poll to avoid starving timers.
   void SetCqeBatchLimit(size_t limit) { cqe_batch_limit_ = limit; }
@@ -122,7 +122,7 @@ class Poller : NonCopyableMovable {
   std::unordered_map<Eventer*, EventerState> states_;
   std::unordered_map<uint64_t, std::unique_ptr<IoUringOp>> ops_;
   std::atomic_uint64_t next_key_{1};
-  mutable std::mutex ops_mutex_;
+  mutable MutexLock ops_mutex_;
   bool use_sqpoll_{false};
   bool use_multishot_accept_{true};
   bool buffers_registered_{false};

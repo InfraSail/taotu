@@ -34,6 +34,12 @@ class MutexLock : NonCopyableMovable {
     }
   }
   void Unlock() { value_.store(true); }
+  void lock() { Lock(); }
+  void unlock() { Unlock(); }
+  bool try_lock() {
+    bool exp = true;
+    return value_.compare_exchange_strong(exp, false);
+  }
 
  private:
   std::atomic_bool value_;
