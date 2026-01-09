@@ -13,6 +13,7 @@
 #define TAOTU_SRC_CONNECTOR_H_
 
 #include <functional>
+#include <memory>
 
 #include "connecting.h"
 #include "event_manager.h"
@@ -28,7 +29,8 @@ namespace taotu {
  * threads).
  *
  */
-class Connector : NonCopyableMovable {
+class Connector : public std::enable_shared_from_this<Connector>,
+                  public NonCopyableMovable {
  public:
   typedef std::function<void(int)> NewConnectionCallback;
 

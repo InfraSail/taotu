@@ -122,7 +122,9 @@ class ServerReactorManager : NonCopyableMovable {
  * do by some flags and different callback functions.
  *
  */
-class ClientReactorManager : NonCopyableMovable {
+class ClientReactorManager
+    : public NonCopyableMovable,
+      public std::enable_shared_from_this<ClientReactorManager> {
  public:
   typedef Connecting::NormalCallback NormalCallback;
   typedef Connecting::OnMessageCallback MessageCallback;
@@ -140,6 +142,8 @@ class ClientReactorManager : NonCopyableMovable {
   // Stop the TCP connection (if because of acceptable exceptions in
   // hardware-level, just retry)
   void Stop();
+  // Stop the TCP connection but keep the event loop running (shared loops).
+  void StopWithoutQuit();
 
   void SetConnectionCallback(const NormalCallback& cb) {
     ConnectionCallback_ = cb;
@@ -154,6 +158,7 @@ class ClientReactorManager : NonCopyableMovable {
  private:
   void DisconnectInLoop();
   void StopInLoop();
+  void StopInLoopWithoutQuit();
 
   // Build a new TCP connection and insert it into the corresponding I/O thread
   void LaunchNewConnectionCallback(int socket_fd);
@@ -162,7 +167,7 @@ class ClientReactorManager : NonCopyableMovable {
   EventManager* event_manager_;
 
   // Connector for creating a new TCP connection in main thread
-  Connector connector_;
+  std::shared_ptr<Connector> connector_;
 
   // Connection created
   Connecting* connection_;

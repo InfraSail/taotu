@@ -24,7 +24,7 @@ ThreadPool::ThreadPool(size_t thread_amount)
       while (true) {
         std::function<void()> CurTask;
         {
-          std::unique_lock<std::mutex> lock(this->pdt_csm_mutex_);
+          std::unique_lock<MutexLock> lock(this->pdt_csm_mutex_);
           this->pdt_csm_cond_var_.wait(lock, [this]() {
             return this->should_stop_ ||
                    !(this->task_queues_[this->que_pdt_idx_].empty()) ||
@@ -43,7 +43,7 @@ ThreadPool::ThreadPool(size_t thread_amount)
                   .empty()) {  // If there is no task for consuming, make the
                                // index of the task queue for producers as the
                                // index of the task queue for consumers
-            std::lock_guard<std::mutex> csm_lock(this->que_csm_mutex_);
+            LockGuard csm_lock(this->que_csm_mutex_);
             this->que_pdt_idx_ = que_csm_idx;
           }
           que_csm_idx =
@@ -64,7 +64,7 @@ ThreadPool::ThreadPool(size_t thread_amount)
 }
 ThreadPool::~ThreadPool() {
   {
-    std::lock_guard<std::mutex> lock(pdt_csm_mutex_);
+    LockGuard lock(pdt_csm_mutex_);
     should_stop_ = true;
     pdt_csm_cond_var_.notify_all();
   }

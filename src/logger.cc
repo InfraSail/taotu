@@ -43,7 +43,7 @@ void Logger::StartLogger(const std::string& log_file_name) {
 }
 void Logger::StartLogger(std::string&& log_file_name) {
   if (!is_initialized.load(std::memory_order_acquire)) {
-    std::lock_guard<std::mutex> lock(log_mutex_);
+    LockGuard lock(log_mutex_);
     if (!is_initialized.load(std::memory_order_acquire)) {
       is_stopping_.store(false, std::memory_order_release);
       write_index_.store(0, std::memory_order_relaxed);
@@ -85,7 +85,7 @@ void Logger::RecordLogs(LogLevel log_type, std::string&& log_info) {
 std::string Logger::UpdateLoggerTime() {
   time_t tmp_time;
   ::time(&tmp_time);
-  std::lock_guard<std::mutex> lock(time_mutex_);
+  LockGuard lock(time_mutex_);
   if (tmp_time > time_now_sec_) {
     time_now_sec_ = tmp_time;
     // In consideration of time zone
@@ -130,7 +130,7 @@ void Logger::WriteDownLogs() {
     ::fflush(log_file_);
     // Block when the buffer is empty
     if (pending_.load(std::memory_order_acquire) == 0) {
-      std::unique_lock<std::mutex> lock(log_mutex_);
+      std::unique_lock<MutexLock> lock(log_mutex_);
       if (!is_stopping_.load(std::memory_order_acquire) &&
           pending_.load(std::memory_order_acquire) == 0) {
         log_cond_var_.wait(lock);
@@ -150,11 +150,11 @@ void Logger::RecordLogs(std::string&& log_info) {
   // Splice this log record
   std::string time_now_str{UpdateLoggerTime()};
   std::string log_data(time_now_str.size() + log_info.size() + 2, ' ');
-  ::memcpy(reinterpret_cast<void*>(const_cast<char*>(log_data.c_str())),
-           time_now_str.c_str(), time_now_str.size());
-  ::memcpy(reinterpret_cast<void*>(const_cast<char*>(log_data.c_str()) +
-                                   time_now_str.size() + 1),
-           log_info.c_str(), log_info.size());
+  char* buffer = log_data.data();
+  ::memcpy(reinterpret_cast<void*>(buffer), time_now_str.data(),
+           time_now_str.size());
+  ::memcpy(reinterpret_cast<void*>(buffer + time_now_str.size() + 1),
+           log_info.data(), log_info.size());
   log_data.back() = '\n';
   // Put this log record into ring buffer (drop if full)
   (void)Enqueue(std::move(log_data));
@@ -173,7 +173,7 @@ bool Logger::Enqueue(std::string&& log_data) {
         slot.seq.store(pos + 1, std::memory_order_release);
         size_t prev = pending_.fetch_add(1, std::memory_order_release);
         if (prev == 0) {
-          std::lock_guard<std::mutex> lock(log_mutex_);
+          LockGuard lock(log_mutex_);
           log_cond_var_.notify_one();
         }
         return true;
@@ -228,6 +228,10 @@ Logger::Logger()
 }
 
 Logger::~Logger() {
+  if (is_initialized.load(std::memory_order_acquire)) {
+    EndLogger();
+    return;
+  }
   if (thread_.joinable()) {
     thread_.join();
   }

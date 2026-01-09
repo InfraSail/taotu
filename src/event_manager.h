@@ -128,7 +128,10 @@ class EventManager : NonCopyableMovable {
   mutable MutexLock connection_map_mutex_lock_;
 
   // The flag for deciding whether the event loop should quit
-  std::atomic_bool should_quit_;
+  std::atomic_bool should_quit_{false};
+
+  // The flag for deciding whether the event loop is destroying
+  std::atomic_bool is_destroying_{false};
 
   // List for active events returned from the I/O multiplexing waiting each loop
   Poller::EventerList active_events_;

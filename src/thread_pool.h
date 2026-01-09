@@ -28,6 +28,7 @@
 
 #include "logger.h"
 #include "non_copyable_movable.h"
+#include "spin_lock.h"
 
 namespace taotu {
 
@@ -53,7 +54,7 @@ class ThreadPool : NonCopyableMovable {
       auto task_future_pkg = std::make_shared<std::packaged_task<Function>>(
           std::forward<std::function<Function>>(task));
       auto result_future = task_future_pkg->get_future();
-      std::lock_guard<std::mutex> lock(que_csm_mutex_);
+      LockGuard lock(que_csm_mutex_);
       task_queues_[que_pdt_idx_].emplace(
           [task_future_pkg]() { (*task_future_pkg)(); });
       pdt_csm_cond_var_
@@ -72,14 +73,14 @@ class ThreadPool : NonCopyableMovable {
   size_t que_pdt_idx_;
 
   // Mutex lock protecting the 2 task queues
-  std::mutex pdt_csm_mutex_;
+  MutexLock pdt_csm_mutex_;
 
   // Condition Variable for blocking the current leisure thread (and release the
   // lock temporarily) and awaking a ready thread
-  std::condition_variable pdt_csm_cond_var_;
+  std::condition_variable_any pdt_csm_cond_var_;
 
   // Mutex lock protecting the task queue for consumers
-  std::mutex que_csm_mutex_;
+  MutexLock que_csm_mutex_;
 
   bool should_stop_;
 };

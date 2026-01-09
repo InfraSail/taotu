@@ -61,6 +61,7 @@ EventManager::EventManager()
   wake_up_eventer_.EnableReadEvents();
 }
 EventManager::~EventManager() {
+  is_destroying_.store(true, std::memory_order_release);
   Quit();
   if (thread_ && thread_->joinable()) {
     thread_->join();
@@ -91,6 +92,13 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
   Connecting* ref_conn = nullptr;
   {
     LockGuard lock_guard(connection_map_mutex_lock_);
+    auto existing = connection_map_.find(socket_fd);
+    if (existing != connection_map_.end()) {
+      LOG_WARN("Connection fd(%d) already tracked, drop new connection.",
+               socket_fd);
+      ::close(socket_fd);
+      return nullptr;
+    }
     if (CreateConnectionCallback_) {
       // CreateConnectionCallback_ returns raw pointer, wrap it in unique_ptr
       connection_map_[socket_fd].reset(CreateConnectionCallback_(
@@ -113,6 +121,9 @@ Connecting* EventManager::InsertNewConnection(int socket_fd,
 
 void EventManager::RunAt(const TimePoint& time_point,
                          Timer::TimeCallback TimeTask) {
+  if (is_destroying_.load(std::memory_order_acquire)) {
+    return;
+  }
   const TimePoint& tmp_time_point = time_point;
   timer_.AddTimeTask(time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
@@ -123,6 +134,9 @@ void EventManager::RunAt(const TimePoint& time_point,
 }
 void EventManager::RunAfter(int64_t delay_microseconds,
                             Timer::TimeCallback TimeTask) {
+  if (is_destroying_.load(std::memory_order_acquire)) {
+    return;
+  }
   TimePoint tmp_time_point{delay_microseconds};
   timer_.AddTimeTask(tmp_time_point, std::move(TimeTask));
   if (timer_.GetMinTimeDuration() >=
@@ -135,6 +149,9 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
                                  Timer::TimeCallback TimeTask,
                                  const TimePoint& start_time_point,
                                  std::function<bool()> IsContinue) {
+  if (is_destroying_.load(std::memory_order_acquire)) {
+    return;
+  }
   TimePoint time_point{interval_microseconds, start_time_point, true};
   TimePoint tmp_time_point = time_point;
   // Check if the function which decides whether to continue the cycle should be
@@ -151,6 +168,9 @@ void EventManager::RunEveryUntil(int64_t interval_microseconds,
 }
 
 void EventManager::RunSoon(Timer::TimeCallback TimeTask) {
+  if (is_destroying_.load(std::memory_order_acquire)) {
+    return;
+  }
   timer_.AddTimeTask(TimePoint{}, std::move(TimeTask));
   WakeUp();
 }
@@ -262,29 +282,50 @@ void EventManager::DoExpiredTimeTasks(const TimePoint& return_time) {
 void EventManager::DestroyClosedConnections() {
   LockGuard lock_guard_cf(closed_fds_lock_);
   Fds remaining_fds;
-  static constexpr int kMaxPendingIoRetries = 1000;
-  static constexpr int kMaxPendingIoTimeoutMs = 2000;
+  static constexpr int kPendingIoWarnRetries = 1000;
+  static constexpr int kPendingIoWarnTimeoutMs = 2000;
   for (auto fd : closed_fds_) {
     std::unique_ptr<Connecting> connection_ptr;
+    bool detach_connection = false;
     {
       LockGuard lock_guard_cm(connection_map_mutex_lock_);
       auto it = connection_map_.find(fd);
       if (it != connection_map_.end() && it->second &&
           it->second->IsDisconnected()) {
         if (it->second->HasPendingIo()) {
+          it->second->BumpPendingIoWait();
           int retries = it->second->GetPendingIoRetries();
           int64_t waited_ms = it->second->GetPendingIoWaitMs();
-          if (retries < kMaxPendingIoRetries &&
-              waited_ms < kMaxPendingIoTimeoutMs) {
-            it->second->BumpPendingIoWait();
-            remaining_fds.insert(fd);
-            continue;
+          if (retries == kPendingIoWarnRetries ||
+              waited_ms == kPendingIoWarnTimeoutMs) {
+            LOG_WARN("Waiting for pending IO to finish on fd(%d)", fd);
           }
-          LOG_WARN("Force destroy connection fd(%d) after pending IO wait", fd);
+          if (should_quit_.load(std::memory_order_acquire) &&
+              (retries >= kPendingIoWarnRetries ||
+               waited_ms >= kPendingIoWarnTimeoutMs)) {
+            connection_ptr = std::move(it->second);
+            connection_map_.erase(it);
+            detach_connection = true;
+          } else {
+            remaining_fds.insert(fd);
+          }
+          continue;
         }
         connection_ptr = std::move(it->second);
         connection_map_.erase(it);
       }
+    }
+    if (detach_connection && connection_ptr) {
+      connection_ptr->RegisterOnConnectionCallback(
+          Connecting::NormalCallback{});
+      connection_ptr->RegisterOnMessageCallback(
+          Connecting::OnMessageCallback{});
+      connection_ptr->RegisterWriteCallback(Connecting::NormalCallback{});
+      connection_ptr->RegisterHighWaterMarkCallback(
+          Connecting::HighWaterMarkCallback{}, 0);
+      connection_ptr->RegisterCloseCallback(Connecting::NormalCallback{});
+      connection_ptr.release();
+      continue;
     }
     if (connection_ptr) {
       if (DestroyConnectionCallback_) {

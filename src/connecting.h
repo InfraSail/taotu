@@ -126,7 +126,9 @@ class Connecting : NonCopyableMovable {
   bool IsDisconnected() const {
     return ConnectionState::kDisconnected == state_.load();
   }
-  bool HasPendingIo() const { return read_in_flight_ || write_in_flight_; }
+  bool HasPendingIo() const {
+    return pending_io_.load(std::memory_order_relaxed) > 0;
+  }
   int GetPendingIoWaitMs() const { return pending_io_wait_ms_; }
   int GetPendingIoRetries() const { return pending_io_retries_; }
   void BumpPendingIoWait(int delta_ms = 1) {
@@ -164,6 +166,10 @@ class Connecting : NonCopyableMovable {
   static void OnReadComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op);
   static void OnWriteComplete(struct io_uring_cqe* cqe, Poller::IoUringOp* op);
   void CancelPendingIo();
+  void BumpPendingIo() { pending_io_.fetch_add(1, std::memory_order_relaxed); }
+  void CompletePendingIo() {
+    pending_io_.fetch_sub(1, std::memory_order_relaxed);
+  }
 
   enum class ConnectionState {
     kDisconnected,
@@ -227,8 +233,11 @@ class Connecting : NonCopyableMovable {
   // Connection state (atomic)
   std::atomic<ConnectionState> state_;
 
+  std::atomic<int> pending_io_{0};
   bool read_in_flight_{false};
   bool write_in_flight_{false};
+  ReadContext* read_ctx_{nullptr};
+  WriteContext* write_ctx_{nullptr};
   uint64_t next_io_key_{1};
   uint64_t read_cancel_key_{0};
   uint64_t write_cancel_key_{0};

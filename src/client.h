@@ -45,9 +45,11 @@ class Client : NonCopyableMovable {
   // Stop the TCP connection (if because of acceptable exceptions in
   // hardware-level, just retry)
   void Stop();
+  // Stop the TCP connection without stopping the shared event loop.
+  void StopWithoutQuit();
 
  private:
-  typedef std::unique_ptr<ClientReactorManager> ClientReactorManagerPtr;
+  typedef std::shared_ptr<ClientReactorManager> ClientReactorManagerPtr;
 
   // Reactor manager (the "engine")
   ClientReactorManagerPtr reactor_manager_;

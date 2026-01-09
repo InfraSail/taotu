@@ -26,6 +26,7 @@
 #include <thread>
 
 #include "non_copyable_movable.h"
+#include "spin_lock.h"
 
 namespace taotu {
 
@@ -161,8 +162,8 @@ class Logger : NonCopyableMovable {
   alignas(256) std::atomic<bool> is_stopping_;
   alignas(256) char filler1_;  // Only for solving "False Sharing"
 
-  std::mutex log_mutex_;
-  std::condition_variable log_cond_var_;
+  MutexLock log_mutex_;
+  std::condition_variable_any log_cond_var_;
 
   int64_t cur_log_file_byte_;
   int64_t cur_log_file_seq_;
@@ -172,7 +173,7 @@ class Logger : NonCopyableMovable {
 
   std::thread thread_;
 
-  std::mutex time_mutex_;
+  MutexLock time_mutex_;
   std::string time_now_str_;
   time_t time_now_sec_;
 
