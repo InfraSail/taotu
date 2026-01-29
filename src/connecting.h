@@ -17,6 +17,7 @@
 #include <array>
 #include <atomic>
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -148,7 +149,8 @@ class Connecting : NonCopyableMovable {
     Connecting* self{nullptr};
     std::array<struct iovec, 2> iov{};
     size_t writable{0};
-    char extra_buffer[64 * 1024];
+    char* extra_buffer{nullptr};
+    size_t extra_len{0};
     uint64_t key{0};
     bool multishot{false};
     uint16_t buf_id{0};
@@ -238,6 +240,9 @@ class Connecting : NonCopyableMovable {
   bool write_in_flight_{false};
   ReadContext* read_ctx_{nullptr};
   WriteContext* write_ctx_{nullptr};
+  ReadContext read_ctx_storage_{};
+  WriteContext write_ctx_storage_{};
+  std::unique_ptr<char[]> extra_read_buffer_{};
   uint64_t next_io_key_{1};
   uint64_t read_cancel_key_{0};
   uint64_t write_cancel_key_{0};

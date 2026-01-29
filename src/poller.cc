@@ -199,7 +199,7 @@ uint64_t Poller::SubmitReadMultishot(Eventer* eventer, int buf_group,
                                      CompletionFn completion, void* ctx,
                                      uint64_t key,
                                      ContextDeleter context_deleter) {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   key = NormalizeKey(key);
   struct io_uring_sqe* sqe = ::io_uring_get_sqe(&ring_);
   if (!sqe) {
@@ -214,7 +214,8 @@ uint64_t Poller::SubmitReadMultishot(Eventer* eventer, int buf_group,
     LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
-  ::io_uring_prep_recv_multishot(sqe, eventer->Fd(), nullptr, 0, 0);
+  ::io_uring_prep_recv(sqe, eventer->Fd(), nullptr, 0, 0);
+  sqe->ioprio |= IORING_RECV_MULTISHOT;
   ::io_uring_sqe_set_flags(sqe, IOSQE_BUFFER_SELECT);
   sqe->buf_group = static_cast<__u16>(buf_group);
   ::io_uring_sqe_set_data64(sqe, key);
@@ -517,7 +518,13 @@ void Poller::SubmitPending() {
 }
 
 void Poller::RegisterBuffers() {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
+  const char* disable_multishot = ::getenv("TAOTU_DISABLE_RECV_MULTISHOT");
+  if (disable_multishot && *disable_multishot != '\0' &&
+      *disable_multishot != '0') {
+    LOG_DEBUG("recv-multishot disabled by TAOTU_DISABLE_RECV_MULTISHOT.");
+    return;
+  }
   struct io_uring_sqe* sqe = ::io_uring_get_sqe(&ring_);
   if (!sqe) {
     LOG_WARN("io_uring_get_sqe failed when registering buffers, skip.");
@@ -545,7 +552,7 @@ void Poller::RegisterBuffers() {
 }
 
 void Poller::UnregisterBuffers() {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   if (!buffers_registered_) {
     return;
   }
@@ -561,7 +568,7 @@ void Poller::UnregisterBuffers() {
 }
 
 void Poller::ReleaseBufferFromCqe(struct io_uring_cqe* cqe) {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   if (!buffers_registered_) {
     return;
   }
