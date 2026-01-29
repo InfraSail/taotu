@@ -71,8 +71,8 @@ class Session : taotu::NonCopyableMovable {
   // Stop the session
   void Stop();
 
-  int64_t GetBytesRead() const { return bytes_read_; }
-  int64_t GetMessagesRead() const { return messages_read_; }
+  int64_t GetBytesRead() const { return bytes_read_.load(); }
+  int64_t GetMessagesRead() const { return messages_read_.load(); }
 
  private:
   // Called after the connection creating and before the connection destroying
@@ -84,8 +84,8 @@ class Session : taotu::NonCopyableMovable {
 
   taotu::Client client_;
   std::weak_ptr<PingpongClient> master_client_;
-  int64_t bytes_read_;
-  int64_t messages_read_;
+  std::atomic<int64_t> bytes_read_{0};
+  std::atomic<int64_t> messages_read_{0};
 };
 
 #endif  // !TAOTU_EXAMPLE_PINGPONG_PINGPONG_CLIENT_H_

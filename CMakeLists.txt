@@ -49,6 +49,7 @@ IF(TAOTU_ENABLE_CLANG_FORMAT)
        "${CMAKE_SOURCE_DIR}/example/*.c"
        "${CMAKE_SOURCE_DIR}/example/*.cc"
        "${CMAKE_SOURCE_DIR}/example/*.cpp")
+  LIST(FILTER TAOTU_CLANG_FORMAT_FILES EXCLUDE REGEX ".*\\.pb\\.(cc|h)$")
   ADD_CUSTOM_TARGET(
     clang-format
     COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file

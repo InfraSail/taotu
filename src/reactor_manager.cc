@@ -14,6 +14,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <functional>
 #include <string>
@@ -100,12 +101,20 @@ void ServerReactorManager::Loop() {
 void ServerReactorManager::AcceptNewConnectionCallback(
     int socket_fd, const NetAddress& peer_address) {
   auto* event_manager = balancer_->PickOneEventManager();
+  if (!event_manager) {
+    LOG_ERROR("No EventManager available, drop connection fd(%d)", socket_fd);
+    ::close(socket_fd);
+    return;
+  }
   NetAddress local_address = GetLocalAddress(socket_fd);
   event_manager->RunSoon(
       [this, event_manager, socket_fd, local_address, peer_address]() {
         auto new_connection = event_manager->InsertNewConnection(
             socket_fd, local_address,
             peer_address);  // Insert the new connection in its own I/O thread
+        if (!new_connection) {
+          return;
+        }
         new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
         new_connection->RegisterOnMessageCallback(MessageCallback_);
         new_connection->RegisterWriteCallback(WriteCompleteCallback_);
@@ -118,11 +127,11 @@ void ServerReactorManager::AcceptNewConnectionCallback(
 ClientReactorManager::ClientReactorManager(EventManager* event_manager,
                                            const NetAddress& server_address)
     : event_manager_(event_manager),
-      connector_(event_manager_, server_address),
+      connector_(std::make_shared<Connector>(event_manager_, server_address)),
       connection_(nullptr),
       should_retry_(false),
       can_connect_(true) {
-  connector_.RegisterNewConnectionCallback(
+  connector_->RegisterNewConnectionCallback(
       [this](int socket_fd) { this->LaunchNewConnectionCallback(socket_fd); });
 }
 ClientReactorManager::~ClientReactorManager() {
@@ -131,27 +140,37 @@ ClientReactorManager::~ClientReactorManager() {
     LockGuard lock_guard(connection_mutex_);
     connection_ = nullptr;
   }
-  connector_.Stop();
+  if (connector_) {
+    connector_->Stop();
+  }
 }
 
 void ClientReactorManager::Connect() {
   LOG_DEBUG("Connect to [ IP(%s) Port(%u) ].",
-            connector_.GetServerAddress().GetIp().c_str(),
-            connector_.GetServerAddress().GetPort());
+            connector_->GetServerAddress().GetIp().c_str(),
+            connector_->GetServerAddress().GetPort());
   should_retry_ = false;  // No auto-reconnect for client mode to avoid loops.
   can_connect_ = true;
-  connector_.Start();
+  connector_->Start();
 }
 void ClientReactorManager::Disconnect() {
-  event_manager_->RunSoon([this]() { this->DisconnectInLoop(); });
+  auto self = shared_from_this();
+  event_manager_->RunSoon([self]() { self->DisconnectInLoop(); });
 }
 void ClientReactorManager::Stop() {
-  event_manager_->RunSoon([this]() { this->StopInLoop(); });
+  auto self = shared_from_this();
+  event_manager_->RunSoon([self]() { self->StopInLoop(); });
+}
+void ClientReactorManager::StopWithoutQuit() {
+  auto self = shared_from_this();
+  event_manager_->RunSoon([self]() { self->StopInLoopWithoutQuit(); });
 }
 void ClientReactorManager::DisconnectInLoop() {
   should_retry_ = false;
   can_connect_ = false;
-  connector_.Stop();
+  if (connector_) {
+    connector_->Stop();
+  }
   Connecting* connection_to_close = nullptr;
   {
     LockGuard lock_guard(connection_mutex_);
@@ -169,7 +188,9 @@ void ClientReactorManager::DisconnectInLoop() {
 void ClientReactorManager::StopInLoop() {
   should_retry_ = false;
   can_connect_ = false;
-  connector_.Stop();
+  if (connector_) {
+    connector_->Stop();
+  }
   Connecting* connection_to_close = nullptr;
   {
     LockGuard lock_guard(connection_mutex_);
@@ -185,11 +206,33 @@ void ClientReactorManager::StopInLoop() {
   event_manager_->WakeUp();
 }
 
+void ClientReactorManager::StopInLoopWithoutQuit() {
+  should_retry_ = false;
+  can_connect_ = false;
+  if (connector_) {
+    connector_->Stop();
+  }
+  Connecting* connection_to_close = nullptr;
+  {
+    LockGuard lock_guard(connection_mutex_);
+    if (connection_ != nullptr) {
+      connection_to_close = connection_;
+      connection_ = nullptr;
+    }
+  }
+  if (connection_to_close) {
+    connection_to_close->ForceClose();
+  }
+}
+
 void ClientReactorManager::LaunchNewConnectionCallback(int socket_fd) {
   NetAddress peer_address(GetPeerAddress(socket_fd));
   NetAddress local_address(GetLocalAddress(socket_fd));
   auto new_connection = event_manager_->InsertNewConnection(
       socket_fd, local_address, peer_address);
+  if (!new_connection) {
+    return;
+  }
   new_connection->RegisterOnConnectionCallback(ConnectionCallback_);
   new_connection->RegisterOnMessageCallback(MessageCallback_);
   new_connection->RegisterWriteCallback(WriteCompleteCallback_);

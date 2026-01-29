@@ -15,7 +15,7 @@ namespace taotu {
 
 Client::Client(EventManager* event_manager, const NetAddress& server_address,
                bool should_retry_)
-    : reactor_manager_(std::make_unique<ClientReactorManager>(event_manager,
+    : reactor_manager_(std::make_shared<ClientReactorManager>(event_manager,
                                                               server_address)) {
   reactor_manager_->SetRetryOn(should_retry_);
 }
@@ -35,5 +35,6 @@ void Client::SetWriteCompleteCallback(
 void Client::Connect() { reactor_manager_->Connect(); }
 void Client::Disconnect() { reactor_manager_->Disconnect(); }
 void Client::Stop() { reactor_manager_->Stop(); }
+void Client::StopWithoutQuit() { reactor_manager_->StopWithoutQuit(); }
 
 }  // namespace taotu

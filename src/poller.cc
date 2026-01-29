@@ -50,7 +50,19 @@ uint32_t GetIoUringEntries() {
 Poller::Poller() {
   ::memset(static_cast<void*>(&ring_), 0, sizeof(ring_));
   struct io_uring_params params {};
-  params.flags = IORING_SETUP_SQPOLL;
+  bool want_sqpoll = false;
+  const char* enable_sqpoll = ::getenv("TAOTU_ENABLE_SQPOLL");
+  if (enable_sqpoll && *enable_sqpoll != '\0' && *enable_sqpoll != '0') {
+    want_sqpoll = true;
+  }
+  const char* disable_sqpoll = ::getenv("TAOTU_DISABLE_SQPOLL");
+  if (disable_sqpoll && *disable_sqpoll != '\0' && *disable_sqpoll != '0') {
+    want_sqpoll = false;
+  }
+  const bool requested_sqpoll = want_sqpoll;
+  if (requested_sqpoll) {
+    params.flags = IORING_SETUP_SQPOLL;
+  }
   uint32_t entries = GetIoUringEntries();
   int ret = -ENOMEM;
   while (entries >= kMinEntries) {
@@ -61,7 +73,7 @@ Poller::Poller() {
     }
     break;
   }
-  if (ret == -EPERM || ret == -EINVAL) {
+  if (requested_sqpoll && (ret == -EPERM || ret == -EINVAL)) {
     LOG_WARN("io_uring SQPOLL unavailable, fallback to default: %s",
              ::strerror(-ret));
     ::memset(static_cast<void*>(&ring_), 0, sizeof(ring_));
@@ -76,7 +88,7 @@ Poller::Poller() {
       }
       break;
     }
-  } else {
+  } else if (requested_sqpoll) {
     use_sqpoll_ = true;
   }
   if (ret < 0) {
@@ -101,7 +113,7 @@ Poller::~Poller() {
   // Clean up user-space ops still in the queue to avoid leaks on early exit.
   LOG_DEBUG("Destroying Poller, pending ops: %zu", ops_.size());
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     for (auto& item : ops_) {
       CleanupOpContext(item.second.get());
     }
@@ -125,7 +137,7 @@ std::unique_ptr<Poller::IoUringOp> Poller::LookupOp(uint64_t key) {
   if (key == 0) {
     return nullptr;
   }
-  std::lock_guard<std::mutex> lock(ops_mutex_);
+  LockGuard lock(ops_mutex_);
   auto it = ops_.find(key);
   if (it == ops_.end()) {
     return nullptr;
@@ -174,7 +186,7 @@ uint64_t Poller::SubmitRead(Eventer* eventer, struct iovec* iov, int iovcnt,
                                                   eventer->Fd(), completion,
                                                   key, context_deleter});
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
   ::io_uring_prep_readv(sqe, eventer->Fd(), iov, iovcnt, 0);
@@ -187,7 +199,7 @@ uint64_t Poller::SubmitReadMultishot(Eventer* eventer, int buf_group,
                                      CompletionFn completion, void* ctx,
                                      uint64_t key,
                                      ContextDeleter context_deleter) {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   key = NormalizeKey(key);
   struct io_uring_sqe* sqe = ::io_uring_get_sqe(&ring_);
   if (!sqe) {
@@ -199,10 +211,11 @@ uint64_t Poller::SubmitReadMultishot(Eventer* eventer, int buf_group,
                                                   eventer->Fd(), completion,
                                                   key, context_deleter});
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
-  ::io_uring_prep_recv_multishot(sqe, eventer->Fd(), nullptr, 0, 0);
+  ::io_uring_prep_recv(sqe, eventer->Fd(), nullptr, 0, 0);
+  sqe->ioprio |= IORING_RECV_MULTISHOT;
   ::io_uring_sqe_set_flags(sqe, IOSQE_BUFFER_SELECT);
   sqe->buf_group = static_cast<__u16>(buf_group);
   ::io_uring_sqe_set_data64(sqe, key);
@@ -233,7 +246,7 @@ uint64_t Poller::SubmitWrite(Eventer* eventer, struct iovec* iov, int iovcnt,
                                                   eventer->Fd(), completion,
                                                   key, context_deleter});
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
   ::io_uring_prep_writev(sqe, eventer->Fd(), iov, iovcnt, 0);
@@ -254,7 +267,7 @@ uint64_t Poller::SubmitAccept(int fd, struct sockaddr* addr, socklen_t* addrlen,
   auto op = std::make_unique<IoUringOp>(IoUringOp{
       OpType::kAccept, nullptr, ctx, fd, completion, key, context_deleter});
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
   if (multishot && use_multishot_accept_) {
@@ -274,28 +287,31 @@ uint64_t Poller::SubmitAccept(int fd, struct sockaddr* addr, socklen_t* addrlen,
   return key;
 }
 
-void Poller::CancelOp(uint64_t user_data_key) {
+bool Poller::CancelOp(uint64_t user_data_key) {
   if (user_data_key == 0) {
-    return;
+    return false;
   }
+  bool found = false;
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     auto it = ops_.find(user_data_key);
     if (it != ops_.end()) {
       // Mark canceled: keep op until its CQE arrives, so the kernel won't
       // touch freed context/iov memory.
       it->second->eventer = nullptr;
       it->second->completion = nullptr;
+      found = true;
     }
   }
   struct io_uring_sqe* sqe = ::io_uring_get_sqe(&ring_);
   if (!sqe) {
     LOG_ERROR("io_uring_get_sqe failed when cancel op");
-    return;
+    return found;
   }
   ::io_uring_prep_cancel64(sqe, user_data_key, 0);
   ::io_uring_sqe_set_data64(sqe, 0);  // Cancellation CQE needs no handling.
   SubmitPending();
+  return found;
 }
 TimePoint Poller::Poll(int timeout, EventerList* active_eventers) {
   struct __kernel_timespec ts {};
@@ -375,7 +391,7 @@ void Poller::HandleCqe(struct io_uring_cqe* cqe, EventerList* active_eventers) {
     op_ptr->completion(cqe, op_ptr);
     ReleaseBufferFromCqe(cqe);
     if (keep_op && op && op->context != nullptr) {
-      std::lock_guard<std::mutex> lock(ops_mutex_);
+      LockGuard lock(ops_mutex_);
       ops_[key] = std::move(op);  // keep for the next CQE
     } else {
       op.reset();
@@ -468,7 +484,7 @@ void Poller::SubmitPoll(Eventer* eventer) {
   auto op = std::make_unique<IoUringOp>(
       IoUringOp{OpType::kPoll, eventer, nullptr, eventer->Fd(), nullptr, key});
   {
-    std::lock_guard<std::mutex> lock(ops_mutex_);
+    LockGuard lock(ops_mutex_);
     ops_[key] = std::move(op);
   }
   ::io_uring_prep_poll_add(sqe, eventer->Fd(),
@@ -502,7 +518,13 @@ void Poller::SubmitPending() {
 }
 
 void Poller::RegisterBuffers() {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
+  const char* disable_multishot = ::getenv("TAOTU_DISABLE_RECV_MULTISHOT");
+  if (disable_multishot && *disable_multishot != '\0' &&
+      *disable_multishot != '0') {
+    LOG_DEBUG("recv-multishot disabled by TAOTU_DISABLE_RECV_MULTISHOT.");
+    return;
+  }
   struct io_uring_sqe* sqe = ::io_uring_get_sqe(&ring_);
   if (!sqe) {
     LOG_WARN("io_uring_get_sqe failed when registering buffers, skip.");
@@ -530,7 +552,7 @@ void Poller::RegisterBuffers() {
 }
 
 void Poller::UnregisterBuffers() {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   if (!buffers_registered_) {
     return;
   }
@@ -546,7 +568,7 @@ void Poller::UnregisterBuffers() {
 }
 
 void Poller::ReleaseBufferFromCqe(struct io_uring_cqe* cqe) {
-#ifdef IORING_OP_RECV_MULTISHOT
+#ifdef IORING_RECV_MULTISHOT
   if (!buffers_registered_) {
     return;
   }

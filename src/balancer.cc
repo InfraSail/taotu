@@ -12,6 +12,7 @@
 #include "balancer.h"
 
 #include "event_manager.h"
+#include "logger.h"
 #include "reactor_manager.h"
 
 namespace taotu {
@@ -21,7 +22,15 @@ Balancer::Balancer(ServerReactorManager::EventManagers* event_managers,
     : event_managers_(event_managers), strategy_(strategy), cursor_(0) {}
 
 EventManager* Balancer::PickOneEventManager() {
+  if (!event_managers_ || event_managers_->empty()) {
+    LOG_ERROR("No EventManager available in balancer");
+    return nullptr;
+  }
   auto evt_mng_num = event_managers_->size();
+  if (evt_mng_num <= 1) {
+    cursor_ = 0;
+    return (*event_managers_)[0];
+  }
   switch (strategy_) {
     // "Round Robin"
     case BalancerStrategy::kRoundRobin:
